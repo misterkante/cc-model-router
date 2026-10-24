@@ -1,0 +1,12 @@
+{
+  "defaultTier": "implementation",
+  "tiers": {
+    "mechanical": { "model": "haiku", "effort": "none" },
+    "implementation": { "model": "sonnet", "effort": "medium" },
+    "debugging": { "model": "opus", "effort": "high" }
+  },
+  "extraKeywords": {
+    "mechanical": ["bump deps", "update lockfile"],
+    "debugging": ["segfault", "deadlock"]
+  }
+}
