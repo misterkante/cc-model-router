@@ -35,10 +35,11 @@ export function runHook({
 
       const result = classify(prompt, loadConfig(cwd));
 
-      const dir = path.join(os.homedir(), ".claude");
+      const dir =
+        process.env.CC_ROUTER_CONFIG_DIR || path.join(os.homedir(), ".claude");
       mkdirSync(dir, { recursive: true });
       appendFileSync(
-        path.join(dir, "router.log"),
+        process.env.CC_ROUTER_LOG || path.join(dir, "router.log"),
         JSON.stringify({ ts: new Date().toISOString(), ...result }) + "\n"
       );
 

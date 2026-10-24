@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { classify, effectiveTiers } from "../src/classifier.js";
-import { mergeConfigs } from "../src/config.js";
+import { configPaths, mergeConfigs } from "../src/config.js";
 
 const cases = [
   ["lint and format the changed files", "mechanical"],
@@ -56,4 +56,16 @@ test("effective tiers keep defaults when config is empty", () => {
   assert.equal(tiers.mechanical.model, "haiku");
   assert.equal(tiers.implementation.model, "sonnet");
   assert.equal(tiers.debugging.model, "opus");
+});
+
+test("CC_ROUTER_CONFIG_DIR overrides the global config location", () => {
+  const previous = process.env.CC_ROUTER_CONFIG_DIR;
+  process.env.CC_ROUTER_CONFIG_DIR = "/tmp/cc-router-test";
+  try {
+    const paths = configPaths("/work");
+    assert.equal(paths.global, "/tmp/cc-router-test/model-router.json");
+  } finally {
+    if (previous === undefined) delete process.env.CC_ROUTER_CONFIG_DIR;
+    else process.env.CC_ROUTER_CONFIG_DIR = previous;
+  }
 });

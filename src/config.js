@@ -47,8 +47,10 @@ export function mergeConfigs(...configs) {
 }
 
 export function configPaths(cwd = process.cwd()) {
+  const base =
+    process.env.CC_ROUTER_CONFIG_DIR || path.join(os.homedir(), ".claude");
   return {
-    global: path.join(os.homedir(), ".claude", "model-router.json"),
+    global: path.join(base, "model-router.json"),
     project: path.join(cwd, ".claude", "model-router.json")
   };
 }

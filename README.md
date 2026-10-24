@@ -101,6 +101,27 @@ Add the hook and status line to your Claude Code settings:
 
 The hook logs every classification to `~/.claude/router.log` and adds the recommended tier/model as additional context.
 
+## Isolated testing (without touching your real `~/.claude`)
+
+Two safety mechanisms:
+
+- `CC_ROUTER_CONFIG_DIR` moves the router's global config and log to a sandbox directory.
+- `claude --settings <file>` loads the hook and status line for one Claude Code session only.
+
+Smoke test (dry run, real config untouched):
+
+```bash
+./scripts/sandbox.sh
+```
+
+Launch a sandboxed Claude Code session with the router hook:
+
+```bash
+./scripts/claude-sandbox.sh
+```
+
+Your `~/.claude/settings.json` and `~/.claude/model-router.json` are never modified. Auth is preserved because `HOME` is not overridden.
+
 ## Limitations (honest ones)
 
 - **A hook cannot change the active model mid-session.** Claude Code has no public API for that today (see issues #44976, #43326, #27665). The hook observes and recommends; `cc-router run` applies the model at launch.

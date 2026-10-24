@@ -26,6 +26,7 @@
    - debugging / complex → Opus (effort : high)
 4. Subagents : forcer le tier par classe de tâche ; modèle explicite > déduit ; plafond de délégation imbriqué.
 5. Config : globale (`~/.claude/model-router.json`) + projet (`.claude/model-router.json`).
+6. Isolation des tests : `CC_ROUTER_CONFIG_DIR` + `claude --settings` (jamais `~/.claude/settings.json`) ; `HOME` non modifié pour préserver l'auth Claude.
 
 ## 📋 Phases
 
