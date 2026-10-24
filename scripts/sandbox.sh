@@ -27,6 +27,6 @@ run node "$ROOT/bin/cc-router.js" status
 
 echo '{"prompt":"implement a REST endpoint"}' | node "$ROOT/hooks/user-prompt-submit.js"
 echo
-echo '{"model":{"display_name":"Opus 4.8"}}' | node "$ROOT/bin/statusline.js"
+echo '{"model":{"display_name":"Opus 5.5"}}' | node "$ROOT/bin/statusline.js"
 echo
 echo "Hook log           : $CONFIG_DIR/router.log"
