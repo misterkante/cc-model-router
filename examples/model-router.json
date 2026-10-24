@@ -1,7 +1,7 @@
 {
   "defaultTier": "implementation",
   "tiers": {
-    "mechanical": { "model": "haiku", "effort": "none" },
+    "mechanical": { "model": "haiku", "effort": "low" },
     "implementation": { "model": "sonnet", "effort": "medium" },
     "debugging": { "model": "opus", "effort": "high" }
   },

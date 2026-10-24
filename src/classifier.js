@@ -1,7 +1,8 @@
 const DEFAULT_TIERS = {
   mechanical: {
     model: "haiku",
-    effort: "none",
+    effort: "low",
+    fallback: "sonnet",
     weight: 3,
     keywords: [
       "rename",
@@ -31,6 +32,7 @@ const DEFAULT_TIERS = {
   implementation: {
     model: "sonnet",
     effort: "medium",
+    fallback: "haiku",
     weight: 2,
     keywords: [
       "implement",
@@ -57,6 +59,7 @@ const DEFAULT_TIERS = {
   debugging: {
     model: "opus",
     effort: "high",
+    fallback: "sonnet,haiku",
     weight: 3,
     keywords: [
       "debug",
@@ -169,6 +172,7 @@ export function classify(prompt, config = {}) {
     tier,
     model: def.model,
     effort: def.effort,
+    fallback: def.fallback,
     confidence,
     matched: matched[tier] || [],
     scores

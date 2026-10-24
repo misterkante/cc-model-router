@@ -37,7 +37,13 @@ Run Claude Code with the routed model:
 
 ```bash
 node bin/cc-router.js run "implement the auth endpoint"
-# equivalent to: claude --model sonnet "implement the auth endpoint"
+# equivalent to: claude --model sonnet --effort medium --fallback-model haiku "implement the auth endpoint"
+```
+
+Pass extra Claude Code flags after `--`:
+
+```bash
+node bin/cc-router.js run "implement the auth endpoint" -- -p
 ```
 
 Dry run (show the command without executing it):
@@ -61,7 +67,7 @@ node bin/cc-router.js status
 {
   "defaultTier": "implementation",
   "tiers": {
-    "mechanical": { "model": "haiku", "effort": "none" },
+    "mechanical": { "model": "haiku", "effort": "low" },
     "implementation": { "model": "sonnet", "effort": "medium" },
     "debugging": { "model": "opus", "effort": "high" }
   },

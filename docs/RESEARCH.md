@@ -23,21 +23,30 @@ Un fait n'entre dans une décision que s'il est daté et sourcé. Les sources qu
 - Sources : anthropic.com/claude-opus-5-5, anthropic.com/claude-sonnet-5-5, anthropic.com/claude-haiku-5-5, taskade.com/blog/claude-models-explained, felloai.com.
 - Mythos 5.1 : réservé aux programmes de vérification, hors scope.
 
-## 3. Écosystème routing
+## 3. CLI Claude Code 2.1.309 — vérifié le 2026-10-24
+
+- Alias de modèle acceptés (présents dans le binaire) : `fable`, `opus`, `sonnet`, `haiku`.
+- `--effort <level>` : `low`, `medium`, `high`, `xhigh`, `max` (pas de `none`).
+- `--fallback-model <model>` : accepte une liste séparée par virgules ; bascule si le modèle est surchargé ou indisponible.
+- `--settings <file-or-json>` : charge des settings additionnels (hooks/statusLine) sans modifier `~/.claude/settings.json`.
+- `--max-budget-usd <amount>` : plafond de dépense, uniquement avec `--print`.
+- `claude "prompt"` démarre une session interactive ; `-p/--print` pour le non-interactif.
+
+## 4. Écosystème routing
 
 - Claude Code natif : alias `opusplan` (Opus en plan → Sonnet en exécution).
 - Feature requests ouvertes : #44976, #43326, #27665 (auto routing par task type).
 - Hook communautaire : `tzachbon/claude-model-router-hook` (tiers, config globale/projet, subagents).
 - OpenCode : issue #8456 (auto model par task type), plugins `opencode-model-router`, `Auto (Jev)`.
 
-## 4. Incertitudes / à revérifier
+## 5. Incertitudes / à revérifier
 
-- Les alias exacts acceptés par `claude --model` sur la version installée (2.1.309) : à confirmer.
 - Les prix et la lineup bougent vite : revérifier avant toute publication.
 - Les résultats web se contredisent parfois (articles citant encore Opus 4.6 / Sonnet 4.6 / Haiku 4.5).
 - `CLAUDE_CONFIG_DIR` : support non confirmé ; on utilise `--settings` + `CC_ROUTER_CONFIG_DIR`.
+- Schéma exact du hook `UserPromptSubmit` (`additionalContext`) : à valider en session réelle (reporté).
 
-## 5. Décision issue de la veille
+## 6. Décision issue de la veille
 
 - Router par **alias** (`haiku` / `sonnet` / `opus`) par défaut.
 - Versions épinglables via `tiers.<tier>.model` en config.

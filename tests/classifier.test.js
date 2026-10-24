@@ -56,6 +56,14 @@ test("effective tiers keep defaults when config is empty", () => {
   assert.equal(tiers.mechanical.model, "haiku");
   assert.equal(tiers.implementation.model, "sonnet");
   assert.equal(tiers.debugging.model, "opus");
+  assert.equal(tiers.mechanical.effort, "low");
+  assert.equal(tiers.implementation.effort, "medium");
+  assert.equal(tiers.debugging.effort, "high");
+});
+
+test("classify returns the fallback chain", () => {
+  const result = classify("debug why the login test is flaky");
+  assert.equal(result.fallback, "sonnet,haiku");
 });
 
 test("CC_ROUTER_CONFIG_DIR overrides the global config location", () => {

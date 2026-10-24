@@ -18,12 +18,22 @@ function readPrompt(args) {
   }
 }
 
+function splitArgs(args) {
+  const idx = args.indexOf("--");
+  if (idx === -1) return { promptArgs: args, passthrough: [] };
+  return {
+    promptArgs: args.slice(0, idx),
+    passthrough: args.slice(idx + 1)
+  };
+}
+
 function usage() {
   console.log(`cc-router — automatic model routing for Claude Code
 
 Usage:
   cc-router classify "<task>"     Print tier, model and confidence (JSON)
-  cc-router run "<task>"          Classify then run: claude --model <model> "<task>"
+  cc-router run "<task>" [-- <claude args>]
+                                  Classify then run with --model/--effort/--fallback-model
   cc-router status                Show the effective tier -> model mapping
   cc-router hook                  Hook mode: reads JSON on stdin (UserPromptSubmit)
 
@@ -45,15 +55,18 @@ switch (cmd) {
   }
 
   case "run": {
-    const prompt = readPrompt(rest);
+    const { promptArgs, passthrough } = splitArgs(rest);
+    const prompt = readPrompt(promptArgs);
     if (!prompt) {
-      console.error('usage: cc-router run "<task>"');
+      console.error('usage: cc-router run "<task>" [-- <claude args...>]');
       process.exit(2);
     }
 
     const result = classify(prompt, loadConfig());
     const bin = process.env.CC_ROUTER_CLAUDE_BIN || "claude";
-    const args = ["--model", result.model, prompt];
+    const args = ["--model", result.model, "--effort", result.effort];
+    if (result.fallback) args.push("--fallback-model", result.fallback);
+    args.push(...passthrough, prompt);
 
     if (process.env.CC_ROUTER_DRY_RUN === "1") {
       console.log(

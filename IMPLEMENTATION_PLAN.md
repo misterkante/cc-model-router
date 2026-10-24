@@ -53,18 +53,27 @@
 | `src/hook.js` | Hook `UserPromptSubmit` (log + contexte) |
 | `hooks/user-prompt-submit.js` | Entrée hook pour Claude Code |
 | `bin/statusline.js` | Status line : modèle courant + mapping des tiers |
-| `tests/classifier.test.js` | 15 tests (routing, fallback, config, isolation) |
+| `tests/classifier.test.js` | 16 tests (routing, fallback, config, isolation) |
 | `examples/model-router.json` | Config d'exemple |
 | `docs/RESEARCH.md` | Veille datée : lineup, écosystème, incertitudes |
 
 ## 🧪 Preuves Phase 1
 
-- `node --test tests/*.test.js` → **15/15 tests passent**
+- `node --test tests/*.test.js` → **16/16 tests passent**
 - `cc-router classify "debug why the login test is flaky"` → `debugging` / `opus` / confidence 1
 - `cc-router run` (dry-run) → `claude --model sonnet "implement the auth endpoint"`
 - Hook `UserPromptSubmit` → log dans `.sandbox/config/router.log` (isolation) + `additionalContext` correct
 - `./scripts/sandbox.sh` → smoke test complet sans toucher `~/.claude`
 - [ ] Validation en session réelle Claude Code : **reportée** (budget crédits — à faire après les livraisons du week-end)
+
+## 🔧 Correctifs d'alignement Claude Code (2026-10-24)
+
+Vérifiés sur le CLI 2.1.309 (`claude --help` + inspection du binaire) :
+- `effort: "none"` était invalide → `"low"` (valeurs : low/medium/high/xhigh/max).
+- `cc-router run` applique désormais `--effort` et `--fallback-model`.
+- Fallbacks par tier : mechanical → sonnet ; implementation → haiku ; debugging → sonnet,haiku.
+- Passthrough d'arguments Claude via `-- <args>` (ex: `-- -p`).
+- Alias `haiku` / `sonnet` / `opus` / `fable` confirmés.
 
 ## ⚠️ Limite connue (à documenter pour les users)
 
