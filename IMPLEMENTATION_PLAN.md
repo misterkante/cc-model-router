@@ -64,6 +64,7 @@
 - `cc-router run` (dry-run) → `claude --model sonnet "implement the auth endpoint"`
 - Hook `UserPromptSubmit` → log dans `.sandbox/config/router.log` (isolation) + `additionalContext` correct
 - `./scripts/sandbox.sh` → smoke test complet sans toucher `~/.claude`
+- [ ] Validation en session réelle Claude Code : **reportée** (budget crédits — à faire après les livraisons du week-end)
 
 ## ⚠️ Limite connue (à documenter pour les users)
 
