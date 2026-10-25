@@ -46,6 +46,25 @@ Pass extra Claude Code flags after `--`:
 node bin/cc-router.js run "implement the auth endpoint" -- -p
 ```
 
+### Verify and escalate
+
+Run a check after the task, and retry with the next tier if it fails:
+
+```bash
+node bin/cc-router.js run "implement the auth endpoint" --verify "npm test" --escalate
+```
+
+- `--verify "<command>"` runs after Claude finishes, in the current directory.
+- Router flags go before `--`; everything after `--` is passed to Claude Code.
+- Without `--escalate`, a failure is reported and `cc-router` exits non-zero.
+- With `--escalate`, a failed check retries with the next tier (`mechanical → implementation → debugging`) and includes the failure output in the retry prompt.
+- Claude's exit status is reported; the verification command is the gate. If the check passes, the run is accepted even when Claude exited non-zero.
+- Use a read-only check (tests, typecheck, lint). A command that rewrites files changes the state the retry sees.
+- The retry reuses the working tree and does **not** roll back. Commit or stash first if you need a clean rollback.
+- The verification command is user-provided and runs with your shell permissions.
+
+This closes the one real quality failure measured in the 48-run benchmark: Sonnet produced an invalid YAML, and an Opus retry would have had the parser output to fix it.
+
 Dry run (show the command without executing it):
 
 ```bash
@@ -151,6 +170,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). Run `npm test` and `npm run bench:veri
 - **A hook cannot change the active model mid-session.** Claude Code has no public API for that today (see issues #44976, #43326, #27665). The hook observes and recommends; `cc-router run` applies the model at launch.
 - For interactive plan → code switching, Claude Code's native `opusplan` alias already covers part of the job.
 - Classification is heuristic and can be wrong. The `confidence` and `matched` fields are in the output so you can tune the keywords.
+- **Verification and escalation are opt-in.** The router does not know your test command; a retry reuses the working tree and can duplicate work or cost more. Use a clean git state for important runs.
 
 ## Tests
 
@@ -165,7 +185,7 @@ npm test
 - [x] Claude Code hook + status line
 - [x] CLI `run` wrapper
 - [x] Quality benchmark harness (12 tasks × 2 repeats, 48 runs)
-- [ ] Validation + escalation (`run --verify`, retry with next model)
+- [x] Validation + escalation (`run --verify`, retry with next model)
 - [ ] Finer debugging policy (Sonnet-first, escalate to Opus on failed check)
 - [ ] OpenCode adapter
 - [ ] Stats dashboard (cost/quota saved, escalation rate)

@@ -4,6 +4,11 @@ import { readFileSync } from "node:fs";
 import { classify, effectiveTiers } from "../src/classifier.js";
 import { loadConfig } from "../src/config.js";
 import { runHook } from "../src/hook.js";
+import {
+  escalationPlan,
+  parseRunArgs,
+  runWithVerification
+} from "../src/runner.js";
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -32,8 +37,10 @@ function usage() {
 
 Usage:
   cc-router classify "<task>"     Print tier, model and confidence (JSON)
-  cc-router run "<task>" [-- <claude args>]
-                                  Classify then run with --model/--effort/--fallback-model
+  cc-router run "<task>" [--verify "<command>"] [--escalate] [-- <claude args>]
+                                  Classify then run with --model/--effort/--fallback-model.
+                                  --verify runs a command after the task.
+                                  --escalate retries with the next tier on failure.
   cc-router status                Show the effective tier -> model mapping
   cc-router hook                  Hook mode: reads JSON on stdin (UserPromptSubmit)
 
@@ -56,31 +63,97 @@ switch (cmd) {
 
   case "run": {
     const { promptArgs, passthrough } = splitArgs(rest);
-    const prompt = readPrompt(promptArgs);
-    if (!prompt) {
-      console.error('usage: cc-router run "<task>" [-- <claude args...>]');
+    let parsed;
+    try {
+      parsed = parseRunArgs(promptArgs);
+    } catch (err) {
+      console.error(`cc-router: ${err.message}`);
       process.exit(2);
     }
 
-    const result = classify(prompt, loadConfig());
+    const prompt = parsed.prompt.trim() || readPrompt([]);
+    if (!prompt) {
+      console.error(
+        'usage: cc-router run "<task>" [--verify "<command>"] [--escalate] [-- <claude args...>]'
+      );
+      process.exit(2);
+    }
+
+    const config = loadConfig();
+    const result = classify(prompt, config);
     const bin = process.env.CC_ROUTER_CLAUDE_BIN || "claude";
-    const args = ["--model", result.model, "--effort", result.effort];
-    if (result.fallback) args.push("--fallback-model", result.fallback);
-    args.push(...passthrough, prompt);
+
+    const claudeArgs = (decision, text) => {
+      const args = ["--model", decision.model, "--effort", decision.effort];
+      if (decision.fallback) args.push("--fallback-model", decision.fallback);
+      args.push(...passthrough, text);
+      return args;
+    };
 
     if (process.env.CC_ROUTER_DRY_RUN === "1") {
       console.log(
-        JSON.stringify({ command: bin, args, decision: result }, null, 2)
+        JSON.stringify(
+          {
+            command: bin,
+            args: claudeArgs(result, prompt),
+            decision: result,
+            verify: parsed.verify,
+            escalate: parsed.escalate,
+            escalation: parsed.escalate ? escalationPlan(result.tier) : []
+          },
+          null,
+          2
+        )
       );
       break;
     }
 
-    const child = spawnSync(bin, args, { stdio: "inherit" });
-    if (child.error) {
-      console.error(`cc-router: could not run ${bin}: ${child.error.message}`);
+    const runClaude = ({ prompt: text, decision }) => {
+      const child = spawnSync(bin, claudeArgs(decision, text), {
+        stdio: "inherit"
+      });
+      if (child.error) return { error: child.error.message };
+      return { status: child.status ?? 1 };
+    };
+
+    const runVerify = ({ command }) => {
+      const child = spawnSync(command, [], {
+        shell: true,
+        encoding: "utf8",
+        stdio: ["inherit", "pipe", "pipe"]
+      });
+      const output = `${child.stdout || ""}${child.stderr || ""}`;
+      if (output.trim()) process.stderr.write(`${output.trim()}\n`);
+      if (child.error) {
+        return { status: 1, output: `${output}\n${child.error.message}` };
+      }
+      return { status: child.status ?? 1, output };
+    };
+
+    const outcome = runWithVerification({
+      prompt,
+      decision: result,
+      passthrough,
+      verify: parsed.verify,
+      escalate: parsed.escalate,
+      config,
+      deps: {
+        runClaude,
+        runVerify,
+        log: (message) => console.error(message)
+      }
+    });
+
+    if (outcome.error) {
+      console.error(`cc-router: could not run ${bin}: ${outcome.error}`);
       process.exit(1);
     }
-    process.exit(child.status ?? 1);
+    if (outcome.ok) process.exit(0);
+
+    const exitCode = parsed.verify
+      ? (outcome.verification?.status ?? 1)
+      : (outcome.run?.status ?? 1);
+    process.exit(exitCode);
     break;
   }
 

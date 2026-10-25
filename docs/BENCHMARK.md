@@ -254,8 +254,9 @@ Voir le protocole complet : [`../bench/README.md`](../bench/README.md).
 
 1. **Debugging plus fin** : Sonnet par défaut + escalade Opus sur échec de check, ou sous-classifieur
    simple/profond. Mesurer le taux d'escalade et le coût réel (échec + retry).
-2. **Validation post-run** : `cc-router run --verify "<commande>"`, retry/escalade si le check
-   échoue. C'est ce qui aurait rattrapé le YAML invalide de Sonnet.
+2. **Validation post-run** : `cc-router run --verify "<commande>"` + `--escalate` (implémenté
+   le 2026-10-26, hors chiffres de ce run). C'est ce qui aurait rattrapé le YAML invalide de
+   Sonnet : le parser renvoie 1, puis Opus reçoit l'erreur et corrige.
 3. **Élargir à 20–30 tâches, 3 répétitions**, avec revue aveugle des diffs et intervalles de
    confiance.
 4. **Valider la session interactive** (hook + statusline en TUI).

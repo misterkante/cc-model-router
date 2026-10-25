@@ -1,7 +1,7 @@
 # Plan d'implémentation — Auto Model Router
 
 > Dernière mise à jour : 2026-10-26
-> Statut : Phase 1 terminée (MVP Claude Code) + benchmark élargi (48 runs)
+> Statut : Phase 1 terminée (MVP Claude Code) + benchmark élargi (48 runs) + validation/escalade
 
 ## 🎯 Vision
 
@@ -114,6 +114,21 @@ Détail : `docs/BENCHMARK.md` ; process canonique : `bench/README.md` ; vérific
 
 Le pilote initial (5 tâches, 1 run) avait donné -53,6 % de coût par accepté et +37,6 % de tokens. Le run élargi corrige deux conclusions : le debugging n'est pas uniformément justifié, et Sonnet peut échouer sur la syntaxe. Le chiffre global baisse (-34,1 %) parce qu'il est plus honnête, pas parce que le routing est moins bon.
 
+## ✅ Validation + escalade (2026-10-26)
+
+Problème mesuré : sur 48 runs, Sonnet a produit un YAML invalide sur `impl-angular` (1/8 échec implementation) ; le baseline Opus était 8/8. Le routeur doit pouvoir **vérifier puis escalader**, pas seulement choisir un modèle au lancement.
+
+Implémentation :
+
+- `cc-router run "<task>" --verify "<commande>"` exécute la commande après Claude, dans le répertoire courant.
+- `--escalate` rejoue avec le tier suivant (`mechanical → implementation → debugging`) et inclut la sortie d'échec dans le prompt de retry.
+- `src/runner.js` : parsing des flags, plan d'escalade, prompt de retry, orchestration injectable (`runClaude` / `runVerify`).
+- `bin/cc-router.js` : wiring `spawnSync`, dry-run avec plan d'escalade, exit code de la vérification.
+- Tests : 18 tests unitaires + 2 tests CLI avec un faux binaire Claude (aucun quota consommé). `npm test` = **36 tests**.
+- Limites : pas de rollback ; le retry réutilise l'arbre de travail ; la commande de vérification est fournie par l'utilisateur ; pas encore mesuré sur un benchmark réel.
+
+Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré. Un `--verify` qui parse le YAML aurait renvoyé 1, et `--escalate` aurait laissé Opus corriger avec l'erreur sous les yeux. La prochaine étape est de mesurer le taux d'escalade et le coût réel (échec + retry) sur les 12 tâches.
+
 ## ⚠️ Limite connue (à documenter pour les users)
 
 Claude Code ne permet pas encore à un hook de changer le modèle en cours de session (issues #44976, #43326, #27665). Donc :
@@ -130,10 +145,11 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 ## 🔜 Prochaines actions
 
 - [x] Benchmark élargi (12 tâches × 2 répétitions, 48 runs) — voir `docs/BENCHMARK.md`.
-- [ ] Validation + escalade : `run --verify "<commande>"`, retry avec le modèle suivant si le check échoue.
+- [x] Validation + escalade : `run --verify "<commande>"`, retry avec le modèle suivant si le check échoue.
+- [ ] Mesurer l'escalade sur le benchmark (taux, coût échec + retry).
 - [ ] Politique debugging plus fine : Sonnet d'abord, escalade Opus sur échec, ou sous-classifieur simple/profond.
 - [ ] Élargir le benchmark à 20–30 tâches, 3 répétitions, revue aveugle.
-- [ ] Mesurer le rework / taux d'escalade.
+- [ ] Mesurer le rework (temps perdu, runs échoués).
 - [ ] Valider la session interactive (hook + statusline en TUI).
 - [ ] Mettre à jour `docs/RESEARCH.md` avant Phase 2 (veille datée).
 - [ ] Phase 2 — adaptateur OpenCode (routing par tour / plugin).
