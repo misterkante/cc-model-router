@@ -96,7 +96,7 @@ Contexte : copie de devquiz dans `/tmp/devquiz-router-test`, CLI Claude Code 2.1
 
 Question : le routing économise-t-il du coût **sans dégrader la qualité** ?
 Protocole : 5 tâches × 2 variantes, copies isolées, checks automatiques, budget 0,50 $/run.
-Détail : `docs/BENCHMARK.md` ; données : `docs/benchmarks/2026-10-25-pilot.json`.
+Détail : `docs/BENCHMARK.md` ; process canonique : `bench/README.md` ; vérification : `npm run bench:verify` ; données : `docs/benchmarks/2026-10-25-pilot.json`.
 
 | Variante | Acceptés | Coût total | Coût / accepté | Tokens |
 |---|---|---|---|---|

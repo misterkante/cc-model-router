@@ -26,12 +26,33 @@ function arg(name, fallback) {
 }
 
 const only = arg("tasks", "").split(",").filter(Boolean);
+const variants = arg("variants", "routed,baseline").split(",").filter(Boolean);
 const budget = arg("budget", "0.20");
-const devquizRepo = arg("repo", "/home/misterkante/dev/misterkante/devquiz");
+const devquizRepo = arg("repo", path.join(ROOT, "bench", "fixtures", "devquiz"));
+
+for (const variant of variants) {
+  if (variant !== "routed" && variant !== "baseline") {
+    console.error(`unknown variant: ${variant} (expected routed or baseline)`);
+    process.exit(2);
+  }
+}
 const resultsDir = path.join(ROOT, "bench", "results");
 mkdirSync(resultsDir, { recursive: true });
+const benchConfigDir = mkdtempSync(path.join(os.tmpdir(), "cc-router-bench-config-"));
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const outFile = arg("out", path.join(resultsDir, `run-${stamp}.json`));
+
+const unknownTasks = only.filter(
+  (id) => !TASKS.some((task) => task.id === id)
+);
+if (unknownTasks.length) {
+  console.error(`unknown task(s): ${unknownTasks.join(", ")}`);
+  process.exit(2);
+}
+if (!Number.isFinite(Number(budget)) || Number(budget) <= 0) {
+  console.error(`invalid budget: ${budget}`);
+  process.exit(2);
+}
 
 const FIXTURES = {
   devquiz: devquizRepo,
@@ -134,7 +155,7 @@ function runVariant(task, variant, dir) {
     timeout: 300000,
     env: {
       ...process.env,
-      CC_ROUTER_CONFIG_DIR: path.join(ROOT, ".sandbox", "config")
+      CC_ROUTER_CONFIG_DIR: benchConfigDir
     }
   });
 
@@ -160,10 +181,14 @@ function tokenTotal(usage = {}) {
 const selected = TASKS.filter(
   (task) => only.length === 0 || only.includes(task.id)
 );
+if (selected.length === 0) {
+  console.error("no tasks selected");
+  process.exit(2);
+}
 const records = [];
 
 for (const task of selected) {
-  for (const variant of ["routed", "baseline"]) {
+  for (const variant of variants) {
     process.stderr.write(`\n> ${task.id} / ${variant}\n`);
 
     const dir = prepareRepo(task);
@@ -228,16 +253,25 @@ function aggregate(variant) {
   };
 }
 
-const summary = {
-  routed: aggregate("routed"),
-  baseline: aggregate("baseline")
-};
+const summary = Object.fromEntries(
+  variants.map((variant) => [variant, aggregate(variant)])
+);
+
+const claudeVersion = spawnSync("claude", ["--version"], {
+  encoding: "utf8"
+}).stdout?.trim() || "unknown";
+const routerVersion = JSON.parse(
+  readFileSync(path.join(ROOT, "package.json"), "utf8")
+).version;
 
 writeFileSync(
   outFile,
   JSON.stringify(
     {
       generatedAt: new Date().toISOString(),
+      claudeVersion,
+      routerVersion,
+      nodeVersion: process.version,
       budgetPerRunUsd: budget,
       results: records,
       summary
@@ -249,7 +283,7 @@ writeFileSync(
 
 console.log(`\nResults: ${outFile}`);
 console.log("\nVariant  | pass  | cost      | $/passed | tokens  | tok/passed");
-for (const variant of ["routed", "baseline"]) {
+for (const variant of variants) {
   const s = summary[variant];
   console.log(
     `${variant.padEnd(8)} | ${s.passed}/${s.runs}  | $${String(s.totalCostUsd).padEnd(8)} | $${String(s.costPerPassedUsd).padEnd(7)} | ${String(s.totalTokens).padEnd(7)} | ${s.tokensPerPassed}`

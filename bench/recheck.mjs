@@ -54,17 +54,16 @@ function aggregate(variant) {
   };
 }
 
-data.summary = {
-  routed: aggregate("routed"),
-  baseline: aggregate("baseline")
-};
+data.summary = Object.fromEntries(
+  Object.keys(data.summary).map((variant) => [variant, aggregate(variant)])
+);
 
 const out = source.replace(/\.json$/, "") + "-rescored.json";
 writeFileSync(out, JSON.stringify(data, null, 2));
 
 console.log(`updated ${updated} record(s) -> ${out}`);
 console.log("\nVariant  | pass  | cost      | $/passed | tokens  | tok/passed");
-for (const variant of ["routed", "baseline"]) {
+for (const variant of Object.keys(data.summary)) {
   const s = data.summary[variant];
   console.log(
     `${variant.padEnd(8)} | ${s.passed}/${s.runs}  | $${String(s.totalCostUsd).padEnd(8)} | $${String(s.costPerPassedUsd).padEnd(7)} | ${String(s.totalTokens).padEnd(7)} | ${s.tokensPerPassed}`

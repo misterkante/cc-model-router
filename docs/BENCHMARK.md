@@ -3,20 +3,25 @@
 > Date : 2026-10-25
 > Question : le routing économise-t-il du coût/quota **sans dégrader la qualité** ?
 > Échantillon : 5 tâches × 2 variantes = 10 runs.
+> Process canonique : [`../bench/README.md`](../bench/README.md) · vérification : `npm run bench:verify`.
 > Données brutes : [`benchmarks/2026-10-25-pilot.json`](benchmarks/2026-10-25-pilot.json)
 
 ## Résultat en une ligne
 
 Sur ce pilote, le routing passe **5/5 tâches** contre **4/5** pour le baseline, à **0,0877 $ par tâche acceptée** contre **0,1893 $** (-53,6 %). Mais il consomme **37,6 % de tokens bruts en plus** : l'économie est en **coût/quota**, pas en nombre de tokens.
 
-## Protocole
+## Protocole (résumé)
+
+Le détail canonique, les règles d'ajout de tâche et la checklist de publication sont dans [`../bench/README.md`](../bench/README.md).
 
 - Chaque run part d'une **copie isolée** : devquiz pour les tâches mechanical/implementation, fixture Python pour le debugging. Le repo source n'est jamais modifié.
-- Variante `routed` : `cc-router run`, hook chargé via `--settings`, config dans `.sandbox/config`.
+- Variante `routed` : `cc-router run`, hook chargé via `--settings`, config isolée (`CC_ROUTER_CONFIG_DIR`).
 - Variante `baseline` : `claude --model <modèle> --effort <effort>` avec les mêmes flags (`-p --output-format json --max-budget-usd 0.50 --permission-mode acceptEdits`).
 - Checks **automatiques** : IDs présents, fichiers attendus, YAML valide (PyYAML), tests Python, fichier de test non modifié.
 - Un run est **accepté** si le check passe et si aucun fichier hors périmètre n'a changé.
 - `total_cost_usd` est un coût API-équivalent : avec un abonnement Claude Code, c'est un **proxy de la consommation de quota**, pas une facture.
+
+Le pilote a tourné sur une copie du **vrai devquiz**. La fixture commitée (`bench/fixtures/devquiz/`) en est un **équivalent synthétique** (mêmes IDs F-01..F-14 / Q-01..Q-11, même AC1) pour que le benchmark soit reproductible sans dépôt privé. `--repo` permet de rejouer sur le vrai dépôt.
 
 ### Tâches
 
@@ -97,12 +102,14 @@ Le baseline a échoué une fois. Si on le relance avec Opus (0,1581 $), son coû
 ## Reproduire
 
 ```bash
-node bench/run.mjs --budget 0.50
-node bench/run.mjs --tasks debug-calc --budget 0.50
-node bench/recheck.mjs bench/results/<fichier>.json <taskId>
+npm run bench:verify
+npm run bench -- --budget 0.50
+npm run bench -- --tasks debug-calc --budget 0.50
+npm run bench -- --repo /chemin/vers/devquiz --budget 0.50
+npm run bench:recheck -- bench/results/<fichier>.json <taskId>
 ```
 
-Voir [`bench/README.md`](../bench/README.md).
+Voir le protocole complet : [`../bench/README.md`](../bench/README.md).
 
 ## Prochaines étapes
 

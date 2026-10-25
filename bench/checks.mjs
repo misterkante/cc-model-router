@@ -108,7 +108,8 @@ const CHECKS = {
     }
     const res = spawnSync("python3", ["-m", "unittest", "-q", "test_calc"], {
       cwd: dir,
-      encoding: "utf8"
+      encoding: "utf8",
+      env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" }
     });
     return {
       pass: res.status === 0,
@@ -119,6 +120,12 @@ const CHECKS = {
     };
   }
 };
+
+export const CHECK_NAMES = Object.keys(CHECKS);
+
+export function hasCheck(name) {
+  return Boolean(CHECKS[name]);
+}
 
 export function runCheck(name, ctx) {
   const fn = CHECKS[name];

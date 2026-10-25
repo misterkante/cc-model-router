@@ -132,11 +132,16 @@ Your `~/.claude/settings.json` and `~/.claude/model-router.json` are never modif
 
 Pilot: 5 tasks, routed vs baseline, automatic checks. On these tasks, routing passed **5/5 vs 4/5** and cost **$0.0877 per accepted task vs $0.1893** (-53.6%). It does **not** reduce raw tokens (+37.6%): the saving is in cost/quota, not token count.
 
-Full protocol, per-task results and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md).
+Full protocol, per-task results and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md). The canonical process (isolation, variants, checks, adding a task, publishing a result) is in [`bench/README.md`](bench/README.md).
 
 ```bash
-node bench/run.mjs --budget 0.50
+npm run bench:verify
+npm run bench -- --budget 0.50
 ```
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). Run `npm test` and `npm run bench:verify` before opening a pull request.
 
 ## Limitations (honest ones)
 
