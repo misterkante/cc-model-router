@@ -64,7 +64,8 @@
 - `cc-router run` (dry-run) → `claude --model sonnet "implement the auth endpoint"`
 - Hook `UserPromptSubmit` → log dans `.sandbox/config/router.log` (isolation) + `additionalContext` correct
 - `./scripts/sandbox.sh` → smoke test complet sans toucher `~/.claude`
-- [ ] Validation en session réelle Claude Code : **reportée** (budget crédits — à faire après les livraisons du week-end)
+- [x] Validation en session réelle Claude Code (headless `-p`) : ✅ 2026-10-25 (voir résultats ci-dessous)
+- [ ] Validation en session interactive (hook + statusline en TUI) : à faire
 
 ## 🔧 Correctifs d'alignement Claude Code (2026-10-24)
 
@@ -74,6 +75,22 @@ Vérifiés sur le CLI 2.1.309 (`claude --help` + inspection du binaire) :
 - Fallbacks par tier : mechanical → sonnet ; implementation → haiku ; debugging → sonnet,haiku.
 - Passthrough d'arguments Claude via `-- <args>` (ex: `-- -p`).
 - Alias `haiku` / `sonnet` / `opus` / `fable` confirmés.
+
+## 🧪 Test réel devquiz (2026-10-25)
+
+Contexte : copie de devquiz dans `/tmp/devquiz-router-test`, CLI Claude Code 2.1.309, `-p --output-format json`, plafond 0,30 $/run, hook via `--settings`.
+
+| Run | Routage | Modèle réel | Coût | Fichiers |
+|---|---|---|---|---|
+| A (mechanical) | haiku / low | claude-haiku-5-5 | $0.00334 | aucun |
+| A baseline (sans routeur) | sonnet / medium | claude-sonnet-5-5 | $0.05859 | aucun |
+| B (implementation) | sonnet / medium | claude-sonnet-5-5 | $0.10274 | `docs/ROADMAP.md` |
+
+- Économie Tâche A : **-94,3 %** vs Sonnet ($0.00334 vs $0.05859).
+- Hook `UserPromptSubmit` déclenché en headless : 2 entrées dans `.sandbox/config/router.log`.
+- Aucun fichier du devquiz réel modifié ; `~/.claude` intact.
+- Coût total du test : **~$0.165**.
+- Limite : 1 échantillon par tâche ; la session interactive reste à valider.
 
 ## ⚠️ Limite connue (à documenter pour les users)
 
