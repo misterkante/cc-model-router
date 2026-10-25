@@ -128,6 +128,16 @@ Launch a sandboxed Claude Code session with the router hook:
 
 Your `~/.claude/settings.json` and `~/.claude/model-router.json` are never modified. Auth is preserved because `HOME` is not overridden.
 
+## Benchmark
+
+Pilot: 5 tasks, routed vs baseline, automatic checks. On these tasks, routing passed **5/5 vs 4/5** and cost **$0.0877 per accepted task vs $0.1893** (-53.6%). It does **not** reduce raw tokens (+37.6%): the saving is in cost/quota, not token count.
+
+Full protocol, per-task results and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md).
+
+```bash
+node bench/run.mjs --budget 0.50
+```
+
 ## Limitations (honest ones)
 
 - **A hook cannot change the active model mid-session.** Claude Code has no public API for that today (see issues #44976, #43326, #27665). The hook observes and recommends; `cc-router run` applies the model at launch.
@@ -146,8 +156,9 @@ npm test
 - [x] Global + project config
 - [x] Claude Code hook + status line
 - [x] CLI `run` wrapper
+- [x] Quality benchmark harness (pilot, 5 tasks)
 - [ ] OpenCode adapter
-- [ ] Stats dashboard (tokens/cost saved, escalation rate)
+- [ ] Stats dashboard (cost/quota saved, escalation rate)
 
 ## License
 

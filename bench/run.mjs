@@ -1,0 +1,257 @@
+#!/usr/bin/env node
+import { spawnSync } from "node:child_process";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync
+} from "node:fs";
+import { createHash } from "node:crypto";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { TASKS } from "./tasks.mjs";
+import { runCheck } from "./checks.mjs";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ARGS = process.argv.slice(2);
+
+function arg(name, fallback) {
+  const index = ARGS.indexOf(`--${name}`);
+  return index === -1 ? fallback : ARGS[index + 1];
+}
+
+const only = arg("tasks", "").split(",").filter(Boolean);
+const budget = arg("budget", "0.20");
+const devquizRepo = arg("repo", "/home/misterkante/dev/misterkante/devquiz");
+const resultsDir = path.join(ROOT, "bench", "results");
+mkdirSync(resultsDir, { recursive: true });
+const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+const outFile = arg("out", path.join(resultsDir, `run-${stamp}.json`));
+
+const FIXTURES = {
+  devquiz: devquizRepo,
+  "buggy-python": path.join(ROOT, "bench", "fixtures", "buggy-python")
+};
+
+const settingsPath = path.join(ROOT, ".sandbox", "claude-settings.json");
+if (!existsSync(settingsPath)) {
+  mkdirSync(path.dirname(settingsPath), { recursive: true });
+  writeFileSync(
+    settingsPath,
+    JSON.stringify(
+      {
+        hooks: {
+          UserPromptSubmit: [
+            {
+              hooks: [
+                {
+                  type: "command",
+                  command: `node ${path.join(ROOT, "hooks", "user-prompt-submit.js")}`
+                }
+              ]
+            }
+          ]
+        },
+        statusLine: {
+          type: "command",
+          command: `node ${path.join(ROOT, "bin", "statusline.js")}`
+        }
+      },
+      null,
+      2
+    )
+  );
+}
+
+function walk(dir, base = dir, acc = {}) {
+  for (const entry of readdirSync(dir)) {
+    if (entry === ".git" || entry === "node_modules") continue;
+    const full = path.join(dir, entry);
+    const rel = path.relative(base, full);
+    if (statSync(full).isDirectory()) {
+      walk(full, base, acc);
+    } else {
+      acc[rel] = createHash("sha1").update(readFileSync(full)).digest("hex");
+    }
+  }
+  return acc;
+}
+
+function changedFiles(before, after) {
+  const all = new Set([...Object.keys(before), ...Object.keys(after)]);
+  return [...all]
+    .filter((file) => before[file] !== after[file])
+    .sort();
+}
+
+function prepareRepo(task) {
+  const source = FIXTURES[task.fixture];
+  if (!source) throw new Error(`unknown fixture: ${task.fixture}`);
+  const root = mkdtempSync(path.join(os.tmpdir(), `cc-router-bench-${task.id}-`));
+  const dir = path.join(root, "repo");
+  cpSync(source, dir, { recursive: true });
+  return dir;
+}
+
+function runVariant(task, variant, dir) {
+  const common = [
+    "-p",
+    "--output-format", "json",
+    "--max-budget-usd", budget,
+    "--permission-mode", "acceptEdits"
+  ];
+
+  let command;
+  let args;
+  if (variant === "routed") {
+    command = process.execPath;
+    args = [
+      path.join(ROOT, "bin", "cc-router.js"),
+      "run",
+      task.prompt,
+      "--",
+      ...common,
+      "--settings", settingsPath
+    ];
+  } else {
+    command = "claude";
+    args = [
+      "--model", task.baseline.model,
+      "--effort", task.baseline.effort,
+      ...common,
+      task.prompt
+    ];
+  }
+
+  const result = spawnSync(command, args, {
+    cwd: dir,
+    encoding: "utf8",
+    timeout: 300000,
+    env: {
+      ...process.env,
+      CC_ROUTER_CONFIG_DIR: path.join(ROOT, ".sandbox", "config")
+    }
+  });
+
+  let parsed = null;
+  try {
+    parsed = JSON.parse(result.stdout);
+  } catch {
+    parsed = null;
+  }
+
+  return { result, parsed };
+}
+
+function tokenTotal(usage = {}) {
+  return (
+    (usage.input_tokens || 0) +
+    (usage.cache_read_input_tokens || 0) +
+    (usage.cache_creation_input_tokens || 0) +
+    (usage.output_tokens || 0)
+  );
+}
+
+const selected = TASKS.filter(
+  (task) => only.length === 0 || only.includes(task.id)
+);
+const records = [];
+
+for (const task of selected) {
+  for (const variant of ["routed", "baseline"]) {
+    process.stderr.write(`\n> ${task.id} / ${variant}\n`);
+
+    const dir = prepareRepo(task);
+    const before = walk(dir);
+    const { result, parsed } = runVariant(task, variant, dir);
+    const after = walk(dir);
+
+    const changed = changedFiles(before, after);
+    const unexpectedChanges = changed.filter(
+      (file) => !task.allowedChanges.includes(file)
+    );
+
+    const check = parsed
+      ? runCheck(task.check, {
+          dir,
+          result: parsed,
+          beforeHashes: before,
+          afterHashes: after
+        })
+      : { pass: false, detail: "no JSON output from claude" };
+
+    const record = {
+      task: task.id,
+      tier: task.tier,
+      variant,
+      exit: result.status,
+      model: parsed ? Object.keys(parsed.modelUsage || {}) : [],
+      cost_usd: parsed?.total_cost_usd ?? null,
+      tokens: tokenTotal(parsed?.usage),
+      duration_ms: parsed?.duration_ms ?? null,
+      changedFiles: changed,
+      unexpectedChanges,
+      check,
+      beforeHashes: before,
+      afterHashes: after,
+      dir,
+      stderr: result.status === 0 ? "" : String(result.stderr || "").slice(0, 500)
+    };
+
+    records.push(record);
+    process.stderr.write(
+      `  ${check.pass ? "PASS" : "FAIL"} | ${record.model.join(",") || "?"} | $${record.cost_usd ?? "?"} | ${record.tokens} tokens | ${check.detail}\n`
+    );
+  }
+}
+
+function aggregate(variant) {
+  const rows = records.filter((record) => record.variant === variant);
+  const passed = rows.filter((record) => record.check.pass);
+  const cost = rows.reduce((sum, record) => sum + (record.cost_usd || 0), 0);
+  const tokens = rows.reduce((sum, record) => sum + (record.tokens || 0), 0);
+  return {
+    runs: rows.length,
+    passed: passed.length,
+    passRate: rows.length ? passed.length / rows.length : 0,
+    totalCostUsd: Number(cost.toFixed(6)),
+    costPerPassedUsd: passed.length
+      ? Number((cost / passed.length).toFixed(6))
+      : null,
+    totalTokens: tokens,
+    tokensPerPassed: passed.length ? Math.round(tokens / passed.length) : null
+  };
+}
+
+const summary = {
+  routed: aggregate("routed"),
+  baseline: aggregate("baseline")
+};
+
+writeFileSync(
+  outFile,
+  JSON.stringify(
+    {
+      generatedAt: new Date().toISOString(),
+      budgetPerRunUsd: budget,
+      results: records,
+      summary
+    },
+    null,
+    2
+  )
+);
+
+console.log(`\nResults: ${outFile}`);
+console.log("\nVariant  | pass  | cost      | $/passed | tokens  | tok/passed");
+for (const variant of ["routed", "baseline"]) {
+  const s = summary[variant];
+  console.log(
+    `${variant.padEnd(8)} | ${s.passed}/${s.runs}  | $${String(s.totalCostUsd).padEnd(8)} | $${String(s.costPerPassedUsd).padEnd(7)} | ${String(s.totalTokens).padEnd(7)} | ${s.tokensPerPassed}`
+  );
+}

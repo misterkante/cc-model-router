@@ -1,0 +1,220 @@
+{
+  "generatedAt": "2026-10-25T22:09:57.173Z",
+  "budgetPerRunUsd": "0.50",
+  "summary": {
+    "routed": {
+      "runs": 5,
+      "passed": 5,
+      "passRate": 1,
+      "totalCostUsd": 0.438617,
+      "costPerPassedUsd": 0.087723,
+      "totalTokens": 556931,
+      "tokensPerPassed": 111386
+    },
+    "baseline": {
+      "runs": 5,
+      "passed": 4,
+      "passRate": 0.8,
+      "totalCostUsd": 0.757015,
+      "costPerPassedUsd": 0.189254,
+      "totalTokens": 404795,
+      "tokensPerPassed": 101199
+    }
+  },
+  "results": [
+    {
+      "task": "mech-questions",
+      "tier": "mechanical",
+      "variant": "routed",
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.0031187000000000003,
+      "tokens": 41055,
+      "duration_ms": 7004,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all Q-01..Q-11 present"
+      }
+    },
+    {
+      "task": "mech-questions",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0631226,
+      "tokens": 43786,
+      "duration_ms": 7396,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all Q-01..Q-11 present"
+      }
+    },
+    {
+      "task": "mech-features",
+      "tier": "mechanical",
+      "variant": "routed",
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.00408324,
+      "tokens": 69181,
+      "duration_ms": 8186,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all F-01..F-14 present"
+      }
+    },
+    {
+      "task": "mech-features",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0624798,
+      "tokens": 41156,
+      "duration_ms": 7892,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all F-01..F-14 present"
+      }
+    },
+    {
+      "task": "impl-roadmap",
+      "tier": "implementation",
+      "variant": "routed",
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.1127479,
+      "tokens": 143389,
+      "duration_ms": 22749,
+      "changedFiles": [
+        "docs/ROADMAP.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all features + lots present"
+      }
+    },
+    {
+      "task": "impl-roadmap",
+      "tier": "implementation",
+      "variant": "baseline",
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.27897879999999997,
+      "tokens": 105855,
+      "duration_ms": 38398,
+      "changedFiles": [
+        "docs/ROADMAP.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all features + lots present"
+      }
+    },
+    {
+      "task": "impl-profile",
+      "tier": "implementation",
+      "variant": "routed",
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.1605279,
+      "tokens": 195307,
+      "duration_ms": 40593,
+      "changedFiles": [
+        "parcours/python.yaml",
+        "profil.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "YAML structure ok"
+      }
+    },
+    {
+      "task": "impl-profile",
+      "tier": "implementation",
+      "variant": "baseline",
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.296434,
+      "tokens": 137851,
+      "duration_ms": 42788,
+      "changedFiles": [
+        "parcours/python.yaml",
+        "profil.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "YAML structure ok"
+      }
+    },
+    {
+      "task": "debug-calc",
+      "tier": "debugging",
+      "variant": "routed",
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.1581396,
+      "tokens": 107999,
+      "duration_ms": 15408,
+      "changedFiles": [
+        "calc.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      }
+    },
+    {
+      "task": "debug-calc",
+      "tier": "debugging",
+      "variant": "baseline",
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.056000100000000004,
+      "tokens": 76147,
+      "duration_ms": 11568,
+      "changedFiles": [
+        "calc.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": false,
+        "detail": "======================================================================\nERROR: test_average_empty (test_calc.CalcTest.test_average_empty)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/cc-router-bench-debug-calc-h1vwnx/repo/test_"
+      }
+    }
+  ]
+}
