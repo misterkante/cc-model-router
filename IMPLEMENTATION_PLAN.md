@@ -124,8 +124,9 @@ Implémentation :
 - `--escalate` rejoue avec le tier suivant (`mechanical → implementation → debugging`) et inclut la sortie d'échec dans le prompt de retry.
 - `src/runner.js` : parsing des flags, plan d'escalade, prompt de retry, orchestration injectable (`runClaude` / `runVerify`).
 - `bin/cc-router.js` : wiring `spawnSync`, dry-run avec plan d'escalade, exit code de la vérification.
-- Tests : 18 tests unitaires + 2 tests CLI avec un faux binaire Claude (aucun quota consommé). `npm test` = **36 tests**.
+- Tests : 18 tests unitaires + 2 tests CLI (faux binaire Claude, zéro quota) + 5 tests d'intégration hook/statusline. `npm test` = **41 tests**.
 - Limites : pas de rollback ; le retry réutilise l'arbre de travail ; la commande de vérification est fournie par l'utilisateur ; pas encore mesuré sur un benchmark réel.
+- Hook + statusline validés avec des payloads réels (config globale + override projet) ; le rendu TUI lui-même reste à vérifier à la main.
 
 Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré. Un `--verify` qui parse le YAML aurait renvoyé 1, et `--escalate` aurait laissé Opus corriger avec l'erreur sous les yeux. La prochaine étape est de mesurer le taux d'escalade et le coût réel (échec + retry) sur les 12 tâches.
 
@@ -150,7 +151,8 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 - [ ] Politique debugging plus fine : Sonnet d'abord, escalade Opus sur échec, ou sous-classifieur simple/profond.
 - [ ] Élargir le benchmark à 20–30 tâches, 3 répétitions, revue aveugle.
 - [ ] Mesurer le rework (temps perdu, runs échoués).
-- [ ] Valider la session interactive (hook + statusline en TUI).
+- [x] Hook + statusline validés hors TUI (payloads réels, config projet).
+- [ ] Rendu TUI manuel (hook + statusline) — nécessite un humain.
 - [ ] Mettre à jour `docs/RESEARCH.md` avant Phase 2 (veille datée).
 - [ ] Phase 2 — adaptateur OpenCode (routing par tour / plugin).
 - [ ] Phase 3 — dashboard de stats (coût/quota économisé, escalade).
