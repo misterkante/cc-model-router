@@ -1,0 +1,1062 @@
+{
+  "generatedAt": "2026-10-25T23:38:21.590Z",
+  "claudeVersion": "2.1.309 (Claude Code)",
+  "routerVersion": "0.1.0",
+  "nodeVersion": "v22.23.4",
+  "budgetPerRunUsd": "0.50",
+  "repeats": 2,
+  "mergedAt": "2026-10-25T23:38:21.590Z",
+  "mergedTasks": [
+    "impl-angular"
+  ],
+  "summary": {
+    "routed": {
+      "runs": 24,
+      "passed": 23,
+      "passRate": 0.9583333333333334,
+      "totalCostUsd": 2.083787,
+      "costPerPassedUsd": 0.090599,
+      "totalTokens": 2147568,
+      "tokensPerPassed": 93373
+    },
+    "baseline": {
+      "runs": 24,
+      "passed": 21,
+      "passRate": 0.875,
+      "totalCostUsd": 2.88739,
+      "costPerPassedUsd": 0.137495,
+      "totalTokens": 2266530,
+      "tokensPerPassed": 107930
+    }
+  },
+  "results": [
+    {
+      "task": "mech-questions",
+      "tier": "mechanical",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.0031912,
+      "tokens": 41623,
+      "duration_ms": 9817,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all Q-01..Q-11 present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-questions",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0579304,
+      "tokens": 42894,
+      "duration_ms": 7981,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all Q-01..Q-11 present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-questions",
+      "tier": "mechanical",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.00335263,
+      "tokens": 44358,
+      "duration_ms": 7051,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all Q-01..Q-11 present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-questions",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0596927,
+      "tokens": 40798,
+      "duration_ms": 7785,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all Q-01..Q-11 present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-features",
+      "tier": "mechanical",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.00334016,
+      "tokens": 45151,
+      "duration_ms": 4751,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all F-01..F-14 present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-features",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0511736,
+      "tokens": 38371,
+      "duration_ms": 6460,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all F-01..F-14 present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-features",
+      "tier": "mechanical",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.0029736299999999997,
+      "tokens": 40371,
+      "duration_ms": 6519,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all F-01..F-14 present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-features",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0629498,
+      "tokens": 41380,
+      "duration_ms": 6830,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all F-01..F-14 present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-lots",
+      "tier": "mechanical",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.00362121,
+      "tokens": 66866,
+      "duration_ms": 5822,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "counts 9/3/2"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-lots",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.05987150000000001,
+      "tokens": 62615,
+      "duration_ms": 6975,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "counts 9/3/2"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-lots",
+      "tier": "mechanical",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.0037481900000000006,
+      "tokens": 64874,
+      "duration_ms": 7488,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "counts 9/3/2"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-lots",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.060484300000000005,
+      "tokens": 62389,
+      "duration_ms": 8156,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "counts 9/3/2"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-questions-json",
+      "tier": "mechanical",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.00340365,
+      "tokens": 42820,
+      "duration_ms": 4504,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "11 questions with text"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-questions-json",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0524498,
+      "tokens": 38923,
+      "duration_ms": 9078,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "11 questions with text"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-questions-json",
+      "tier": "mechanical",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-haiku-5-5"
+      ],
+      "cost_usd": 0.00308063,
+      "tokens": 41027,
+      "duration_ms": 6254,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "11 questions with text"
+      },
+      "accepted": true
+    },
+    {
+      "task": "mech-questions-json",
+      "tier": "mechanical",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0550518,
+      "tokens": 39578,
+      "duration_ms": 9577,
+      "changedFiles": [],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "11 questions with text"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-roadmap",
+      "tier": "implementation",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.09116269999999999,
+      "tokens": 92157,
+      "duration_ms": 19701,
+      "changedFiles": [
+        "docs/ROADMAP.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all features + lots present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-roadmap",
+      "tier": "implementation",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.2154576,
+      "tokens": 95089,
+      "duration_ms": 37433,
+      "changedFiles": [
+        "docs/ROADMAP.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all features + lots present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-roadmap",
+      "tier": "implementation",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.08790880000000001,
+      "tokens": 91973,
+      "duration_ms": 16983,
+      "changedFiles": [
+        "docs/ROADMAP.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all features + lots present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-roadmap",
+      "tier": "implementation",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.2057498,
+      "tokens": 96134,
+      "duration_ms": 31587,
+      "changedFiles": [
+        "docs/ROADMAP.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "all features + lots present"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-profile",
+      "tier": "implementation",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.10020760000000001,
+      "tokens": 117825,
+      "duration_ms": 21228,
+      "changedFiles": [
+        "parcours/python.yaml",
+        "profil.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "YAML structure ok"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-profile",
+      "tier": "implementation",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.23272800000000002,
+      "tokens": 124208,
+      "duration_ms": 120710,
+      "changedFiles": [
+        "parcours/python.yaml",
+        "profil.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "YAML structure ok"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-profile",
+      "tier": "implementation",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.102796,
+      "tokens": 116463,
+      "duration_ms": 20758,
+      "changedFiles": [
+        "parcours/python.yaml",
+        "profil.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "YAML structure ok"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-profile",
+      "tier": "implementation",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.21263639999999998,
+      "tokens": 98035,
+      "duration_ms": 31833,
+      "changedFiles": [
+        "parcours/python.yaml",
+        "profil.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "YAML structure ok"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-questions",
+      "tier": "implementation",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0885364,
+      "tokens": 91343,
+      "duration_ms": 17815,
+      "changedFiles": [
+        "docs/QUESTIONS.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "11 questions answered"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-questions",
+      "tier": "implementation",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.235962,
+      "tokens": 122303,
+      "duration_ms": 42030,
+      "changedFiles": [
+        "docs/QUESTIONS.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "11 questions answered"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-questions",
+      "tier": "implementation",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.08979619999999999,
+      "tokens": 93048,
+      "duration_ms": 20978,
+      "changedFiles": [
+        "docs/QUESTIONS.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "11 questions answered"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-questions",
+      "tier": "implementation",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.1957122,
+      "tokens": 93136,
+      "duration_ms": 32663,
+      "changedFiles": [
+        "docs/QUESTIONS.md"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "11 questions answered"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-calc",
+      "tier": "debugging",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.1514222,
+      "tokens": 110820,
+      "duration_ms": 15349,
+      "changedFiles": [
+        "calc.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-calc",
+      "tier": "debugging",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0703838,
+      "tokens": 85575,
+      "duration_ms": 11316,
+      "changedFiles": [
+        "calc.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": false,
+        "detail": "======================================================================\nERROR: test_average_empty (test_calc.CalcTest.test_average_empty)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<sandbox>/test_"
+      },
+      "accepted": false
+    },
+    {
+      "task": "debug-calc",
+      "tier": "debugging",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.1604692,
+      "tokens": 132461,
+      "duration_ms": 21636,
+      "changedFiles": [
+        "calc.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-calc",
+      "tier": "debugging",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0659004,
+      "tokens": 62922,
+      "duration_ms": 8908,
+      "changedFiles": [
+        "calc.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": false,
+        "detail": "======================================================================\nERROR: test_average_empty (test_calc.CalcTest.test_average_empty)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<sandbox>/test_"
+      },
+      "accepted": false
+    },
+    {
+      "task": "debug-parse",
+      "tier": "debugging",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.2092324,
+      "tokens": 163953,
+      "duration_ms": 38002,
+      "changedFiles": [
+        "duration.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-parse",
+      "tier": "debugging",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.08843480000000001,
+      "tokens": 153633,
+      "duration_ms": 17314,
+      "changedFiles": [
+        "duration.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-parse",
+      "tier": "debugging",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.17496319999999999,
+      "tokens": 113574,
+      "duration_ms": 22549,
+      "changedFiles": [
+        "duration.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-parse",
+      "tier": "debugging",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0901984,
+      "tokens": 158651,
+      "duration_ms": 15618,
+      "changedFiles": [
+        "duration.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-state",
+      "tier": "debugging",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.1628504,
+      "tokens": 112446,
+      "duration_ms": 23256,
+      "changedFiles": [
+        "cart.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-state",
+      "tier": "debugging",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0774284,
+      "tokens": 109483,
+      "duration_ms": 14749,
+      "changedFiles": [
+        "cart.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-state",
+      "tier": "debugging",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.16453600000000002,
+      "tokens": 110935,
+      "duration_ms": 21506,
+      "changedFiles": [
+        "cart.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-state",
+      "tier": "debugging",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.08816879999999999,
+      "tokens": 133074,
+      "duration_ms": 17160,
+      "changedFiles": [
+        "cart.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-search",
+      "tier": "debugging",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.1324764,
+      "tokens": 97835,
+      "duration_ms": 32029,
+      "changedFiles": [
+        "search.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-search",
+      "tier": "debugging",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0836651,
+      "tokens": 132779,
+      "duration_ms": 26918,
+      "changedFiles": [
+        "search.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-search",
+      "tier": "debugging",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.16871879999999997,
+      "tokens": 131781,
+      "duration_ms": 20591,
+      "changedFiles": [
+        "search.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "tests pass"
+      },
+      "accepted": true
+    },
+    {
+      "task": "debug-search",
+      "tier": "debugging",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0742929,
+      "tokens": 108737,
+      "duration_ms": 13627,
+      "changedFiles": [
+        "search.py"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": false,
+        "detail": "======================================================================\nFAIL: test_first_occurrence (test_search.SearchTest.test_first_occurrence)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<sandbox>"
+      },
+      "accepted": false
+    },
+    {
+      "task": "impl-angular",
+      "tier": "implementation",
+      "variant": "routed",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0883342,
+      "tokens": 90713,
+      "duration_ms": 14561,
+      "changedFiles": [
+        "parcours/angular.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": false,
+        "detail": "Traceback (most recent call last):\n  File \"<string>\", line 17, in <module>\n    p = yaml.safe_load(open('parcours/angular.yaml'))\n  File \"/usr/lib/python3/dist-packages/yaml/__init__.py\", line 125, in safe_load\n    return load(stream, SafeLoader)\n  File \"/usr/lib/python3/dist-packages/yaml/__init__.p"
+      },
+      "accepted": false
+    },
+    {
+      "task": "impl-angular",
+      "tier": "implementation",
+      "variant": "baseline",
+      "repeat": 1,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.23605279999999998,
+      "tokens": 147394,
+      "duration_ms": 41746,
+      "changedFiles": [
+        "parcours/angular.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "Angular YAML structure ok"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-angular",
+      "tier": "implementation",
+      "variant": "routed",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-sonnet-5-5"
+      ],
+      "cost_usd": 0.0836655,
+      "tokens": 93151,
+      "duration_ms": 13057,
+      "changedFiles": [
+        "parcours/angular.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "Angular YAML structure ok"
+      },
+      "accepted": true
+    },
+    {
+      "task": "impl-angular",
+      "tier": "implementation",
+      "variant": "baseline",
+      "repeat": 2,
+      "exit": 0,
+      "model": [
+        "claude-opus-5-5"
+      ],
+      "cost_usd": 0.255015,
+      "tokens": 178429,
+      "duration_ms": 48441,
+      "changedFiles": [
+        "parcours/angular.yaml"
+      ],
+      "unexpectedChanges": [],
+      "check": {
+        "pass": true,
+        "detail": "Angular YAML structure ok"
+      },
+      "accepted": true
+    }
+  ]
+}

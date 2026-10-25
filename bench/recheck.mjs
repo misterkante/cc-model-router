@@ -34,11 +34,17 @@ for (const record of data.results) {
     record.check = check;
     updated += 1;
   }
+  record.accepted =
+    (record.exit == null || record.exit === 0) &&
+    check.pass &&
+    (record.unexpectedChanges || []).length === 0;
 }
 
 function aggregate(variant) {
   const rows = data.results.filter((record) => record.variant === variant);
-  const passed = rows.filter((record) => record.check.pass);
+  const passed = rows.filter(
+    (record) => record.accepted ?? record.check.pass
+  );
   const cost = rows.reduce((sum, record) => sum + (record.cost_usd || 0), 0);
   const tokens = rows.reduce((sum, record) => sum + (record.tokens || 0), 0);
   return {

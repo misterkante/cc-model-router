@@ -28,6 +28,7 @@ function arg(name, fallback) {
 const only = arg("tasks", "").split(",").filter(Boolean);
 const variants = arg("variants", "routed,baseline").split(",").filter(Boolean);
 const budget = arg("budget", "0.20");
+const repeats = Number(arg("repeats", "1"));
 const devquizRepo = arg("repo", path.join(ROOT, "bench", "fixtures", "devquiz"));
 
 for (const variant of variants) {
@@ -35,6 +36,10 @@ for (const variant of variants) {
     console.error(`unknown variant: ${variant} (expected routed or baseline)`);
     process.exit(2);
   }
+}
+if (!Number.isInteger(repeats) || repeats < 1) {
+  console.error(`invalid repeats: ${arg("repeats", "1")}`);
+  process.exit(2);
 }
 const resultsDir = path.join(ROOT, "bench", "results");
 mkdirSync(resultsDir, { recursive: true });
@@ -54,10 +59,10 @@ if (!Number.isFinite(Number(budget)) || Number(budget) <= 0) {
   process.exit(2);
 }
 
-const FIXTURES = {
-  devquiz: devquizRepo,
-  "buggy-python": path.join(ROOT, "bench", "fixtures", "buggy-python")
-};
+function fixturePath(name) {
+  if (name === "devquiz") return devquizRepo;
+  return path.join(ROOT, "bench", "fixtures", name);
+}
 
 const settingsPath = path.join(ROOT, ".sandbox", "claude-settings.json");
 if (!existsSync(settingsPath)) {
@@ -111,8 +116,8 @@ function changedFiles(before, after) {
 }
 
 function prepareRepo(task) {
-  const source = FIXTURES[task.fixture];
-  if (!source) throw new Error(`unknown fixture: ${task.fixture}`);
+  const source = fixturePath(task.fixture);
+  if (!existsSync(source)) throw new Error(`unknown fixture: ${task.fixture}`);
   const root = mkdtempSync(path.join(os.tmpdir(), `cc-router-bench-${task.id}-`));
   const dir = path.join(root, "repo");
   cpSync(source, dir, { recursive: true });
@@ -187,57 +192,74 @@ if (selected.length === 0) {
 }
 const records = [];
 
+const runs = [];
 for (const task of selected) {
-  for (const variant of variants) {
-    process.stderr.write(`\n> ${task.id} / ${variant}\n`);
-
-    const dir = prepareRepo(task);
-    const before = walk(dir);
-    const { result, parsed } = runVariant(task, variant, dir);
-    const after = walk(dir);
-
-    const changed = changedFiles(before, after);
-    const unexpectedChanges = changed.filter(
-      (file) => !task.allowedChanges.includes(file)
-    );
-
-    const check = parsed
-      ? runCheck(task.check, {
-          dir,
-          result: parsed,
-          beforeHashes: before,
-          afterHashes: after
-        })
-      : { pass: false, detail: "no JSON output from claude" };
-
-    const record = {
-      task: task.id,
-      tier: task.tier,
-      variant,
-      exit: result.status,
-      model: parsed ? Object.keys(parsed.modelUsage || {}) : [],
-      cost_usd: parsed?.total_cost_usd ?? null,
-      tokens: tokenTotal(parsed?.usage),
-      duration_ms: parsed?.duration_ms ?? null,
-      changedFiles: changed,
-      unexpectedChanges,
-      check,
-      beforeHashes: before,
-      afterHashes: after,
-      dir,
-      stderr: result.status === 0 ? "" : String(result.stderr || "").slice(0, 500)
-    };
-
-    records.push(record);
-    process.stderr.write(
-      `  ${check.pass ? "PASS" : "FAIL"} | ${record.model.join(",") || "?"} | $${record.cost_usd ?? "?"} | ${record.tokens} tokens | ${check.detail}\n`
-    );
+  for (let repeat = 1; repeat <= repeats; repeat++) {
+    for (const variant of variants) {
+      runs.push({ task, repeat, variant });
+    }
   }
+}
+
+for (const { task, repeat, variant } of runs) {
+  process.stderr.write(
+    `\n> ${task.id} / ${variant}${repeats > 1 ? ` / repeat ${repeat}` : ""}\n`
+  );
+
+  const dir = prepareRepo(task);
+  const before = walk(dir);
+  const { result, parsed } = runVariant(task, variant, dir);
+  const after = walk(dir);
+
+  const changed = changedFiles(before, after);
+  const unexpectedChanges = changed.filter(
+    (file) => !task.allowedChanges.includes(file)
+  );
+
+  const check = parsed
+    ? runCheck(task.check, {
+        dir,
+        result: parsed,
+        beforeHashes: before,
+        afterHashes: after
+      })
+    : { pass: false, detail: "no JSON output from claude" };
+
+  const accepted =
+    result.status === 0 && check.pass && unexpectedChanges.length === 0;
+
+  const record = {
+    task: task.id,
+    tier: task.tier,
+    variant,
+    repeat,
+    exit: result.status,
+    model: parsed ? Object.keys(parsed.modelUsage || {}) : [],
+    cost_usd: parsed?.total_cost_usd ?? null,
+    tokens: tokenTotal(parsed?.usage),
+    duration_ms: parsed?.duration_ms ?? null,
+    changedFiles: changed,
+    unexpectedChanges,
+    check,
+    accepted,
+    resultPreview: parsed?.result ? String(parsed.result).slice(0, 1000) : "",
+    beforeHashes: before,
+    afterHashes: after,
+    dir,
+    stderr: result.status === 0 ? "" : String(result.stderr || "").slice(0, 500)
+  };
+
+  records.push(record);
+  process.stderr.write(
+    `  ${accepted ? "PASS" : "FAIL"} | ${record.model.join(",") || "?"} | $${record.cost_usd ?? "?"} | ${record.tokens} tokens | ${check.detail}${unexpectedChanges.length ? ` | unexpected: ${unexpectedChanges.join(", ")}` : ""}\n`
+  );
 }
 
 function aggregate(variant) {
   const rows = records.filter((record) => record.variant === variant);
-  const passed = rows.filter((record) => record.check.pass);
+  const passed = rows.filter(
+    (record) => record.accepted ?? record.check.pass
+  );
   const cost = rows.reduce((sum, record) => sum + (record.cost_usd || 0), 0);
   const tokens = rows.reduce((sum, record) => sum + (record.tokens || 0), 0);
   return {
@@ -273,6 +295,7 @@ writeFileSync(
       routerVersion,
       nodeVersion: process.version,
       budgetPerRunUsd: budget,
+      repeats,
       results: records,
       summary
     },

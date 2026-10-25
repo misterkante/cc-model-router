@@ -21,7 +21,16 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TIERS = new Set(["mechanical", "implementation", "debugging"]);
 const MODELS = new Set(["haiku", "sonnet", "opus", "fable"]);
 const EFFORTS = new Set(["low", "medium", "high", "xhigh", "max"]);
-const FILE_CHECKS = new Set(["impl-roadmap", "impl-profile", "debug-calc"]);
+const FILE_CHECKS = new Set([
+  "impl-roadmap",
+  "impl-profile",
+  "impl-angular",
+  "impl-questions",
+  "debug-calc",
+  "debug-parse",
+  "debug-state",
+  "debug-search"
+]);
 
 const errors = [];
 

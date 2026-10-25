@@ -17,7 +17,7 @@ Ce que le benchmark ne mesure pas (encore) : style, maintenabilité, architectur
 |---|---|
 | **Run** | Une exécution d'une tâche dans une variante. |
 | **Variante** | `routed` (le router choisit) ou `baseline` (modèle de référence imposé). |
-| **Tâche acceptée** | Check vert **et** aucun fichier hors `allowedChanges`. |
+| **Tâche acceptée** | Check vert, code de sortie 0 **et** aucun fichier hors `allowedChanges`. |
 | **Check** | Fonction déterministe, locale, sans réseau, qui rend `{ pass, detail }`. |
 | **Fixture** | Dépôt minimal et synthétique dans lequel le run travaille. |
 | **Baseline** | Modèle/effort qu'un utilisateur aurait utilisés sans le router. |
@@ -49,6 +49,8 @@ Les deux variantes reçoivent **exactement les mêmes flags** :
 
 Pas de `--dangerously-skip-permissions`. Pas de réseau demandé par les tâches. Timeout : 300 s.
 
+**Limite headless importante** : `--permission-mode acceptEdits` auto-approuve les edits de fichiers, **pas les commandes Bash**. Un modèle qui tente `mkdir`/`cat` en Bash peut être bloqué et croire avoir créé le fichier. Ce n'est pas un échec de raisonnement : c'est une limite du harness. Les fixtures doivent **pré-créer les répertoires cibles** (ex. `parcours/.gitkeep`) pour que le modèle puisse utiliser Write. Un run bloqué ainsi est documenté et rejoué après correction de la fixture, jamais compté comme une victoire du routeur.
+
 ### 3.3 Checks
 
 Un check doit être :
@@ -75,6 +77,11 @@ Pour les tâches d'édition, `allowedChanges` liste les seuls fichiers autorisé
 
 - Un pilote peut avoir 5 tâches × 1 run : il détecte les écarts grossiers, il ne conclut pas.
 - Une publication « preuve » exige **≥ 12 tâches** et **≥ 2 répétitions** par tâche, avec des fixtures variées.
+- Le run de référence est :
+  ```bash
+  npm run bench -- --repeats 2 --budget 0.50
+  ```
+  soit 12 tâches × 2 variantes × 2 répétitions = **48 runs**.
 - Toute publication indique `n`, le nombre de runs et les limites.
 
 ### 3.6 Interprétation
@@ -90,9 +97,16 @@ Pour les tâches d'édition, `allowedChanges` liste les seuls fichiers autorisé
 |---|---|---|---|---|
 | `mech-questions` | mechanical | devquiz | sonnet / medium | IDs Q-01..Q-11 présents |
 | `mech-features` | mechanical | devquiz | sonnet / medium | IDs F-01..F-14 présents |
+| `mech-lots` | mechanical | devquiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
+| `mech-questions-json` | mechanical | devquiz | sonnet / medium | JSON de 11 questions avec texte |
 | `impl-roadmap` | implementation | devquiz | opus / high | fichier + IDs + lots A/B/C |
-| `impl-profile` | implementation | devquiz | opus / high | YAML valide + AC1 |
+| `impl-profile` | implementation | devquiz | opus / high | YAML valide + AC1 (Python) |
+| `impl-angular` | implementation | devquiz | opus / high | YAML + ≥ 8 notions + URLs Angular |
+| `impl-questions` | implementation | devquiz | opus / high | 11 réponses avec rationale |
 | `debug-calc` | debugging | buggy-python | sonnet / medium | tests verts + test intact |
+| `debug-parse` | debugging | buggy-python-parse | sonnet / medium | tests verts + test intact |
+| `debug-state` | debugging | buggy-python-state | sonnet / medium | tests verts + test intact |
+| `debug-search` | debugging | buggy-python-search | sonnet / medium | tests verts + test intact |
 
 La fixture `devquiz` est **locale et synthétique** (`bench/fixtures/devquiz/`). Pour tester ton vrai dépôt :
 
@@ -162,6 +176,7 @@ Exemples de checks :
 ## 7. Ajouter une fixture
 
 - Créer `bench/fixtures/<nom>/` avec le minimum de fichiers.
+- **Pré-créer les répertoires cibles** (ex. `parcours/.gitkeep`) : en headless, Bash n'est pas auto-approuvé, donc un `mkdir` peut être bloqué. Write crée le fichier si le répertoire existe.
 - **Synthétique** : pas de code propriétaire, pas de secrets, pas de données réelles.
 - Pour un bug : les tests doivent **échouer avant** le fix et **passer après**.
 - Documenter la fixture dans `tasks.mjs` (champ `fixture`).
@@ -176,14 +191,20 @@ npm run bench:verify
 # Smoke test : une tâche, une variante, budget faible
 npm run bench -- --tasks mech-questions --variants routed --budget 0.05
 
-# Run complet (5 tâches, 2 variantes)
-npm run bench -- --budget 0.50
+# Run complet (12 tâches, 2 variantes, 2 répétitions)
+npm run bench -- --repeats 2 --budget 0.50
+
+# Rapport Markdown lisible
+npm run bench:report -- bench/results/<fichier>.json
 
 # Contre ton vrai dépôt devquiz
 npm run bench -- --repo /chemin/vers/devquiz --budget 0.50
 
 # Re-scorer un résultat après correction d'un check (sans relancer les modèles)
 npm run bench:recheck -- bench/results/<fichier>.json <taskId>
+
+# Fusionner un re-run de tâche après correction de fixture
+npm run bench:merge -- bench/results/<base>.json bench/results/<rerun>.json --out bench/results/<merged>.json
 ```
 
 Options :
@@ -192,6 +213,7 @@ Options :
 |---|---|---|
 | `--tasks` | toutes | liste d'ids séparés par des virgules |
 | `--variants` | `routed,baseline` | variantes à exécuter |
+| `--repeats` | `1` | nombre de répétitions par tâche et par variante |
 | `--budget` | `0.20` | plafond API-équivalent par run |
 | `--repo` | fixture locale | dépôt devquiz alternatif |
 | `--out` | `bench/results/run-<date>.json` | fichier de sortie |
@@ -199,7 +221,10 @@ Options :
 ## 9. Résultats
 
 - Les runs locaux vont dans `bench/results/` (ignoré par git).
-- Les résultats **publiés** vont dans `docs/benchmarks/<date>-<nom>.json`, sans `dir`, `beforeHashes`, `afterHashes` ni `stderr`.
+- Les résultats **publiés** vont dans `docs/benchmarks/<date>-<nom>.json`, sans `dir`, `beforeHashes`, `afterHashes` ni `stderr` :
+  ```bash
+  npm run bench:publish -- bench/results/<fichier>.json 2026-10-26-expanded
+  ```
 - Champs principaux d'un résultat :
 
 ```json
@@ -209,33 +234,47 @@ Options :
   "routerVersion": "0.1.0",
   "nodeVersion": "v22.0.0",
   "budgetPerRunUsd": "0.50",
+  "repeats": 2,
   "summary": {
-    "routed": { "runs": 5, "passed": 5, "costPerPassedUsd": 0.087723, "totalTokens": 556931 },
-    "baseline": { "runs": 5, "passed": 4, "costPerPassedUsd": 0.189254, "totalTokens": 404795 }
+    "routed": { "runs": 24, "passed": 23, "costPerPassedUsd": 0.090599, "totalTokens": 2147568 },
+    "baseline": { "runs": 24, "passed": 21, "costPerPassedUsd": 0.137495, "totalTokens": 2266530 }
   },
   "results": [
     {
       "task": "debug-calc",
       "tier": "debugging",
       "variant": "routed",
+      "repeat": 1,
       "model": ["claude-opus-5-5"],
       "cost_usd": 0.1581396,
       "tokens": 107999,
       "changedFiles": ["calc.py"],
       "unexpectedChanges": [],
-      "check": { "pass": true, "detail": "tests pass" }
+      "check": { "pass": true, "detail": "tests pass" },
+      "accepted": true
     }
   ]
 }
 ```
 
 - Si un check était faux et a été corrigé, **re-scorer** les sorties existantes avec `bench:recheck` et publier un fichier `-rescored.json` en documentant la correction. Ne pas relancer les modèles pour « améliorer » un résultat.
+- Si une **fixture** était fautive (ex. répertoire manquant qui bloque Bash), corriger la fixture, **rejouer la tâche seule**, puis fusionner avec `bench:merge` :
+  ```bash
+  npm run bench -- --tasks impl-angular --repeats 2 --budget 0.50 \
+    --out bench/results/impl-angular-rerun.json
+  npm run bench:merge -- bench/results/<base>.json \
+    bench/results/impl-angular-rerun.json \
+    --out bench/results/<base>-merged.json
+  ```
+  Documenter la raison du re-run et les tâches remplacées ; le JSON publié porte `mergedAt` et `mergedTasks`. Ne jamais fusionner un re-run sans le dire.
+- `bench:publish` retire `dir`, `beforeHashes`, `afterHashes`, `stderr` et `resultPreview` du JSON publié.
 
 ## 10. Checklist avant publication
 
 - [ ] `npm run bench:verify` vert.
 - [ ] Tous les runs ont un code de sortie 0, ou l'échec est documenté.
 - [ ] Aucun changement inattendu, ou il est expliqué.
+- [ ] Si des runs ont été rejoués/fusionnés, la raison et `mergedTasks` sont documentées.
 - [ ] `n`, nombre de runs et répétitions indiqués.
 - [ ] Version de Claude Code et lineup de modèles datés (`docs/RESEARCH.md`).
 - [ ] JSON brut publié dans `docs/benchmarks/`.
@@ -247,9 +286,9 @@ Options :
 ## 11. Limites connues
 
 - Checks binaires : la qualité rédactionnelle n'est pas notée.
-- Petits échantillons : pas d'intervalle de confiance tant que `n < 12` et les répétitions < 2.
+- 12 tâches, 2 répétitions : pas d'intervalle de confiance ni de revue aveugle ; les runs d'une même tâche ne sont pas indépendants.
 - Coût API-équivalent ≠ quota réel d'un abonnement.
-- Les prompts du pilote routent correctement ; les erreurs de classification ne sont pas mesurées.
+- Les prompts du run de référence routent correctement ; les erreurs de classification ne sont pas mesurées.
 - Les sessions interactives (TUI) ne sont pas couvertes par ce harness.
 
 ## 12. Références

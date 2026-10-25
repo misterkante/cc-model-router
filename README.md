@@ -130,13 +130,16 @@ Your `~/.claude/settings.json` and `~/.claude/model-router.json` are never modif
 
 ## Benchmark
 
-Pilot: 5 tasks, routed vs baseline, automatic checks. On these tasks, routing passed **5/5 vs 4/5** and cost **$0.0877 per accepted task vs $0.1893** (-53.6%). It does **not** reduce raw tokens (+37.6%): the saving is in cost/quota, not token count.
+Reference run: **12 tasks × 2 variants × 2 repeats = 48 runs**, automatic checks, isolated copies. Routing passed **23/24 (95.8%) vs 21/24 (87.5%)** and cost **$0.0906 per accepted task vs $0.1375** (-34.1%). Raw tokens fell 5.2% overall, but that is not the claim: the saving is in cost/quota, carried by mechanical (-94%) and implementation (-53%). Debugging is a quality guard (+30% per accepted vs Sonnet), not a saving.
 
-Full protocol, per-task results and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md). The canonical process (isolation, variants, checks, adding a task, publishing a result) is in [`bench/README.md`](bench/README.md).
+The run also found the next product gap: Sonnet produced one invalid YAML on an implementation task, and the debugging tier over-routes Opus on simple bugs. Validation + escalation is the next step.
+
+Full results, per-tier analysis, incident log and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md). Canonical process: [`bench/README.md`](bench/README.md).
 
 ```bash
 npm run bench:verify
-npm run bench -- --budget 0.50
+npm run bench -- --repeats 2 --budget 0.50
+npm run bench:report -- bench/results/<file>.json
 ```
 
 ## Contributing
@@ -161,7 +164,9 @@ npm test
 - [x] Global + project config
 - [x] Claude Code hook + status line
 - [x] CLI `run` wrapper
-- [x] Quality benchmark harness (pilot, 5 tasks)
+- [x] Quality benchmark harness (12 tasks × 2 repeats, 48 runs)
+- [ ] Validation + escalation (`run --verify`, retry with next model)
+- [ ] Finer debugging policy (Sonnet-first, escalate to Opus on failed check)
 - [ ] OpenCode adapter
 - [ ] Stats dashboard (cost/quota saved, escalation rate)
 

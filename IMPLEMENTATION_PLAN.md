@@ -1,11 +1,11 @@
 # Plan d'implémentation — Auto Model Router
 
-> Dernière mise à jour : 2026-10-25
-> Statut : Phase 1 terminée (MVP Claude Code) + benchmark pilote
+> Dernière mise à jour : 2026-10-26
+> Statut : Phase 1 terminée (MVP Claude Code) + benchmark élargi (48 runs)
 
 ## 🎯 Vision
 
-Éliminer le `/model` manuel : router automatiquement Claude Code (puis OpenCode) vers le modèle adapté à la complexité de la tâche (Haiku / Sonnet / Opus), pour réduire la consommation de tokens et d'credits tout en préservant la qualité.
+Éliminer le `/model` manuel : router automatiquement Claude Code (puis OpenCode) vers le modèle adapté à la complexité de la tâche (Haiku / Sonnet / Opus), pour réduire la consommation de **quota/coût** tout en préservant la qualité. Les tokens bruts ne baissent pas toujours : c'est le coût par résultat accepté qui compte.
 
 ## 🧩 Contexte & problème
 
@@ -92,24 +92,27 @@ Contexte : copie de devquiz dans `/tmp/devquiz-router-test`, CLI Claude Code 2.1
 - Coût total du test : **~$0.165**.
 - Limite : 1 échantillon par tâche ; la session interactive reste à valider.
 
-## 📊 Benchmark qualité — pilote (2026-10-25)
+## 📊 Benchmark qualité — run de référence (2026-10-26)
 
-Question : le routing économise-t-il du coût **sans dégrader la qualité** ?
-Protocole : 5 tâches × 2 variantes, copies isolées, checks automatiques, budget 0,50 $/run.
-Détail : `docs/BENCHMARK.md` ; process canonique : `bench/README.md` ; vérification : `npm run bench:verify` ; données : `docs/benchmarks/2026-10-25-pilot.json`.
+Question : le routing économise-t-il du coût/quota **sans dégrader la qualité** ?
+Protocole : 12 tâches × 2 variantes × 2 répétitions = 48 runs, copies isolées, checks automatiques, budget 0,50 $/run.
+Détail : `docs/BENCHMARK.md` ; process canonique : `bench/README.md` ; vérification : `npm run bench:verify` ; données : `docs/benchmarks/2026-10-26-expanded.json`.
 
 | Variante | Acceptés | Coût total | Coût / accepté | Tokens |
 |---|---|---|---|---|
-| routed | 5/5 | 0,4386 $ | **0,0877 $** | 556 931 |
-| baseline | 4/5 | 0,7570 $ | 0,1893 $ | 404 795 |
+| routed | 23/24 (95,8 %) | 2,0838 $ | **0,0906 $** | 2 147 568 |
+| baseline | 21/24 (87,5 %) | 2,8874 $ | 0,1375 $ | 2 266 530 |
 
-- Coût par tâche acceptée : **-53,6 %**.
-- Tokens bruts : **+37,6 %** → l'économie est en **coût/quota**, pas en volume.
-- Mechanical : Haiku -95,1 % / -93,5 %, qualité identique.
-- Implementation : Sonnet -59,6 % / -45,8 % vs Opus, qualité identique.
-- Debugging : Opus 1/1, Sonnet 0/1 (liste vide non gérée) → le tier debugging est justifié.
+- Coût par tâche acceptée : **-34,1 %** ; coût total : -27,8 %.
+- Tokens bruts : -5,2 % au total ; -13,5 % par accepté → l'économie reste en **coût/quota**, pas en volume.
+- Mechanical : Haiku -94,3 %, 8/8 vs 8/8.
+- Implementation : Sonnet -53,2 %, 7/8 vs 8/8 ; un YAML invalide sur `impl-angular` (vrai échec Sonnet, rattrapable par validation).
+- Debugging : Opus 8/8 vs Sonnet 5/8, mais +29,7 % par accepté ; Opus nécessaire sur `debug-calc`/`debug-search`, surdimensionné sur `debug-parse`/`debug-state`.
 - Aucun fichier hors périmètre modifié.
-- Limite : 5 tâches, 1 run, checks binaires ; pas encore une preuve statistique.
+- Incident : `impl-angular` routé repeat 2 du premier run = commande Bash bloquée (artefact harness) ; fixture corrigée (`parcours/.gitkeep`), tâche rejouée et fusionnée. L'échec final est le YAML invalide, pas l'artefact.
+- Limite : 12 tâches, 2 répétitions, checks binaires, pas de revue aveugle ; pas encore une preuve statistique.
+
+Le pilote initial (5 tâches, 1 run) avait donné -53,6 % de coût par accepté et +37,6 % de tokens. Le run élargi corrige deux conclusions : le debugging n'est pas uniformément justifié, et Sonnet peut échouer sur la syntaxe. Le chiffre global baisse (-34,1 %) parce qu'il est plus honnête, pas parce que le routing est moins bon.
 
 ## ⚠️ Limite connue (à documenter pour les users)
 
@@ -126,7 +129,9 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 
 ## 🔜 Prochaines actions
 
-- [x] Benchmark pilote (5 tâches, routé vs baseline) — voir `docs/BENCHMARK.md`.
+- [x] Benchmark élargi (12 tâches × 2 répétitions, 48 runs) — voir `docs/BENCHMARK.md`.
+- [ ] Validation + escalade : `run --verify "<commande>"`, retry avec le modèle suivant si le check échoue.
+- [ ] Politique debugging plus fine : Sonnet d'abord, escalade Opus sur échec, ou sous-classifieur simple/profond.
 - [ ] Élargir le benchmark à 20–30 tâches, 3 répétitions, revue aveugle.
 - [ ] Mesurer le rework / taux d'escalade.
 - [ ] Valider la session interactive (hook + statusline en TUI).

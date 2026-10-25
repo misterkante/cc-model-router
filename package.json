@@ -10,6 +10,9 @@
     "test": "node --test tests/*.test.js",
     "bench": "node bench/run.mjs",
     "bench:verify": "node bench/verify.mjs",
+    "bench:report": "node bench/report.mjs",
+    "bench:publish": "node bench/publish.mjs",
+    "bench:merge": "node bench/merge.mjs",
     "bench:recheck": "node bench/recheck.mjs"
   },
   "engines": {

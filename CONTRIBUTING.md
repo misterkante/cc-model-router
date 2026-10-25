@@ -36,7 +36,12 @@ To add a task:
    ```bash
    npm run bench -- --tasks <id> --variants routed --budget 0.05
    ```
-7. Run the full comparison and publish the JSON in `docs/benchmarks/`.
+7. Run the full comparison and publish the JSON in `docs/benchmarks/`:
+   ```bash
+   npm run bench -- --repeats 2 --budget 0.50
+   npm run bench:report -- bench/results/<file>.json
+   npm run bench:publish -- bench/results/<file>.json <date>-<name>
+   ```
 8. Update `docs/BENCHMARK.md` with results, `n`, and caveats.
 
 A result is only publishable if:
@@ -44,14 +49,15 @@ A result is only publishable if:
 - the check is deterministic and red before / green after;
 - the source repo is untouched;
 - there are no unexpected file changes;
-- the raw JSON is committed (without `dir`, hashes or stderr);
+- the raw JSON is committed (without `dir`, hashes, stderr or `resultPreview`);
+- any re-run or merge is documented (`mergedTasks`, reason);
 - the text talks about **cost/quota**, not "tokens saved";
 - the baseline (counterfactual) is explicit;
 - `n`, repetitions and limitations are stated.
 
 ## Reporting a benchmark result
 
-Include: date, Claude Code version, model lineup, exact command, budget, `n`, raw JSON, and limitations. Do not cherry-pick runs; publish failures too. If a check was wrong and has been fixed, re-score the existing outputs with `npm run bench:recheck` and document the correction instead of re-running the models.
+Include: date, Claude Code version, model lineup, exact command, budget, `n`, raw JSON, and limitations. Do not cherry-pick runs; publish failures too. If a check was wrong and has been fixed, re-score the existing outputs with `npm run bench:recheck` and document the correction instead of re-running the models. If a fixture was wrong (for example a missing directory that blocked Bash), fix the fixture, re-run only that task, merge it with `npm run bench:merge`, and document why. Never merge silently.
 
 ## Commit style
 
