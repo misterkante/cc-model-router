@@ -165,9 +165,9 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
    sont des plateformes.
 5. **Une politique debugging Sonnet-first opt-in** : Sonnet d'abord, Opus sur échec de
    `--verify`, avec une simulation à **-15,5 %** vs Opus direct à 8/8 (3/8 retries).
-   Un pilot réel de 2 runs sur `debug-calc` passe 2/2 avec Sonnet, sans escalade ; l'escalade
-   réelle et le coût du retry restent à mesurer. C'est une piste crédible, pas un claim de
-   benchmark.
+   Un pilot réel de 4 runs sur `debug-calc` + `debug-search` passe 4/4 avec Sonnet, sans
+   escalade ; l'escalade réelle et le coût du retry restent à mesurer. C'est une piste crédible,
+   pas un claim de benchmark.
 
 ### Ce que les autres font mieux (à assumer)
 
@@ -280,7 +280,7 @@ commerciale.
 **Honnêteté :**
 > Échantillon petit, pas une preuve statistique ; Sonnet a échoué 1/8 en implémentation ;
 > `--verify`/`--escalate` est la réponse, pas encore dans les 48 runs ; la politique
-> Sonnet-first est une simulation + un pilot 2/2, pas un benchmark, et l'escalade n'a pas été
+> Sonnet-first est une simulation + un pilot 4/4, pas un benchmark, et l'escalade n'a pas été
 > exercée ; pas de proxy, pas de clé API, MIT.
 
 ### 7.4 Métriques post-lancement
