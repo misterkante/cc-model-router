@@ -19,6 +19,59 @@ export function escalationPlan(tier) {
   return plan;
 }
 
+export const DEFAULT_DEBUGGING_FIRST = Object.freeze({
+  model: "sonnet",
+  effort: "medium"
+});
+
+export function debuggingFirstDecision(config = {}) {
+  const override =
+    config.debuggingFirst && typeof config.debuggingFirst === "object"
+      ? config.debuggingFirst
+      : {};
+  return { ...DEFAULT_DEBUGGING_FIRST, ...override };
+}
+
+/**
+ * Sonnet-first debugging is opt-in and only applies when the safety net is
+ * present: a verification command and escalation. Without both, debugging
+ * stays on the configured debugging tier (Opus by default).
+ */
+export function usesSonnetFirstDebugging(
+  decision,
+  config = {},
+  { verify = null, escalate = false } = {}
+) {
+  return Boolean(
+    verify &&
+      escalate &&
+      decision &&
+      decision.tier === "debugging" &&
+      config.debuggingStrategy === "sonnet-first"
+  );
+}
+
+export function initialDecision(decision, config = {}, options = {}) {
+  if (!usesSonnetFirstDebugging(decision, config, options)) return decision;
+  const first = debuggingFirstDecision(config);
+  return {
+    ...decision,
+    model: first.model,
+    effort: first.effort,
+    fallback: first.fallback ?? decision.fallback,
+    strategy: "sonnet-first"
+  };
+}
+
+export function escalationPlanFor(decision, config = {}, options = {}) {
+  if (!usesSonnetFirstDebugging(decision, config, options)) {
+    return escalationPlan(decision.tier);
+  }
+  // The first attempt is the Sonnet override; the retry is the configured
+  // debugging tier (Opus by default).
+  return ["debugging", "debugging"];
+}
+
 /**
  * Parse the router-owned flags from the prompt side of `run`.
  * Everything else is prompt text; Claude Code flags stay after `--`.
@@ -127,8 +180,11 @@ export function runWithVerification({
 
   const { runClaude, runVerify, log = () => {} } = deps;
   const originalPrompt = prompt;
-  const plan = escalate ? escalationPlan(decision.tier) : [decision.tier];
-  let current = decision;
+  const strategyOptions = { verify, escalate };
+  const plan = escalate
+    ? escalationPlanFor(decision, config, strategyOptions)
+    : [decision.tier];
+  let current = initialDecision(decision, config, strategyOptions);
   let last = null;
 
   for (let index = 0; index < plan.length; index += 1) {

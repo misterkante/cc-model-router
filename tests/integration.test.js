@@ -98,6 +98,28 @@ test("hook honors the project config override", () => {
   }
 });
 
+test("hook mentions the opt-in sonnet-first debugging policy", () => {
+  const { dir, project, config } = tempProject();
+  try {
+    writeProjectConfig(project, { debuggingStrategy: "sonnet-first" });
+
+    const result = run(HOOK, {
+      cwd: project,
+      config,
+      input: JSON.stringify({ prompt: "debug why the login test is flaky" })
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.match(
+      payload.hookSpecificOutput.additionalContext,
+      /sonnet-first available with --verify --escalate/
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("hook ignores an empty prompt and writes no log", () => {
   const { dir, project, config } = tempProject();
   try {
@@ -122,6 +144,27 @@ test("statusline prints the active model and the default mapping", () => {
 
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout.trim(), "Sonnet 5.5 · M:haiku I:sonnet D:opus");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("statusline shows sonnet-first debugging with an Opus fallback", () => {
+  const { dir, project, config } = tempProject();
+  try {
+    writeProjectConfig(project, { debuggingStrategy: "sonnet-first" });
+
+    const result = run(STATUSLINE, {
+      cwd: project,
+      config,
+      input: JSON.stringify({ model: { display_name: "Sonnet 5.5" } })
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(
+      result.stdout.trim(),
+      "Sonnet 5.5 · M:haiku I:sonnet D:sonnet→opus"
+    );
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -51,6 +51,28 @@ test("project config wins over global config", () => {
   assert.equal(merged.defaultTier, "implementation");
 });
 
+test("config preserves debuggingStrategy and merges debuggingFirst", () => {
+  const merged = mergeConfigs(
+    { debuggingStrategy: "sonnet-first", debuggingFirst: { model: "sonnet" } },
+    { debuggingFirst: { effort: "low" } }
+  );
+  assert.equal(merged.debuggingStrategy, "sonnet-first");
+  assert.deepEqual(merged.debuggingFirst, { model: "sonnet", effort: "low" });
+
+  const projectWins = mergeConfigs(
+    { debuggingStrategy: "sonnet-first" },
+    { debuggingStrategy: "opus" }
+  );
+  assert.equal(projectWins.debuggingStrategy, "opus");
+});
+
+test("invalid debuggingStrategy falls back to opus", () => {
+  assert.equal(
+    mergeConfigs({ debuggingStrategy: "turbo" }).debuggingStrategy,
+    "opus"
+  );
+});
+
 test("effective tiers keep defaults when config is empty", () => {
   const tiers = effectiveTiers({});
   assert.equal(tiers.mechanical.model, "haiku");

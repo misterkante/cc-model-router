@@ -163,6 +163,11 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
 4. **La simplicité** : 3 tiers, Node ≥ 18, MIT, zéro dépendance runtime. Le concurrent
    le plus proche est bash/Python avec 5 classes et des hooks sous-agents ; les gateways
    sont des plateformes.
+5. **Une politique debugging Sonnet-first opt-in** : Sonnet d'abord, Opus sur échec de
+   `--verify`, avec une simulation à **-15,5 %** vs Opus direct à 8/8 (3/8 retries).
+   Un pilot réel de 2 runs sur `debug-calc` passe 2/2 avec Sonnet, sans escalade ; l'escalade
+   réelle et le coût du retry restent à mesurer. C'est une piste crédible, pas un claim de
+   benchmark.
 
 ### Ce que les autres font mieux (à assumer)
 
@@ -196,7 +201,7 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
 - **Demande** : documentée par les issues, les concurrents et les coûts réels.
 - **Niche** : les gateways sont gros mais généralistes ; le hook concurrent le plus proche
   est petit (105 ★) et sans benchmark. Un outil natif, mesuré, vérifié, MIT, a une place.
-- **Coût de développement** : faible (Node, zéro dépendance, déjà 41 tests).
+- **Coût de développement** : faible (Node, zéro dépendance, déjà 52 tests).
 - **Valeur portfolio** : élevée (recherche, CLI, hooks, isolation, tests, benchmark,
   analyse coût/qualité, documentation honnête).
 
@@ -230,7 +235,7 @@ commerciale.
 
 ### 7.1 Pré-lancement (2 semaines)
 
-- [ ] **Figer le scope** : 3 tiers, `run --verify`/`--escalate`, benchmark 48 runs.
+- [ ] **Figer le scope** : 3 tiers, `run --verify`/`--escalate`, politique Sonnet-first opt-in, benchmark 48 runs.
 - [ ] **npm** : `cc-model-router` est **disponible** (vérifié le 2026-10-26) ; `npm pack
       --dry-run` ; ajouter `repository`, `homepage`, `bugs`, `files`, `author` dans
       `package.json`.
@@ -269,12 +274,14 @@ commerciale.
 
 **Preuve :**
 > 23/24 vs 21/24 acceptés ; 0,0906 $ vs 0,1375 $ par tâche acceptée (-34,1 %) ;
-> 12 tâches, 2 répétitions ; debugging = garde-fou qualité (+29,7 %), pas économie.
+> 12 tâches, 2 répétitions ; debugging = garde-fou qualité (+29,7 %), pas économie ;
+> baseline sans hook (comparaison produit, pas A/B de modèles isolés).
 
 **Honnêteté :**
 > Échantillon petit, pas une preuve statistique ; Sonnet a échoué 1/8 en implémentation ;
-> `--verify`/`--escalate` est la réponse, pas encore dans les 48 runs ; pas de proxy,
-> pas de clé API, MIT.
+> `--verify`/`--escalate` est la réponse, pas encore dans les 48 runs ; la politique
+> Sonnet-first est une simulation + un pilot 2/2, pas un benchmark, et l'escalade n'a pas été
+> exercée ; pas de proxy, pas de clé API, MIT.
 
 ### 7.4 Métriques post-lancement
 
@@ -296,7 +303,7 @@ Ce que le projet démontre, concrètement :
 - **Recherche datée** : lineup, CLI, issues, concurrents, sources primaires.
 - **Ingénierie** : CLI Node, hooks, config globale/projet, isolation, `spawnSync`,
   parsing d'arguments, exit codes, dry-run.
-- **Qualité** : 41 tests, faux binaire Claude, tests d'intégration, `bench:verify`,
+- **Qualité** : 52 tests, faux binaire Claude, tests d'intégration, `bench:verify`,
   checks déterministes, dataset assaini.
 - **Analyse coût/qualité** : coût par tâche acceptée, baseline, tokens vs coût, limites.
 - **Communication** : README, benchmark reproductible, documentation honnête, ce document.

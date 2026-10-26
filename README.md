@@ -85,6 +85,8 @@ node bin/cc-router.js status
 ```json
 {
   "defaultTier": "implementation",
+  "debuggingStrategy": "opus",
+  "debuggingFirst": { "model": "sonnet", "effort": "medium" },
   "tiers": {
     "mechanical": { "model": "haiku", "effort": "low" },
     "implementation": { "model": "sonnet", "effort": "medium" },
@@ -97,7 +99,19 @@ node bin/cc-router.js status
 }
 ```
 
-See `examples/model-router.json` for a ready-to-copy file.
+See `examples/model-router.json` for a ready-to-copy file, and
+`examples/model-router.sonnet-first.json` for the opt-in debugging policy.
+
+### Optional: Sonnet-first debugging
+
+Set `"debuggingStrategy": "sonnet-first"` to try Sonnet on debugging tasks first and retry with the
+configured debugging tier (Opus by default) when `--verify` fails. It only applies when **both**
+`--verify` and `--escalate` are supplied; without the safety net, debugging stays on Opus. Override
+the first attempt with `debuggingFirst` (default `sonnet` / `medium`).
+
+A simulation from the 48-run records estimates **-15.5% debugging cost** vs Opus-first at 8/8
+accepted, with 3/8 retries. It is a simulation, not a new benchmark: see
+[`docs/BENCHMARK.md`](docs/BENCHMARK.md) and `node bench/simulate-escalation.mjs`.
 
 ## Claude Code integration
 
@@ -149,9 +163,9 @@ Your `~/.claude/settings.json` and `~/.claude/model-router.json` are never modif
 
 ## Benchmark
 
-Reference run: **12 tasks × 2 variants × 2 repeats = 48 runs**, automatic checks, isolated copies. Routing passed **23/24 (95.8%) vs 21/24 (87.5%)** and cost **$0.0906 per accepted task vs $0.1375** (-34.1%). Raw tokens fell 5.2% overall, but that is not the claim: the saving is in cost/quota, carried by mechanical (-94%) and implementation (-53%). Debugging is a quality guard (+30% per accepted vs Sonnet), not a saving.
+Reference run: **12 tasks × 2 variants × 2 repeats = 48 runs**, automatic checks, isolated copies. Routing passed **23/24 (95.8%) vs 21/24 (87.5%)** and cost **$0.0906 per accepted task vs $0.1375** (-34.1%). Raw tokens fell 5.2% overall, but that is not the claim: the saving is in cost/quota, carried by mechanical (-94%) and implementation (-53%). Debugging is a quality guard in this comparison (+30% per accepted vs the Sonnet baseline), not a saving; the baseline does not load the hook (see limitations).
 
-The run also found the next product gap: Sonnet produced one invalid YAML on an implementation task, and the debugging tier over-routes Opus on simple bugs. `run --verify` + `--escalate` is implemented to close the first gap; it is not yet included in the 48-run numbers.
+The run also found the next product gap: Sonnet produced one invalid YAML on an implementation task, and the debugging tier over-routes Opus on simple bugs. `run --verify` + `--escalate` closes the first gap; an opt-in Sonnet-first debugging policy closes the second. A simulation from the same records estimates **-15.5% debugging cost** vs Opus-first at 8/8 accepted, with 3/8 retries; it is a simulation, not a new run, and is not included in the 48-run numbers. A 2-run real pilot on `debug-calc` then passed 2/2 with Sonnet and no escalation; it is a sanity check, not a benchmark.
 
 Full results, per-tier analysis, incident log and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md). Canonical process: [`bench/README.md`](bench/README.md).
 
@@ -164,9 +178,9 @@ npm run bench:report -- bench/results/<file>.json
 ## How it compares
 
 - **Native Claude Code**: `/model`, `--model`, `opusplan`, subagents with `model:`; no per-task tiering and no published task-level quality benchmark.
-- **tzachbon/claude-model-router-hook**: the closest hook-based router (5 task classes, subagent routing, warn/autoswitch); no published task benchmark or post-run verification. It defaults implementation/debugging to Opus, which is more conservative than this router.
+- **tzachbon/claude-model-router-hook**: the closest hook-based router (5 task classes, subagent routing, warn/autoswitch); no published task benchmark or post-run verification. It defaults implementation and debugging to Opus; our default is Sonnet for implementation and Opus for debugging, with an opt-in Sonnet-first debugging policy.
 - **Gateways (Claude Code Router, Weave, LiteLLM, ClaudeRipple)**: multi-provider routing at scale, usually through a local proxy or endpoint change; their benchmarks are general, not Claude Code task-level.
-- **cc-model-router**: Claude Code-native, three tiers, a 48-run benchmark with deterministic checks, and `--verify`/`--escalate`; MIT, no proxy, no telemetry.
+- **cc-model-router**: Claude Code-native, three tiers, a 48-run benchmark with deterministic checks, `--verify`/`--escalate`, and an opt-in Sonnet-first debugging policy; MIT, no proxy, no telemetry.
 
 See [`docs/COMPETITION.md`](docs/COMPETITION.md) for the dated research, links, positioning and launch plan.
 
@@ -181,6 +195,8 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). Run `npm test` and `npm run bench:veri
 - For interactive plan → code switching, Claude Code's native `opusplan` alias already covers part of the job.
 - Classification is heuristic and can be wrong. The `confidence` and `matched` fields are in the output so you can tune the keywords.
 - **Verification and escalation are opt-in.** The router does not know your test command; a retry reuses the working tree and can duplicate work or cost more. Use a clean git state for important runs.
+- **Sonnet-first debugging has a simulation and a 2-run pilot, not a benchmark.** It requires a reliable `--verify` command and `--escalate`; without them, debugging stays on Opus. The 15.5% figure reuses existing records and assumes the Opus retry succeeds at the recorded cost; the pilot passed 2/2 with Sonnet, so escalation was not exercised.
+- **The 48-run baseline does not load the hook; the routed variant does.** The comparison measures the router as a product, not a pure model A/B. The real `debug-calc` pilot (Sonnet-first + hook, 2/2) vs the baseline Sonnet (0/2) shows the difference can matter.
 
 ## Tests
 
@@ -196,7 +212,8 @@ npm test
 - [x] CLI `run` wrapper
 - [x] Quality benchmark harness (12 tasks × 2 repeats, 48 runs)
 - [x] Validation + escalation (`run --verify`, retry with next model)
-- [ ] Finer debugging policy (Sonnet-first, escalate to Opus on failed check)
+- [x] Finer debugging policy (opt-in Sonnet-first, Opus on failed check)
+- [ ] Measure Sonnet-first debugging on the benchmark (escalation rate, retry cost) — 2-run pilot passed, escalation not exercised
 - [ ] OpenCode adapter
 - [ ] Stats dashboard (cost/quota saved, escalation rate)
 

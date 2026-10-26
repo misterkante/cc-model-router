@@ -30,7 +30,7 @@ Ce que le benchmark ne mesure pas (encore) : style, maintenabilité, architectur
 
 - Chaque run part d'une **copie neuve** de la fixture (`mkdtemp` + `cpSync`). Le dépôt source n'est jamais modifié.
 - La config du router est déplacée via `CC_ROUTER_CONFIG_DIR` vers un **répertoire temporaire vide** : le routing benchmarké est celui par défaut, sans config projet ni config globale personnelle.
-- Le hook est chargé via `claude --settings .sandbox/claude-settings.json`.
+- Le hook est chargé **uniquement pour la variante routée** via `claude --settings .sandbox/claude-settings.json`. La baseline est un appel Claude nu, sans hook : la comparaison est « routeur complet vs Claude nu », pas un A/B de modèles isolés.
 - `HOME` n'est **pas** modifié : l'auth Claude Code reste intacte.
 - Interdit : modifier `~/.claude/settings.json`, `~/.claude/model-router.json`, ou le dépôt réel.
 
@@ -41,7 +41,7 @@ Ce que le benchmark ne mesure pas (encore) : style, maintenabilité, architectur
 | `routed` | `cc-router run "<prompt>" -- <flags>` | choisi par le classifieur |
 | `baseline` | `claude --model <m> --effort <e> <flags> "<prompt>"` | imposé par la tâche |
 
-Les deux variantes reçoivent **exactement les mêmes flags** :
+Les deux variantes reçoivent les mêmes flags de run, mais seule la variante routée ajoute `--settings` pour le hook :
 
 ```text
 -p --output-format json --max-budget-usd <budget> --permission-mode acceptEdits
@@ -203,6 +203,9 @@ npm run bench -- --repo /chemin/vers/devquiz --budget 0.50
 # Re-scorer un résultat après correction d'un check (sans relancer les modèles)
 npm run bench:recheck -- bench/results/<fichier>.json <taskId>
 
+# Simuler une politique Sonnet-first (aucun appel modèle)
+npm run bench:simulate-escalation
+
 # Fusionner un re-run de tâche après correction de fixture
 npm run bench:merge -- bench/results/<base>.json bench/results/<rerun>.json --out bench/results/<merged>.json
 ```
@@ -268,6 +271,20 @@ Options :
   ```
   Documenter la raison du re-run et les tâches remplacées ; le JSON publié porte `mergedAt` et `mergedTasks`. Ne jamais fusionner un re-run sans le dire.
 - `bench:publish` retire `dir`, `beforeHashes`, `afterHashes`, `stderr` et `resultPreview` du JSON publié.
+
+### Simulation Sonnet-first (sans appel modèle)
+
+`npm run bench:simulate-escalation` lit `docs/benchmarks/2026-10-26-expanded.json`, apparie les
+enregistrements debugging baseline (Sonnet) et routés (Opus), puis simule « Sonnet d'abord, Opus
+sur échec de vérification ». Il imprime un tableau ; `--json` produit du JSON, `--out <fichier>`
+l'écrit, `--data <fichier>` change de dataset.
+
+- **Aucun appel modèle**, aucun quota consommé, aucun changement des résultats de référence.
+- Le coût du retry Opus est **proxied** par le run Opus frais ; le vrai retry part de l'arbre Sonnet
+  échoué et reçoit la sortie d'échec.
+- On suppose que le retry Opus réussit quand le run Opus frais a réussi ; pas de deuxième échec,
+  pas de latence, pas de cache froid.
+- C'est une **analyse**, pas un benchmark. Le dire explicitement dans toute communication.
 
 ## 10. Checklist avant publication
 

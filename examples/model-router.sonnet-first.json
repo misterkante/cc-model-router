@@ -1,0 +1,14 @@
+{
+  "defaultTier": "implementation",
+  "debuggingStrategy": "sonnet-first",
+  "debuggingFirst": { "model": "sonnet", "effort": "medium" },
+  "tiers": {
+    "mechanical": { "model": "haiku", "effort": "low" },
+    "implementation": { "model": "sonnet", "effort": "medium" },
+    "debugging": { "model": "opus", "effort": "high" }
+  },
+  "extraKeywords": {
+    "mechanical": ["bump deps", "update lockfile"],
+    "debugging": ["segfault", "deadlock"]
+  }
+}

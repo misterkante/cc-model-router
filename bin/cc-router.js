@@ -5,7 +5,9 @@ import { classify, effectiveTiers } from "../src/classifier.js";
 import { loadConfig } from "../src/config.js";
 import { runHook } from "../src/hook.js";
 import {
-  escalationPlan,
+  decisionForTier,
+  escalationPlanFor,
+  initialDecision,
   parseRunArgs,
   runWithVerification
 } from "../src/runner.js";
@@ -47,6 +49,10 @@ Usage:
 Env:
   CC_ROUTER_CLAUDE_BIN   Claude binary used by "run" (default: claude)
   CC_ROUTER_DRY_RUN=1    Print the command instead of running it
+
+Config:
+  debuggingStrategy      "opus" (default) or "sonnet-first"
+                         ("sonnet-first" requires --verify and --escalate)
 `);
 }
 
@@ -81,6 +87,11 @@ switch (cmd) {
 
     const config = loadConfig();
     const result = classify(prompt, config);
+    const strategyOptions = {
+      verify: parsed.verify,
+      escalate: parsed.escalate
+    };
+    const initial = initialDecision(result, config, strategyOptions);
     const bin = process.env.CC_ROUTER_CLAUDE_BIN || "claude";
 
     const claudeArgs = (decision, text) => {
@@ -95,11 +106,15 @@ switch (cmd) {
         JSON.stringify(
           {
             command: bin,
-            args: claudeArgs(result, prompt),
-            decision: result,
+            args: claudeArgs(initial, prompt),
+            decision: initial,
             verify: parsed.verify,
             escalate: parsed.escalate,
-            escalation: parsed.escalate ? escalationPlan(result.tier) : []
+            escalation: parsed.escalate
+              ? escalationPlanFor(result, config, strategyOptions)
+                  .slice(1)
+                  .map((tier) => decisionForTier(tier, config, result))
+              : []
           },
           null,
           2
@@ -161,7 +176,12 @@ switch (cmd) {
     const config = loadConfig();
     console.log(
       JSON.stringify(
-        { defaultTier: config.defaultTier, tiers: effectiveTiers(config) },
+        {
+          defaultTier: config.defaultTier,
+          debuggingStrategy: config.debuggingStrategy,
+          debuggingFirst: config.debuggingFirst || null,
+          tiers: effectiveTiers(config)
+        },
         null,
         2
       )

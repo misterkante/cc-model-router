@@ -1,5 +1,7 @@
 {
   "defaultTier": "implementation",
+  "debuggingStrategy": "opus",
+  "debuggingFirst": { "model": "sonnet", "effort": "medium" },
   "tiers": {
     "mechanical": { "model": "haiku", "effort": "low" },
     "implementation": { "model": "sonnet", "effort": "medium" },

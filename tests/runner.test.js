@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   buildRetryPrompt,
   escalationPlan,
+  escalationPlanFor,
+  initialDecision,
   parseRunArgs,
   runWithVerification
 } from "../src/runner.js";
@@ -65,6 +67,60 @@ test("escalationPlan follows mechanical -> implementation -> debugging", () => {
     "debugging"
   ]);
   assert.deepEqual(escalationPlan("debugging"), ["debugging"]);
+});
+
+test("initialDecision keeps Opus unless sonnet-first + verify + escalate", () => {
+  const opus = decision("debugging");
+  const config = { debuggingStrategy: "sonnet-first" };
+
+  assert.equal(initialDecision(opus, config), opus);
+  assert.equal(initialDecision(opus, config, { verify: "npm test" }), opus);
+  assert.equal(initialDecision(opus, config, { escalate: true }), opus);
+
+  const first = initialDecision(opus, config, {
+    verify: "npm test",
+    escalate: true
+  });
+  assert.equal(first.model, "sonnet");
+  assert.equal(first.effort, "medium");
+  assert.equal(first.tier, "debugging");
+  assert.equal(first.strategy, "sonnet-first");
+});
+
+test("initialDecision uses debuggingFirst overrides", () => {
+  const first = initialDecision(
+    decision("debugging"),
+    {
+      debuggingStrategy: "sonnet-first",
+      debuggingFirst: { model: "haiku", effort: "low" }
+    },
+    { verify: "npm test", escalate: true }
+  );
+
+  assert.equal(first.model, "haiku");
+  assert.equal(first.effort, "low");
+});
+
+test("escalationPlanFor adds an Opus retry for sonnet-first debugging", () => {
+  const config = { debuggingStrategy: "sonnet-first" };
+
+  assert.deepEqual(escalationPlanFor(decision("debugging"), config), [
+    "debugging"
+  ]);
+  assert.deepEqual(
+    escalationPlanFor(decision("debugging"), config, {
+      verify: "npm test",
+      escalate: true
+    }),
+    ["debugging", "debugging"]
+  );
+  assert.deepEqual(
+    escalationPlanFor(decision("implementation"), config, {
+      verify: "npm test",
+      escalate: true
+    }),
+    ["implementation", "debugging"]
+  );
 });
 
 test("buildRetryPrompt includes the task, command and failure output", () => {
@@ -189,6 +245,86 @@ test("runWithVerification uses the full mechanical ladder", () => {
   assert.equal(outcome.ok, false);
   assert.equal(outcome.attempts, 3);
   assert.deepEqual(calls, ["haiku", "sonnet", "opus"]);
+});
+
+test("runWithVerification sonnet-first debugging retries with Opus", () => {
+  const calls = [];
+  const prompts = [];
+  let verifications = 0;
+
+  const outcome = runWithVerification({
+    prompt: "debug the failing test",
+    decision: decision("debugging"),
+    verify: "npm test",
+    escalate: true,
+    config: { debuggingStrategy: "sonnet-first" },
+    deps: {
+      runClaude: ({ prompt, decision: current }) => {
+        calls.push({
+          model: current.model,
+          effort: current.effort,
+          strategy: current.strategy
+        });
+        prompts.push(prompt);
+        return { status: 0 };
+      },
+      runVerify: () =>
+        verifications++ === 0
+          ? { status: 1, output: "AssertionError: expected 3, got 2" }
+          : { status: 0, output: "ok" }
+    }
+  });
+
+  assert.equal(outcome.ok, true);
+  assert.equal(outcome.attempts, 2);
+  assert.deepEqual(calls.map((call) => call.model), ["sonnet", "opus"]);
+  assert.equal(calls[0].effort, "medium");
+  assert.equal(calls[0].strategy, "sonnet-first");
+  assert.equal(calls[1].effort, "high");
+  assert.match(prompts[1], /AssertionError/);
+  assert.match(prompts[1], /debug the failing test/);
+});
+
+test("runWithVerification sonnet-first debugging stays on Opus without escalation", () => {
+  const calls = [];
+  const outcome = runWithVerification({
+    prompt: "debug the failing test",
+    decision: decision("debugging"),
+    verify: "npm test",
+    escalate: false,
+    config: { debuggingStrategy: "sonnet-first" },
+    deps: {
+      runClaude: ({ decision: current }) => {
+        calls.push(current.model);
+        return { status: 0 };
+      },
+      runVerify: () => ({ status: 0, output: "ok" })
+    }
+  });
+
+  assert.equal(outcome.ok, true);
+  assert.deepEqual(calls, ["opus"]);
+});
+
+test("runWithVerification sonnet-first debugging needs a verify command", () => {
+  const calls = [];
+  const outcome = runWithVerification({
+    prompt: "debug the failing test",
+    decision: decision("debugging"),
+    verify: null,
+    escalate: false,
+    config: { debuggingStrategy: "sonnet-first" },
+    deps: {
+      runClaude: ({ decision: current }) => {
+        calls.push(current.model);
+        return { status: 0 };
+      },
+      runVerify: () => ({ status: 0, output: "" })
+    }
+  });
+
+  assert.equal(outcome.ok, true);
+  assert.deepEqual(calls, ["opus"]);
 });
 
 test("runWithVerification does not escalate beyond debugging", () => {

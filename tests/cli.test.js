@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
   chmodSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -61,6 +62,67 @@ exit 0
     );
     assert.match(result.stderr, /escalating to opus/);
     assert.match(result.stderr, /verification passed/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("sonnet-first debugging retries with Opus after a failed check", () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "cc-router-cli-"));
+  try {
+    const configDir = path.join(dir, "config");
+    mkdirSync(configDir, { recursive: true });
+    writeFileSync(
+      path.join(configDir, "model-router.json"),
+      JSON.stringify({ debuggingStrategy: "sonnet-first" })
+    );
+
+    const fake = path.join(dir, "fake-claude");
+    writeFileSync(
+      fake,
+      `#!/bin/sh
+model=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --model) model="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+printf '%s\\n' "$model" >> calls.log
+printf '%s\\n' "$model" > model.txt
+exit 0
+`
+    );
+    chmodSync(fake, 0o755);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        CLI,
+        "run",
+        "debug the failing test",
+        "--verify",
+        "grep -q '^opus$' model.txt",
+        "--escalate"
+      ],
+      {
+        cwd: dir,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          CC_ROUTER_CLAUDE_BIN: fake,
+          CC_ROUTER_CONFIG_DIR: configDir
+        }
+      }
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(
+      readFileSync(path.join(dir, "calls.log"), "utf8").trim().split("\n"),
+      ["sonnet", "opus"]
+    );
+    assert.match(result.stderr, /attempt 1\/2 with sonnet/);
+    assert.match(result.stderr, /escalating to opus/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

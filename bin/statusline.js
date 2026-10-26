@@ -11,10 +11,17 @@ try {
   input = {};
 }
 
-const tiers = effectiveTiers(loadConfig());
+const config = loadConfig();
+const tiers = effectiveTiers(config);
+const firstDebugging = config.debuggingFirst?.model || "sonnet";
 const model = input?.model?.display_name || input?.model?.id || "model?";
 const mapping = Object.entries(tiers)
-  .map(([tier, def]) => `${tier[0].toUpperCase()}:${def.model}`)
+  .map(([tier, def]) => {
+    if (tier === "debugging" && config.debuggingStrategy === "sonnet-first") {
+      return `D:${firstDebugging}→${def.model}`;
+    }
+    return `${tier[0].toUpperCase()}:${def.model}`;
+  })
   .join(" ");
 
 console.log(`${model} · ${mapping}`);

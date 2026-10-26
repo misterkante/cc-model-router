@@ -124,11 +124,21 @@ Implémentation :
 - `--escalate` rejoue avec le tier suivant (`mechanical → implementation → debugging`) et inclut la sortie d'échec dans le prompt de retry.
 - `src/runner.js` : parsing des flags, plan d'escalade, prompt de retry, orchestration injectable (`runClaude` / `runVerify`).
 - `bin/cc-router.js` : wiring `spawnSync`, dry-run avec plan d'escalade, exit code de la vérification.
-- Tests : 18 tests unitaires + 2 tests CLI (faux binaire Claude, zéro quota) + 5 tests d'intégration hook/statusline. `npm test` = **41 tests**.
-- Limites : pas de rollback ; le retry réutilise l'arbre de travail ; la commande de vérification est fournie par l'utilisateur ; pas encore mesuré sur un benchmark réel.
+- Tests : 24 tests runner + 18 tests classifier/config + 3 tests CLI (faux binaire Claude, zéro quota) + 7 tests d'intégration hook/statusline. `npm test` = **52 tests**.
+- Limites : pas de rollback ; le retry réutilise l'arbre de travail ; la commande de vérification est fournie par l'utilisateur ; simulation + pilot réel 2/2 sur `debug-calc`, escalade non exercée.
 - Hook + statusline validés avec des payloads réels (config globale + override projet) ; le rendu TUI lui-même reste à vérifier à la main.
 
-Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré. Un `--verify` qui parse le YAML aurait renvoyé 1, et `--escalate` aurait laissé Opus corriger avec l'erreur sous les yeux. La prochaine étape est de mesurer le taux d'escalade et le coût réel (échec + retry) sur les 12 tâches.
+Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré. Un `--verify` qui parse le YAML aurait renvoyé 1, et `--escalate` aurait laissé Opus corriger avec l'erreur sous les yeux. La simulation Sonnet-first ci-dessous et le pilot réel 2/2 donnent une première estimation ; l'escalade réelle reste à mesurer.
+
+## 🧪 Debugging Sonnet-first (opt-in, 2026-10-26)
+
+- `debuggingStrategy: "sonnet-first"` : premier essai Sonnet/medium (configurable via `debuggingFirst`), retry Opus/high sur échec de `--verify`.
+- Ne s'applique que si `--verify` **et** `--escalate` sont fournis ; sinon le debugging reste Opus. Le défaut `"opus"` est inchangé.
+- Simulation sur les 16 enregistrements debugging : **8/8 acceptés**, 1,1191 $ vs 1,3247 $ Opus direct (**-15,5 %**), 3/8 retries. `bench/simulate-escalation.mjs` (aucun appel modèle).
+- Pilot réel (2 runs, `debug-calc`) : Sonnet **2/2**, 0,0770 $ / 0,0812 $, check OK, **pas d'escalade** ; ~-49 % vs Opus routé. Le baseline Sonnet du benchmark était 0/2 **sans hook** → confondant hook/stochasticité.
+- Implémentation : `src/config.js` (merge), `src/runner.js` (`initialDecision`, `escalationPlanFor`), CLI dry-run/status, statusline `D:sonnet→opus`, note dans le hook.
+- Tests : 11 nouveaux tests (runner, config, CLI, hook/statusline) ; `npm test` = **52 tests**.
+- Limites : simulation + pilot 2/2 ; l'escalade n'a pas été exercée ; le coût réel du retry (cache froid, arbre échoué) reste à mesurer ; nécessite un check fiable.
 
 ## 🔎 Veille concurrence et lancement (2026-10-26)
 
@@ -136,7 +146,7 @@ Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré.
 - Créneau : **natif Claude Code + tiers par tâche + benchmark 48 runs + vérification/escalade**. Pas de proxy, pas de clé API, MIT.
 - Verdict : **Go OSS/portfolio ; No-Go comme entreprise seule** sans équipe, dashboard, support et couche commerciale.
 - Lancement : le benchmark est la preuve ; Show HN + Reddit + article. Claims mesurés, baseline mixte explicite, échantillon petit assumé.
-- Prochaine action : préparer npm/GitHub/CI/démo/article, puis élargir le benchmark avant les gros claims.
+- Prochaine action : GitHub/npm publication, GIF, article, décision sur le bin ; élargir le benchmark avant les gros claims.
 
 ## ⚠️ Limite connue (à documenter pour les users)
 
@@ -155,8 +165,8 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 
 - [x] Benchmark élargi (12 tâches × 2 répétitions, 48 runs) — voir `docs/BENCHMARK.md`.
 - [x] Validation + escalade : `run --verify "<commande>"`, retry avec le modèle suivant si le check échoue.
-- [ ] Mesurer l'escalade sur le benchmark (taux, coût échec + retry).
-- [ ] Politique debugging plus fine : Sonnet d'abord, escalade Opus sur échec, ou sous-classifieur simple/profond.
+- [ ] Mesurer l'escalade en réel sur le benchmark (taux, coût échec + retry) — simulation -15,5 % ; pilot `debug-calc` 2/2 Sonnet, escalade non exercée.
+- [x] Politique debugging plus fine : Sonnet-first opt-in + escalade Opus sur échec (`debuggingStrategy`).
 - [ ] Élargir le benchmark à 20–30 tâches, 3 répétitions, revue aveugle.
 - [ ] Mesurer le rework (temps perdu, runs échoués).
 - [x] Hook + statusline validés hors TUI (payloads réels, config projet).

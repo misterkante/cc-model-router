@@ -14,6 +14,9 @@
     "scripts",
     "docs",
     "bench/README.md",
+    "bench/*.mjs",
+    "bench/fixtures",
+    "tests",
     "CONTRIBUTING.md",
     "LICENSE",
     "README.md",
@@ -28,7 +31,8 @@
     "bench:report": "node bench/report.mjs",
     "bench:publish": "node bench/publish.mjs",
     "bench:merge": "node bench/merge.mjs",
-    "bench:recheck": "node bench/recheck.mjs"
+    "bench:recheck": "node bench/recheck.mjs",
+    "bench:simulate-escalation": "node bench/simulate-escalation.mjs"
   },
   "engines": {
     "node": ">=18"

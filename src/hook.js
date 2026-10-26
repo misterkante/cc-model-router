@@ -33,7 +33,8 @@ export function runHook({
       const prompt = input.prompt || "";
       if (!prompt) return;
 
-      const result = classify(prompt, loadConfig(cwd));
+      const config = loadConfig(cwd);
+      const result = classify(prompt, config);
 
       const dir =
         process.env.CC_ROUTER_CONFIG_DIR || path.join(os.homedir(), ".claude");
@@ -43,11 +44,17 @@ export function runHook({
         JSON.stringify({ ts: new Date().toISOString(), ...result }) + "\n"
       );
 
+      const strategyNote =
+        result.tier === "debugging" &&
+        config.debuggingStrategy === "sonnet-first"
+          ? "; sonnet-first available with --verify --escalate"
+          : "";
+
       stdout.write(
         JSON.stringify({
           hookSpecificOutput: {
             hookEventName: "UserPromptSubmit",
-            additionalContext: `[cc-router] task tier: ${result.tier} → recommended model: ${result.model} (effort: ${result.effort}, confidence: ${result.confidence})`
+            additionalContext: `[cc-router] task tier: ${result.tier} → recommended model: ${result.model} (effort: ${result.effort}, confidence: ${result.confidence})${strategyNote}`
           }
         })
       );

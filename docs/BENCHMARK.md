@@ -12,7 +12,9 @@ Sur 48 runs, le routing passe **23/24 (95,8 %)** contre **21/24 (87,5 %)** pour 
 **0,0906 $ par tâche acceptée** contre **0,1375 $** : **-34,1 % de coût/quota**. Les tokens bruts
 baissent de 5,2 % au total, mais ce n'est pas l'argument : le gain vient des tiers mechanical
 (-94 %) et implementation (-53 %). Le tier debugging est un **garde-fou qualité** (+30 % par tâche
-acceptée vs Sonnet), pas une source d'économie ; il sur-route Opus sur les bugs simples.
+acceptée vs Sonnet), pas une source d'économie ; il sur-route Opus sur les bugs simples. Une
+politique opt-in Sonnet-first (simulation + pilot 2 runs) est analysée plus bas ; la baseline 48
+runs ne charge pas le hook.
 
 ## Protocole (résumé)
 
@@ -24,7 +26,7 @@ Le détail canonique, les règles d'ajout de tâche et la checklist de publicati
 - Variante `routed` : `cc-router run`, hook chargé via `--settings`, config isolée
   (`CC_ROUTER_CONFIG_DIR`).
 - Variante `baseline` : `claude --model <modèle> --effort <effort>` avec les mêmes flags
-  (`-p --output-format json --max-budget-usd 0.50 --permission-mode acceptEdits`).
+  (`-p --output-format json --max-budget-usd 0.50 --permission-mode acceptEdits`), **sans le hook**.
 - Checks **automatiques** : IDs présents, JSON structuré, fichiers attendus, YAML valide (PyYAML),
   tests Python, fichier de test non modifié (SHA-1).
 - Un run est **accepté** si le check passe, si le code de sortie est 0 et si aucun fichier hors
@@ -105,8 +107,8 @@ Lecture :
 - **Implementation** : **-53,2 %** de coût par accepté, mais **7/8 vs 8/8** : Sonnet a produit un
   YAML invalide sur `impl-angular`. Le baseline Opus est plus fiable, pas seulement plus cher.
 - **Debugging** : **8/8 vs 5/8** pour le baseline Sonnet, mais **+29,7 %** de coût par accepté.
-  Opus évite deux échecs réels (`debug-calc`, `debug-search`) et coûte cher sur deux tâches où
-  Sonnet suffisait (`debug-parse`, `debug-state`).
+  Opus évite deux échecs du baseline sans hook (`debug-calc`, `debug-search`) et coûte cher sur deux
+  tâches où Sonnet suffisait (`debug-parse`, `debug-state`).
 
 Le « tokens / accepté » du debugging baseline est gonflé par les runs échoués (les tokens des échecs
 sont comptés au numérateur, mais divisés par 5 acceptés). Comparer le coût et le taux de réussite,
@@ -158,14 +160,70 @@ unique qui laisserait croire que tout est moins cher.
 
 Le classifieur envoie **tous** les bugs vers Opus. Or :
 
-- `debug-calc` et `debug-search` ont réellement besoin d'Opus (Sonnet échoue 0/2 et 1/2) ;
+- `debug-calc` et `debug-search` ont échoué avec Sonnet dans le baseline **sans hook** (0/2 et
+  1/2) ; le pilot réel avec hook passe 2/2 sur `debug-calc`, donc le besoin d'Opus n'est pas
+  déterministe ;
 - `debug-parse` et `debug-state` passent avec Sonnet 2/2, à environ **2× moins cher** qu'Opus.
 
 Un tier debugging unique est donc **conservateur** : il protège la qualité, mais sur-route les bugs
-simples. La prochaine amélioration logique est une politique **Sonnet d'abord, escalade Opus sur
-échec de check**, ou un sous-classifieur « bug simple » vs « bug profond » (concurrence, régression,
-état, flaky). Il faut mesurer le taux d'escalade et le coût d'un run échoué + retry, pas seulement
-le coût du run gagnant.
+simples. L'amélioration logique est une politique **Sonnet d'abord, escalade Opus sur échec de
+check** (implémentée en opt-in le 2026-10-26, simulée ci-dessous), ou un sous-classifieur « bug
+simple » vs « bug profond » (concurrence, régression, état, flaky). Il faut mesurer le taux
+d'escalade et le coût d'un run échoué + retry, pas seulement le coût du run gagnant.
+
+### Simulation : Sonnet-first + escalade Opus (pas un nouveau run)
+
+Les 16 enregistrements debugging du dataset (8 Sonnet baseline, 8 Opus routés) permettent de
+simuler une politique « Sonnet d'abord, Opus sur échec de check » :
+
+| Politique | Acceptés | Coût total | Coût / accepté |
+|---|---:|---:|---:|
+| Sonnet seul | 5/8 | 0,6385 $ | 0,1277 $ |
+| Opus direct | 8/8 | 1,3247 $ | 0,1656 $ |
+| **Sonnet-first + Opus** | **8/8** | **1,1191 $** | **0,1399 $** |
+
+- **-15,5 %** de coût par accepté vs Opus direct, à qualité simulée égale (8/8).
+- 3 runs sur 8 escaladent (`debug-calc` ×2, `debug-search` ×1) ; les 5 autres restent sur Sonnet.
+- **+9,5 %** vs Sonnet seul, mais Sonnet seul n'accepte que 5/8 : on paie le rattrapage des 3 échecs.
+- Coût d'un échec + retry, p. ex. `debug-calc` : 0,0704 $ (Sonnet) + 0,1514 $ (Opus) = 0,2218 $.
+
+**Ce que c'est / n'est pas :**
+
+- Une **simulation** à partir des enregistrements existants, pas un nouveau benchmark.
+- Le coût du retry Opus est **proxied** par le run Opus frais. En réalité, le retry part de l'arbre
+  Sonnet échoué et reçoit la sortie d'échec : le coût peut différer (cache froid, contexte plus
+  long, correction partielle).
+- On suppose que le retry Opus réussit quand le run Opus frais a réussi ; aucun deuxième échec
+  n'est modélisé.
+- Pas de latence, pas de cache, pas de vérification réelle.
+- La politique n'est appliquée que si `--verify` et `--escalate` sont fournis ; sans check fiable,
+  le debugging reste Opus.
+
+Le pilot réel ci-dessous (2/2 Sonnet) montre que l'hypothèse « Sonnet échoue 0/2 » n'est pas stable :
+la simulation est un scénario, pas une prédiction.
+
+Reproduire : `npm run bench:simulate-escalation` (ou `node bench/simulate-escalation.mjs`).
+
+### Pilot réel Sonnet-first (2026-10-26, 2 runs)
+
+Après la simulation, un pilot réel a testé la politique sur `debug-calc` (`buggy-python`), avec
+`debuggingStrategy: "sonnet-first"`, `--verify "python3 -m unittest test_calc.py"`, `--escalate`,
+budget 0,50 $, copie isolée, Claude Code 2.1.309.
+
+| Run | Modèles | Coût API-équivalent | Check | Escalade | Fichiers changés |
+|---|---|---|---:|---|---|
+| 1 | Sonnet 5.5 | 0,0770 $ | OK | non | `calc.py` |
+| 2 | Sonnet 5.5 | 0,0812 $ | OK | non | `calc.py` |
+
+- **2/2 Sonnet passent**, sans escalade ; ~**-49 %** vs Opus routé (0,1514 $ / 0,1605 $ sur les
+  répétitions correspondantes), à check égal.
+- Le baseline Sonnet du benchmark (sans hook) était **0/2** sur la même tâche. Le pilot utilisait le
+  hook (`--settings`) ; la différence peut venir du contexte du hook, de la stochasticité, ou des
+  deux. **Ne pas attribuer la différence au modèle seul.**
+- Aucun fichier hors `calc.py` modifié ; le check externe passe.
+- **L'escalade n'a pas été exercée** : les deux runs Sonnet ont réussi. Les tests unitaires/CLI
+  couvrent le mécanisme ; il reste à observer un échec réel pour mesurer le coût du retry.
+- 2 runs, pas un benchmark ; coût API-équivalent, pas facturé.
 
 ### Un échec d'implémentation réel : YAML invalide
 
@@ -205,8 +263,9 @@ Au global, les tokens baissent de 5,2 %, mais ce signe n'est pas garanti. L'éco
 - Le gain mechanical est **large, stable et sans perte mesurée** (-94 %, 8/8 vs 8/8).
 - Le gain implementation est **large** (-53 %) mais pas sans risque : un YAML invalide sur 8 runs
   routés.
-- Le tier debugging **a un effet qualité mesurable** : Opus 8/8 vs Sonnet 5/8 ; il est justifié sur
-  certains bugs, surdimensionné sur d'autres.
+- Le tier debugging **a un effet qualité mesurable dans la comparaison produit** : Opus + hook 8/8
+  vs Sonnet sans hook 5/8 ; le hook est un confondant, et le pilot réel `debug-calc` (Sonnet +
+  hook 2/2) montre que l'écart n'est pas seulement le modèle.
 - L'isolation fonctionne : aucun fichier source modifié, aucun changement hors périmètre.
 
 ## Ce que ce run ne prouve pas
@@ -221,12 +280,20 @@ Au global, les tokens baissent de 5,2 %, mais ce signe n'est pas garanti. L'éco
 - **Quota réel** : le coût API-équivalent n'est pas la consommation exacte d'un abonnement.
 - **Généralisation à d'autres modèles** : le lineup est daté (Claude Code 2.1.309, Haiku/Sonnet/Opus
   5.5) ; un changement de modèle ou de prix invalide les chiffres.
+- **La politique Sonnet-first** : elle est simulée à partir des enregistrements, et le pilot réel
+  n'a pas exercé l'escalade ; le coût du retry et le taux de réussite réel restent à valider.
+- **Confondant hook** : la variante routée charge le hook (contexte de recommandation), la baseline
+  non. La comparaison est « routeur complet vs Claude nu », pas « modèle A vs modèle B ». Le pilot
+  `debug-calc` (Sonnet + hook 2/2 vs baseline Sonnet 0/2) le montre.
 
 ## Reproduire
 
 ```bash
 # 1. Vérifier le protocole (obligatoire)
 npm run bench:verify
+
+# 1b. Simulation Sonnet-first (aucun appel modèle)
+npm run bench:simulate-escalation
 
 # 2. Run de référence : 12 tâches × 2 variantes × 2 répétitions
 npm run bench -- --repeats 2 --budget 0.50
@@ -252,8 +319,10 @@ Voir le protocole complet : [`../bench/README.md`](../bench/README.md).
 
 ## Prochaines étapes
 
-1. **Debugging plus fin** : Sonnet par défaut + escalade Opus sur échec de check, ou sous-classifieur
-   simple/profond. Mesurer le taux d'escalade et le coût réel (échec + retry).
+1. **Debugging plus fin** : `debuggingStrategy: "sonnet-first"` + `--verify --escalate` est
+   implémenté (2026-10-26) ; la simulation donne -15,5 % vs Opus direct à 8/8. Pilot réel 2/2
+   Sonnet sur `debug-calc`, sans escalade ; il reste à observer un échec réel pour mesurer le taux
+   d'escalade, le coût échec + retry et l'effet du cache froid sur les 4 tâches.
 2. **Validation post-run** : `cc-router run --verify "<commande>"` + `--escalate` (implémenté
    le 2026-10-26, hors chiffres de ce run). C'est ce qui aurait rattrapé le YAML invalide de
    Sonnet : le parser renvoie 1, puis Opus reçoit l'erreur et corrige.
