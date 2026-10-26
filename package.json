@@ -24,20 +24,28 @@
     "scripts",
     "docs",
     "bench/README.md",
+    "bench/README.fr.md",
     "bench/*.mjs",
     "bench/fixtures",
     "tests",
     "CHANGELOG.md",
+    "CHANGELOG.fr.md",
     "CODE_OF_CONDUCT.md",
+    "CODE_OF_CONDUCT.fr.md",
     "CONTRIBUTING.md",
+    "CONTRIBUTING.fr.md",
+    "IMPLEMENTATION_PLAN.md",
+    "IMPLEMENTATION_PLAN.fr.md",
     "LICENSE",
     "README.md",
-    "SECURITY.md"
+    "README.fr.md",
+    "SECURITY.md",
+    "SECURITY.fr.md"
   ],
   "scripts": {
     "test": "node --test tests/*.test.js",
     "demo": "bash scripts/demo.sh",
-    "prepublishOnly": "npm test",
+    "prepublishOnly": "npm test && npm run docs:check",
     "bench": "node bench/run.mjs",
     "bench:verify": "node bench/verify.mjs",
     "bench:report": "node bench/report.mjs",
@@ -45,7 +53,8 @@
     "bench:merge": "node bench/merge.mjs",
     "bench:recheck": "node bench/recheck.mjs",
     "bench:simulate-escalation": "node bench/simulate-escalation.mjs",
-    "test:tui": "bash scripts/tui-smoke.sh"
+    "test:tui": "bash scripts/tui-smoke.sh",
+    "docs:check": "node scripts/check-docs.mjs"
   },
   "engines": {
     "node": ">=18"

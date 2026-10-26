@@ -1,193 +1,266 @@
-# Plan d'implémentation — Auto Model Router
+# Implementation plan — Auto Model Router
 
-> Dernière mise à jour : 2026-10-26
-> Statut : Phase 1 terminée (MVP Claude Code) + benchmark élargi (48 runs) + validation/escalade
+[English](IMPLEMENTATION_PLAN.md) · [Français](IMPLEMENTATION_PLAN.fr.md)
+
+> Last updated: 2026-10-26
+> Status: Phase 1 complete (Claude Code MVP) + expanded benchmark (48 runs) + verification/escalation
 
 ## 🎯 Vision
 
-Éliminer le `/model` manuel : router automatiquement Claude Code (puis OpenCode) vers le modèle adapté à la complexité de la tâche (Haiku / Sonnet / Opus), pour réduire la consommation de **quota/coût** tout en préservant la qualité. Les tokens bruts ne baissent pas toujours : c'est le coût par résultat accepté qui compte.
+Remove manual `/model` switching: automatically route Claude Code (then OpenCode) to the
+model that fits the task complexity (Haiku / Sonnet / Opus), to reduce **quota/cost**
+consumption while preserving quality. Raw tokens do not always fall: what matters is cost
+per accepted result.
 
-## 🧩 Contexte & problème
+## 🧩 Context & problem
 
-- En 2026, l'adoption de Claude Code est généralisée. Point commun de tous les users : la consommation de tokens épuise vite les credits, alors qu'on veut faire de "big things".
-- Solution visée : bascule automatique de modèle selon la tâche, sans intervention manuelle (`/model`).
-- État de l'art constaté (oct. 2026) :
-  - Claude Code : alias natif `opusplan` (Opus en plan → Sonnet en exécution). Feature requests ouverts pour routing auto : #44976, #43326, #27665.
-  - Hook communautaire : `tzachbon/claude-model-router-hook` (tiers mechanical/implementation/debugging ; config globale + projet ; gestion subagents).
-  - OpenCode : feature request #8456 (auto model par task type) ; plugins `opencode-model-router`, `Auto (Jev)` ; routing local/cloud.
+- In 2026, Claude Code adoption is widespread. Every user shares one pain: token
+  consumption drains credits fast, while we want to do "big things".
+- Target solution: automatic model switching by task, without manual `/model`.
+- State of the art observed (Oct. 2026):
+  - Claude Code: native `opusplan` alias (Opus for planning → Sonnet for execution). Open
+    feature requests for auto-routing: #44976, #43326, #27665.
+  - Community hook: `tzachbon/claude-model-router-hook` (mechanical/implementation/debugging
+    tiers; global + project config; subagent handling).
+  - OpenCode: feature request #8456 (auto model by task type); plugins
+    `opencode-model-router`, `Auto (Jev)`; local/cloud routing.
 
-## 🔎 Phase 0 — Veille (obligatoire avant chaque phase de code)
+## 🔎 Phase 0 — Research (mandatory before every coding phase)
 
-1. Chercher sur le web, **sources primaires d'abord** (Anthropic docs/release notes, GitHub officiel).
-2. Noter les faits **datés et sourcés** dans `docs/RESEARCH.md`.
-3. Lister les incertitudes et les contradictions entre sources.
-4. Décider, puis coder.
+1. Search the web, **primary sources first** (Anthropic docs/release notes, official GitHub).
+2. Record **dated and sourced** facts in `docs/RESEARCH.md`.
+3. List uncertainties and contradictions between sources.
+4. Decide, then code.
 
-## ✅ Décisions prises
+## ✅ Decisions made
 
-1. Produit **open source** (licence MIT envisagée).
-2. Scope MVP : **Claude Code** → extension **OpenCode** ensuite.
-3. Tiers de routing :
-   - mechanical → Haiku (effort : low)
-   - implementation → Sonnet (effort : medium)
-   - debugging / complex → Opus (effort : high)
-4. Subagents : forcer le tier par classe de tâche ; modèle explicite > déduit ; plafond de délégation imbriqué.
-5. Config : globale (`~/.claude/model-router.json`) + projet (`.claude/model-router.json`).
-6. Isolation des tests : `CC_ROUTER_CONFIG_DIR` + `claude --settings` (jamais `~/.claude/settings.json`) ; `HOME` non modifié pour préserver l'auth Claude.
-7. Veille web datée obligatoire avant chaque phase de code, consignée dans `docs/RESEARCH.md`.
+1. **Open source** product (MIT license).
+2. MVP scope: **Claude Code** → **OpenCode** extension next.
+3. Routing tiers:
+   - mechanical → Haiku (effort: low)
+   - implementation → Sonnet (effort: medium)
+   - debugging / complex → Opus (effort: high)
+4. Subagents: force the tier by task class; explicit model > inferred; nested delegation
+   cap.
+5. Config: global (`~/.claude/model-router.json`) + project (`.claude/model-router.json`).
+6. Test isolation: `CC_ROUTER_CONFIG_DIR` + `claude --settings` (never
+   `~/.claude/settings.json`); `HOME` unchanged to preserve Claude auth.
+7. Dated web research mandatory before each coding phase, recorded in
+   `docs/RESEARCH.md`.
 
 ## 📋 Phases
 
-- [x] Phase 0 — Veille & découverte : ✅ terminée (voir `docs/RESEARCH.md`)
-- [x] Phase 1 — MVP Claude Code : hook + config + routing + override + status ✅
-- [ ] Phase 2 — OpenCode : routing / plugin équivalent
-- [ ] Phase 3 — Mesure & stats : tokens économisés, coûts, escalade qualité
+- [x] Phase 0 — Research & discovery: ✅ done (see `docs/RESEARCH.md`)
+- [x] Phase 1 — Claude Code MVP: hook + config + routing + override + status ✅
+- [ ] Phase 2 — OpenCode: equivalent routing / plugin
+- [ ] Phase 3 — Measurement & stats: cost/quota saved, costs, quality escalation
 
-## 📦 Livrables Phase 1 (2026-10-24)
+## 📦 Phase 1 deliverables (2026-10-24)
 
-| Fichier | Rôle |
+| File | Role |
 |---|---|
-| `src/classifier.js` | Classifieur heuristique (3 tiers, scoring, confidence) |
-| `src/config.js` | Merge config globale + projet |
-| `bin/cc-model-router.js` | CLI : `classify`, `run`, `status`, `hook` |
-| `src/hook.js` | Hook `UserPromptSubmit` (log + contexte) |
-| `hooks/user-prompt-submit.js` | Entrée hook pour Claude Code |
-| `bin/statusline.js` | Status line : modèle courant + mapping des tiers |
+| `src/classifier.js` | Heuristic classifier (3 tiers, scoring, confidence) |
+| `src/config.js` | Global + project config merge |
+| `bin/cc-model-router.js` | CLI: `classify`, `run`, `status`, `hook` |
+| `src/hook.js` | `UserPromptSubmit` hook (log + context) |
+| `hooks/user-prompt-submit.js` | Hook entry point for Claude Code |
+| `bin/statusline.js` | Status line: current model + tier mapping |
 | `tests/classifier.test.js` | 16 tests (routing, fallback, config, isolation) |
-| `examples/model-router.json` | Config d'exemple |
-| `docs/RESEARCH.md` | Veille datée : lineup, écosystème, incertitudes |
+| `examples/model-router.json` | Example config |
+| `docs/RESEARCH.md` | Dated research: lineup, ecosystem, uncertainties |
 
-## 🧪 Preuves Phase 1
+## 🧪 Phase 1 evidence
 
-- `node --test tests/*.test.js` → **53/53 tests passent**
+- `node --test tests/*.test.js` → **53/53 tests pass**
+- `npm run docs:check` → all relative Markdown links and bilingual pairs resolve
 - `ccmr classify "debug why the login test is flaky"` → `debugging` / `opus` / confidence 1
 - `ccmr run` (dry-run) → `claude --model sonnet "implement the auth endpoint"`
-- Hook `UserPromptSubmit` → log dans `.sandbox/config/router.log` (isolation) + `additionalContext` correct
-- `./scripts/sandbox.sh` → smoke test complet sans toucher `~/.claude`
-- [x] Validation en session réelle Claude Code (headless `-p`) : ✅ 2026-10-25 (voir résultats ci-dessous)
-- [x] Validation en session interactive (hook + statusline en TUI) : `npm run test:tui` (tmux, 2026-10-26)
+- `UserPromptSubmit` hook → log in `.sandbox/config/router.log` (isolation) + correct
+  `additionalContext`
+- `./scripts/sandbox.sh` → full smoke test without touching `~/.claude`
+- [x] Real Claude Code session validation (headless `-p`): ✅ 2026-10-25 (see results below)
+- [x] Interactive session validation (hook + statusline in TUI): `npm run test:tui` (tmux,
+  2026-10-26)
 
-## 🔧 Correctifs d'alignement Claude Code (2026-10-24)
+## 🔧 Claude Code alignment fixes (2026-10-24)
 
-Vérifiés sur le CLI 2.1.309 (`claude --help` + inspection du binaire) :
-- `effort: "none"` était invalide → `"low"` (valeurs : low/medium/high/xhigh/max).
-- `ccmr run` applique désormais `--effort` et `--fallback-model`.
-- Fallbacks par tier : mechanical → sonnet ; implementation → haiku ; debugging → sonnet,haiku.
-- Passthrough d'arguments Claude via `-- <args>` (ex: `-- -p`).
-- Alias `haiku` / `sonnet` / `opus` / `fable` confirmés.
+Verified on CLI 2.1.309 (`claude --help` + binary inspection):
 
-## 🧪 Test réel devquiz (2026-10-25)
+- `effort: "none"` was invalid → `"low"` (values: low/medium/high/xhigh/max).
+- `ccmr run` now applies `--effort` and `--fallback-model`.
+- Fallbacks by tier: mechanical → sonnet; implementation → haiku; debugging → sonnet,haiku.
+- Claude argument passthrough via `-- <args>` (e.g. `-- -p`).
+- Aliases `haiku` / `sonnet` / `opus` / `fable` confirmed.
 
-Contexte : copie de devquiz dans `/tmp/devquiz-router-test`, CLI Claude Code 2.1.309, `-p --output-format json`, plafond 0,30 $/run, hook via `--settings`.
+## 🧪 Real devquiz test (2026-10-25)
 
-| Run | Routage | Modèle réel | Coût | Fichiers |
+Context: devquiz copy in `/tmp/devquiz-router-test`, Claude Code CLI 2.1.309,
+`-p --output-format json`, $0.30/run cap, hook via `--settings`.
+
+| Run | Routing | Actual model | Cost | Files |
 |---|---|---|---|---|
-| A (mechanical) | haiku / low | claude-haiku-5-5 | $0.00334 | aucun |
-| A baseline (sans routeur) | sonnet / medium | claude-sonnet-5-5 | $0.05859 | aucun |
+| A (mechanical) | haiku / low | claude-haiku-5-5 | $0.00334 | none |
+| A baseline (no router) | sonnet / medium | claude-sonnet-5-5 | $0.05859 | none |
 | B (implementation) | sonnet / medium | claude-sonnet-5-5 | $0.10274 | `docs/ROADMAP.md` |
 
-- Économie Tâche A : **-94,3 %** vs Sonnet ($0.00334 vs $0.05859).
-- Hook `UserPromptSubmit` déclenché en headless : 2 entrées dans `.sandbox/config/router.log`.
-- Aucun fichier du devquiz réel modifié ; `~/.claude` intact.
-- Coût total du test : **~$0.165**.
-- Limite : 1 échantillon par tâche ; la session interactive reste à valider.
+- Task A saving: **-94.3%** vs Sonnet ($0.00334 vs $0.05859).
+- `UserPromptSubmit` hook triggered in headless: 2 entries in `.sandbox/config/router.log`.
+- No real devquiz file modified; `~/.claude` intact.
+- Total test cost: **~$0.165**.
+- Limitation: 1 sample per task; the interactive session remained to validate.
 
-## 📊 Benchmark qualité — run de référence (2026-10-26)
+## 📊 Quality benchmark — reference run (2026-10-26)
 
-Question : le routing économise-t-il du coût/quota **sans dégrader la qualité** ?
-Protocole : 12 tâches × 2 variantes × 2 répétitions = 48 runs, copies isolées, checks automatiques, budget 0,50 $/run.
-Détail : `docs/BENCHMARK.md` ; process canonique : `bench/README.md` ; vérification : `npm run bench:verify` ; données : `docs/benchmarks/2026-10-26-expanded.json`.
+Question: does routing save cost/quota **without degrading quality**?
+Protocol: 12 tasks × 2 variants × 2 repeats = 48 runs, isolated copies, automatic checks,
+$0.50/run budget.
+Detail: `docs/BENCHMARK.md`; canonical process: `bench/README.md`; verification:
+`npm run bench:verify`; data: `docs/benchmarks/2026-10-26-expanded.json`.
 
-| Variante | Acceptés | Coût total | Coût / accepté | Tokens |
+| Variant | Accepted | Total cost | Cost / accepted | Tokens |
 |---|---|---|---|---|
-| routed | 23/24 (95,8 %) | 2,0838 $ | **0,0906 $** | 2 147 568 |
-| baseline | 21/24 (87,5 %) | 2,8874 $ | 0,1375 $ | 2 266 530 |
+| routed | 23/24 (95.8%) | $2.0838 | **$0.0906** | 2,147,568 |
+| baseline | 21/24 (87.5%) | $2.8874 | $0.1375 | 2,266,530 |
 
-- Coût par tâche acceptée : **-34,1 %** ; coût total : -27,8 %.
-- Tokens bruts : -5,2 % au total ; -13,5 % par accepté → l'économie reste en **coût/quota**, pas en volume.
-- Mechanical : Haiku -94,3 %, 8/8 vs 8/8.
-- Implementation : Sonnet -53,2 %, 7/8 vs 8/8 ; un YAML invalide sur `impl-angular` (vrai échec Sonnet, rattrapable par validation).
-- Debugging : Opus 8/8 vs Sonnet 5/8, mais +29,7 % par accepté ; Opus nécessaire sur `debug-calc`/`debug-search`, surdimensionné sur `debug-parse`/`debug-state`.
-- Aucun fichier hors périmètre modifié.
-- Incident : `impl-angular` routé repeat 2 du premier run = commande Bash bloquée (artefact harness) ; fixture corrigée (`parcours/.gitkeep`), tâche rejouée et fusionnée. L'échec final est le YAML invalide, pas l'artefact.
-- Limite : 12 tâches, 2 répétitions, checks binaires, pas de revue aveugle ; pas encore une preuve statistique.
+- Cost per accepted task: **-34.1%**; total cost: -27.8%.
+- Raw tokens: -5.2% overall; -13.5% per accepted → the saving remains in **cost/quota**, not
+  volume.
+- Mechanical: Haiku -94.2%, 8/8 vs 8/8.
+- Implementation: Sonnet -53.2%, 7/8 vs 8/8; one invalid YAML on `impl-angular` (real Sonnet
+  failure, recoverable by validation).
+- Debugging: Opus 8/8 vs Sonnet 5/8, but +29.7% per accepted; Opus necessary on
+  `debug-calc`/`debug-search`, oversized on `debug-parse`/`debug-state`.
+- No out-of-scope file modified.
+- Incident: `impl-angular` routed repeat 2 of the first run = blocked Bash command (harness
+  artefact); fixture fixed (`parcours/.gitkeep`), task re-run and merged. The final failure
+  is the invalid YAML, not the artefact.
+- Limitation: 12 tasks, 2 repeats, binary checks, no blind review; not yet statistical
+  proof.
 
-Le pilote initial (5 tâches, 1 run) avait donné -53,6 % de coût par accepté et +37,6 % de tokens. Le run élargi corrige deux conclusions : le debugging n'est pas uniformément justifié, et Sonnet peut échouer sur la syntaxe. Le chiffre global baisse (-34,1 %) parce qu'il est plus honnête, pas parce que le routing est moins bon.
+The initial pilot (5 tasks, 1 run) gave -53.6% cost per accepted and +37.6% tokens. The
+expanded run corrects two conclusions: debugging is not uniformly justified, and Sonnet can
+fail on syntax. The overall number drops (-34.1%) because it is more honest, not because
+routing is worse.
 
-## ✅ Validation + escalade (2026-10-26)
+## ✅ Verification + escalation (2026-10-26)
 
-Problème mesuré : sur 48 runs, Sonnet a produit un YAML invalide sur `impl-angular` (1/8 échec implementation) ; le baseline Opus était 8/8. Le routeur doit pouvoir **vérifier puis escalader**, pas seulement choisir un modèle au lancement.
+Measured problem: across 48 runs, Sonnet produced an invalid YAML on `impl-angular` (1/8
+implementation failure); the Opus baseline was 8/8. The router must be able to **verify then
+escalate**, not only choose a model at launch.
 
-Implémentation :
+Implementation:
 
-- `ccmr run "<task>" --verify "<commande>"` exécute la commande après Claude, dans le répertoire courant.
-- `--escalate` rejoue avec le tier suivant (`mechanical → implementation → debugging`) et inclut la sortie d'échec dans le prompt de retry.
-- `src/runner.js` : parsing des flags, plan d'escalade, prompt de retry, orchestration injectable (`runClaude` / `runVerify`).
-- `bin/cc-model-router.js` : wiring `spawnSync`, dry-run avec plan d'escalade, exit code de la vérification.
-- Tests : 24 tests runner + 18 tests classifier/config + 3 tests CLI (faux binaire Claude, zéro quota) + 7 tests d'intégration hook/statusline + 1 test `check-one`. `npm test` = **53 tests**.
-- Limites : pas de rollback ; le retry réutilise l'arbre de travail ; la commande de vérification est fournie par l'utilisateur ; simulation + pilot réel 4/4 sur `debug-calc` + `debug-search` ; un second pilot sans hook a exercé l'escalade réelle (voir ci-dessous).
-- Hook + statusline validés avec des payloads réels (config globale + override projet) ; le rendu TUI est vérifié automatiquement par `npm run test:tui` (tmux, statusline + hook réels, settings réels inchangés).
+- `ccmr run "<task>" --verify "<command>"` runs the command after Claude, in the current
+  directory.
+- `--escalate` retries with the next tier (`mechanical → implementation → debugging`) and
+  includes the failure output in the retry prompt.
+- `src/runner.js`: flag parsing, escalation plan, retry prompt, injectable orchestration
+  (`runClaude` / `runVerify`).
+- `bin/cc-model-router.js`: `spawnSync` wiring, dry-run with escalation plan, verification
+  exit code.
+- Tests: 24 runner tests + 18 classifier/config tests + 3 CLI tests (fake Claude binary,
+  zero quota) + 7 hook/statusline integration tests + 1 `check-one` test. `npm test` = **53
+  tests**.
+- Limits: no rollback; the retry reuses the working tree; the verification command is
+  user-provided; simulation + real 4/4 pilot on `debug-calc` + `debug-search`; a second pilot
+  without the hook exercised real escalation (see below).
+- Hook + statusline validated with real payloads (global config + project override); the
+  TUI rendering is checked automatically by `npm run test:tui` (tmux, real statusline + hook,
+  real settings unchanged).
 
-Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré. Un `--verify` qui parse le YAML aurait renvoyé 1, et `--escalate` aurait laissé Opus corriger avec l'erreur sous les yeux. La simulation Sonnet-first, le pilot réel 4/4 et le pilot d'escalade ci-dessous donnent une première estimation ; le taux d'escalade reste à mesurer.
+Why it matters: this is the direct answer to the only measured quality failure. A `--verify`
+that parses the YAML would have returned 1, and `--escalate` would have let Opus fix it with
+the error in front of it. The Sonnet-first simulation, the real 4/4 pilot and the escalation
+pilot below give a first estimate; the escalation rate remains to be measured.
 
-## 🧪 Debugging Sonnet-first (opt-in, 2026-10-26)
+## 🧪 Sonnet-first debugging (opt-in, 2026-10-26)
 
-- `debuggingStrategy: "sonnet-first"` : premier essai Sonnet/medium (configurable via `debuggingFirst`), retry Opus/high sur échec de `--verify`.
-- Ne s'applique que si `--verify` **et** `--escalate` sont fournis ; sinon le debugging reste Opus. Le défaut `"opus"` est inchangé.
-- Simulation sur les 16 enregistrements debugging : **8/8 acceptés**, 1,1191 $ vs 1,3247 $ Opus direct (**-15,5 % par accepté**), 3/8 retries. `bench/simulate-escalation.mjs` (aucun appel modèle).
-- Pilot réel (4 runs, `debug-calc` + `debug-search`) : Sonnet **4/4**, 0,0770 $ / 0,0812 $ / 0,0827 $ / 0,0784 $, checks OK, **pas d'escalade** ; ~-49 % sur `debug-calc`, ~-46 % sur `debug-search` vs Opus routé. Le baseline Sonnet du benchmark était **1/4** sur ces deux tâches **sans hook** → confondant hook/stochasticité.
-- Pilot réel d'escalade (1 run, `debug-calc`, **sans hook**) : Sonnet échoue `test_average_empty` (`ZeroDivisionError`), Opus reçoit la sortie et réussit. Coût **0,2132 $** (0,0707 $ + 0,1425 $) vs **0,1559 $** Opus direct, soit **+36,7 %** ; seul `calc.py` change. Un échec réel, pas un taux : il valide le mécanisme et montre qu'un premier essai raté peut coûter plus cher.
-- Implémentation : `src/config.js` (merge), `src/runner.js` (`initialDecision`, `escalationPlanFor`), CLI dry-run/status, statusline `D:sonnet→opus`, note dans le hook.
-- Tests : 11 nouveaux tests (runner, config, CLI, hook/statusline) + 1 test `bench/check-one.mjs` ; `npm test` = **53 tests**.
-- Limites : simulation + deux petits pilots ; le taux d'escalade et le coût moyen restent à mesurer ; le retry réutilise l'arbre échoué ; nécessite un check fiable.
+- `debuggingStrategy: "sonnet-first"`: first attempt Sonnet/medium (configurable via
+  `debuggingFirst`), Opus/high retry on `--verify` failure.
+- Only applies when `--verify` **and** `--escalate` are provided; otherwise debugging stays
+  on Opus. The `"opus"` default is unchanged.
+- Simulation on the 16 debugging records: **8/8 accepted**, $1.1191 vs $1.3247 Opus direct
+  (**-15.5% per accepted**), 3/8 retries. `bench/simulate-escalation.mjs` (no model call).
+- Real pilot (4 runs, `debug-calc` + `debug-search`): Sonnet **4/4**, $0.0770 / $0.0812 /
+  $0.0827 / $0.0784, checks OK, **no escalation**; ~-49% on `debug-calc`, ~-46% on
+  `debug-search` vs routed Opus. The benchmark Sonnet baseline was **1/4** on these two tasks
+  **without the hook** → hook/stochasticity confound.
+- Real escalation pilot (1 run, `debug-calc`, **without hook**): Sonnet fails
+  `test_average_empty` (`ZeroDivisionError`), Opus receives the output and succeeds. Cost
+  **$0.2132** ($0.0707 + $0.1425) vs **$0.1559** Opus direct, i.e. **+36.7%**; only `calc.py`
+  changes. One real failure, not a rate: it validates the mechanism and shows a failed first
+  attempt can cost more.
+- Implementation: `src/config.js` (merge), `src/runner.js` (`initialDecision`,
+  `escalationPlanFor`), CLI dry-run/status, statusline `D:sonnet→opus`, note in the hook.
+- Tests: 11 new tests (runner, config, CLI, hook/statusline) + 1 `bench/check-one.mjs` test;
+  `npm test` = **53 tests**.
+- Limits: simulation + two small pilots; escalation rate and average cost remain to be
+  measured; retry reuses the failed tree; requires a reliable check.
 
-## 🔎 Veille concurrence et lancement (2026-10-26)
+## 🔎 Competition research and launch (2026-10-26)
 
-- [`docs/COMPETITION.md`](docs/COMPETITION.md) : demande (issues #27665 et #44976), ce que fait le natif (`opusplan`, cache), concurrents directs et indirects (tzachbon 105 ★, edagher 0 ★, CCR 37,8k ★, Weave 5,6k ★, LiteLLM, RouteLLM, ClaudeRipple).
-- Créneau : **natif Claude Code + tiers par tâche + benchmark 48 runs + vérification/escalade**. Pas de proxy, pas de clé API, MIT.
-- Verdict : **Go OSS/portfolio ; No-Go comme entreprise seule** sans équipe, dashboard, support et couche commerciale.
-- Lancement : le benchmark est la preuve ; Show HN + Reddit + article. Claims mesurés, baseline mixte explicite, échantillon petit assumé.
-- Prochaine action : publication GitHub/npm, GIF, article ; élargir le benchmark avant les gros claims.
+- [`docs/COMPETITION.md`](docs/COMPETITION.md): demand (issues #27665 and #44976), what native
+  Claude Code does (`opusplan`, cache), direct and indirect competitors (tzachbon 105 ★,
+  edagher 0 ★, CCR 37.8k ★, Weave 5.6k ★, LiteLLM, RouteLLM, ClaudeRipple).
+- Slot: **native Claude Code + per-task tiers + 48-run benchmark + verification/escalation**.
+  No proxy, no API key, MIT.
+- Verdict: **Go OSS/portfolio; No-Go as a standalone company** without a team, dashboard,
+  support and commercial layer.
+- Launch: the benchmark is the evidence; Show HN + Reddit + article. Measured claims,
+  explicit mixed baseline, small sample acknowledged.
+- Next action: GitHub/npm publication, GIF, article; expand the benchmark before big claims.
 
-## ⚠️ Limite connue (à documenter pour les users)
+## ⚠️ Known limitation (document for users)
 
-Claude Code ne permet pas encore à un hook de changer le modèle en cours de session (issues #44976, #43326, #27665). Donc :
-- le hook **observe et recommande** ;
-- `ccmr run` applique le modèle **au lancement** ;
-- en interactif, l'alias natif `opusplan` couvre le plan → code.
+Claude Code does not yet allow a hook to change the model mid-session (issues #44976,
+#43326, #27665). Therefore:
 
-## ⚠️ Critères de succès
+- the hook **observes and recommends**;
+- `ccmr run` applies the model **at launch**;
+- interactively, the native `opusplan` alias covers plan → code.
 
-- Zéro `/model` manuel pour les tâches routables.
-- Réduction des **coûts/quota** mesurable (preuve avant/après) ; les tokens bruts peuvent augmenter.
-- Qualité préservée (escalade intelligente).
+## ⚠️ Success criteria
 
-## 🔜 Prochaines actions
+- Zero manual `/model` for routable tasks.
+- Measurable reduction in **costs/quota** (before/after evidence); raw tokens may increase.
+- Quality preserved (smart escalation).
 
-- [x] Benchmark élargi (12 tâches × 2 répétitions, 48 runs) — voir `docs/BENCHMARK.md`.
-- [x] Validation + escalade : `run --verify "<commande>"`, retry avec le modèle suivant si le check échoue.
-- [x] Provoquer une escalade réelle : `debug-calc` sans hook, Sonnet échoue, Opus réussit ; 0,2132 $ vs 0,1559 $ Opus direct (+36,7 %).
-- [ ] Mesurer le taux d'escalade et le coût moyen sur plusieurs runs/tâches — simulation -15,5 % ; un échec réel observé.
-- [x] Politique debugging plus fine : Sonnet-first opt-in + escalade Opus sur échec (`debuggingStrategy`).
-- [ ] Élargir le benchmark à 20–30 tâches, 3 répétitions, revue aveugle.
-- [ ] Mesurer le rework (temps perdu, runs échoués).
-- [x] Hook + statusline validés hors TUI (payloads réels, config projet).
-- [x] Rendu TUI automatisé (`scripts/tui-smoke.sh`, tmux) : statusline + hook réels, `~/.claude` et repo inchangés.
-- [ ] Mettre à jour `docs/RESEARCH.md` avant Phase 2 (veille datée).
-- [x] Veille concurrence + positionnement + plan de lancement (`docs/COMPETITION.md`).
-- [x] Préparation lancement (code) : `LICENSE`, `SECURITY.md`, CI, templates d'issues/PR, `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`) ; nom npm `cc-model-router` disponible.
-- [x] Nom du binaire : package `cc-model-router`, binaires `cc-model-router` + alias `ccmr` (évite la collision avec `cc-router@4.0.0`).
-- [x] Dépôt GitHub public créé et poussé, description, homepage, 12 topics, issues/projects/discussions, CI verte.
-- [x] Clone propre depuis GitHub : `npm test` 53/53, `bench:verify` 12/12 checks rouges avant, simulation d'escalade OK (aucun run modèle).
-- [ ] Publication npm (tarball validé, pas encore publié).
-- [ ] Épinglage du dépôt et social preview : web-only, aucune API GitHub publique.
-- [ ] GIF de démo, graphique et article de lancement.
-- [ ] Phase 2 — adaptateur OpenCode (routing par tour / plugin).
-- [ ] Phase 3 — dashboard de stats (coût/quota économisé, escalade).
-- [ ] Golden tests sur des prompts réels.
-- [ ] Publication npm réelle (le README et les métadonnées sont prêts).
+## 🔜 Next actions
 
-## 📝 Suivi
+- [x] Expanded benchmark (12 tasks × 2 repeats, 48 runs) — see `docs/BENCHMARK.md`.
+- [x] Verification + escalation: `run --verify "<command>"`, retry with the next model if the
+  check fails.
+- [x] Trigger a real escalation: `debug-calc` without hook, Sonnet fails, Opus succeeds;
+  $0.2132 vs $0.1559 Opus direct (+36.7%).
+- [ ] Measure the escalation rate and average cost over multiple runs/tasks — simulation
+  -15.5%; one real failure observed.
+- [x] Finer debugging policy: opt-in Sonnet-first + Opus escalation on failure
+  (`debuggingStrategy`).
+- [ ] Expand the benchmark to 20–30 tasks, 3 repeats, blind review.
+- [ ] Measure rework (lost time, failed runs).
+- [x] Hook + statusline validated outside the TUI (real payloads, project config).
+- [x] Automated TUI rendering (`scripts/tui-smoke.sh`, tmux): real statusline + hook,
+  `~/.claude` and repo unchanged.
+- [ ] Update `docs/RESEARCH.md` before Phase 2 (dated research).
+- [x] Competition research + positioning + launch plan (`docs/COMPETITION.md`).
+- [x] Launch preparation (code): `LICENSE`, `SECURITY.md`, CI, issue/PR templates,
+  `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`); npm name `cc-model-router`
+  available.
+- [x] Binary name: package `cc-model-router`, binaries `cc-model-router` + alias `ccmr`
+  (avoids the collision with `cc-router@4.0.0`).
+- [x] Public GitHub repository created and pushed, description, homepage, 12 topics,
+  issues/projects/discussions, CI green.
+- [x] Clean clone from GitHub: `npm test` 53/53, `bench:verify` 12/12 checks red before,
+  escalation simulation OK (no model run).
+- [ ] npm publication (tarball validated, not yet published).
+- [ ] Repository pin and social preview: web-only, no public GitHub API.
+- [ ] Demo GIF and launch article (localized charts are done).
+- [ ] Phase 2 — OpenCode adapter (per-turn routing / plugin).
+- [ ] Phase 3 — stats dashboard (cost/quota saved, escalation).
+- [ ] Golden tests on real prompts.
+- [ ] Real npm publication (README and metadata ready).
 
-- Journal tenu à jour à chaque phase / décision.
-- Toute décision technique = entrée datée + justification.
+## 📝 Tracking
+
+- Journal kept up to date at every phase / decision.
+- Every technical decision = dated entry + justification.

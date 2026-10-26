@@ -1,5 +1,7 @@
 # Fixtures
 
+[English](README.md) · [Français](README.fr.md)
+
 Every fixture is synthetic and self-contained. Checks must be **red before** the
 task and **green after** it; `npm run bench:verify` enforces this for file-based
 checks.

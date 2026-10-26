@@ -1,57 +1,59 @@
-# Veille — état de l'art
+# Research — state of the art
 
-> Dernière vérification lineup/CLI : 2026-10-24
-> Veille concurrence : 2026-10-26 (voir [`COMPETITION.md`](COMPETITION.md))
-> Règle : aucune phase de code ne démarre sans une note de veille datée.
+[English](RESEARCH.md) · [Français](RESEARCH.fr.md)
 
-## 1. Hiérarchie des sources
+> Last model-lineup/CLI check: 2026-10-24
+> Competition research: 2026-10-26 (see [`COMPETITION.md`](COMPETITION.md))
+> Rule: no coding phase starts without a dated research note.
 
-1. **Primaire** : documentation et release notes Anthropic (anthropic.com, docs).
-2. **Code** : dépôts GitHub officiels (issues, PR, releases), CLI `claude --help`.
-3. **Communauté** : Reddit, Hacker News, blogs — utiles pour l'usage réel, à recouper.
+## 1. Source hierarchy
 
-Un fait n'entre dans une décision que s'il est daté et sourcé. Les sources qui se contredisent sont listées dans « Incertitudes ».
+1. **Primary**: Anthropic documentation and release notes (anthropic.com, docs).
+2. **Code**: official GitHub repositories (issues, PRs, releases), `claude --help`.
+3. **Community**: Reddit, Hacker News, blogs — useful for real usage, but cross-check.
 
-## 2. Lineup Claude vérifiée (2026-10-24)
+A fact only enters a decision if it is dated and sourced. Sources that disagree are listed under "Uncertainties".
 
-| Modèle | Prix input/output (par M tokens) | Rôle |
+## 2. Verified Claude lineup (2026-10-24)
+
+| Model | Input/output price (per M tokens) | Role |
 |---|---|---|
-| Fable 5.1 | $10 / $50 | frontier, coding/reasoning lourd |
-| Opus 5.5 | $4 / $20 | jugement, généraliste le plus fort |
-| Sonnet 5.5 | $2 / $10 | workhorse, tâches bien cadrées |
+| Fable 5.1 | $10 / $50 | frontier, heavy coding/reasoning |
+| Opus 5.5 | $4 / $20 | judgment, strongest generalist |
+| Sonnet 5.5 | $2 / $10 | workhorse, well-scoped tasks |
 | Haiku 5.5 | $0.10 / $0.50 (<100K input) | volume, subagents, classification |
 
-- Sources : anthropic.com/claude-opus-5-5, anthropic.com/claude-sonnet-5-5, anthropic.com/claude-haiku-5-5, taskade.com/blog/claude-models-explained, felloai.com.
-- Mythos 5.1 : réservé aux programmes de vérification, hors scope.
+- Sources: anthropic.com/claude-opus-5-5, anthropic.com/claude-sonnet-5-5, anthropic.com/claude-haiku-5-5, taskade.com/blog/claude-models-explained, felloai.com.
+- Mythos 5.1: restricted to verification programs, out of scope.
 
-## 3. CLI Claude Code 2.1.309 — vérifié le 2026-10-24
+## 3. Claude Code CLI 2.1.309 — verified on 2026-10-24
 
-- Alias de modèle acceptés (présents dans le binaire) : `fable`, `opus`, `sonnet`, `haiku`.
-- `--effort <level>` : `low`, `medium`, `high`, `xhigh`, `max` (pas de `none`).
-- `--fallback-model <model>` : accepte une liste séparée par virgules ; bascule si le modèle est surchargé ou indisponible.
-- `--settings <file-or-json>` : charge des settings additionnels (hooks/statusLine) sans modifier `~/.claude/settings.json`.
-- `--max-budget-usd <amount>` : plafond de dépense, uniquement avec `--print`.
-- `claude "prompt"` démarre une session interactive ; `-p/--print` pour le non-interactif.
+- Accepted model aliases (present in the binary): `fable`, `opus`, `sonnet`, `haiku`.
+- `--effort <level>`: `low`, `medium`, `high`, `xhigh`, `max` (no `none`).
+- `--fallback-model <model>`: accepts a comma-separated list; switches when the model is overloaded or unavailable.
+- `--settings <file-or-json>`: loads additional settings (hooks/statusLine) without modifying `~/.claude/settings.json`.
+- `--max-budget-usd <amount>`: spending cap, only with `--print`.
+- `claude "prompt"` starts an interactive session; `-p/--print` for non-interactive use.
 
-## 4. Écosystème routing
+## 4. Routing ecosystem
 
-- Claude Code natif : alias `opusplan` (Opus en plan → Sonnet en exécution), `/model`, `model:` par sous-agent. Pas de routage automatique par type de tâche ni de switch mid-session.
-- Feature requests : #27665 (ouverte, 93,8 % des tokens Max sur Opus), #44976 (fermée doublon de #15721), #15721 (fermée comme couverte par `opusplan`).
-- Hook communautaire le plus proche : `tzachbon/claude-model-router-hook` (5 classes + abstain, config globale/projet, sous-agents, warn/autoswitch, 105 ★ au 2026-10-26 ; pas de benchmark de qualité publié).
-- Routeur Python/API : `edagher92-coder/claude-model-router` (tiers, fallback/escalade, `claude -p` pour l'abonnement ; 0 ★).
-- Gateways multi-provider : `musistudio/claude-code-router` (37,8k ★), `weave-os/router` (5,6k ★), LiteLLM Auto Router, RouteLLM, ClaudeRipple.
-- Détail, chiffres, liens et positionnement : [`COMPETITION.md`](COMPETITION.md) (veille du 2026-10-26).
-- OpenCode : issue #8456 (auto model par task type), plugins `opencode-model-router`, `Auto (Jev)`.
+- Native Claude Code: `opusplan` alias (Opus for planning → Sonnet for execution), `/model`, per-subagent `model:`. No automatic routing by task type and no mid-session switch.
+- Feature requests: #27665 (open, 93.8% of Max tokens on Opus), #44976 (closed duplicate of #15721), #15721 (closed as covered by `opusplan`).
+- Closest community hook: `tzachbon/claude-model-router-hook` (5 classes + abstain, global/project config, subagents, warn/autoswitch, 105 ★ on 2026-10-26; no published quality benchmark).
+- Python/API router: `edagher92-coder/claude-model-router` (tiers, fallback/escalation, `claude -p` for the subscription; 0 ★).
+- Multi-provider gateways: `musistudio/claude-code-router` (37.8k ★), `weave-os/router` (5.6k ★), LiteLLM Auto Router, RouteLLM, ClaudeRipple.
+- Details, numbers, links and positioning: [`COMPETITION.md`](COMPETITION.md) (research dated 2026-10-26).
+- OpenCode: issue #8456 (auto model by task type), plugins `opencode-model-router`, `Auto (Jev)`.
 
-## 5. Incertitudes / à revérifier
+## 5. Uncertainties / to re-check
 
-- Les prix et la lineup bougent vite : revérifier avant toute publication.
-- Les résultats web se contredisent parfois (articles citant encore Opus 4.6 / Sonnet 4.6 / Haiku 4.5).
-- `CLAUDE_CONFIG_DIR` : support non confirmé ; on utilise `--settings` + `CC_ROUTER_CONFIG_DIR`.
-- Schéma exact du hook `UserPromptSubmit` (`additionalContext`) : à valider en session réelle (reporté).
+- Prices and the lineup move fast: re-check before any publication.
+- Web results sometimes contradict each other (articles still citing Opus 4.6 / Sonnet 4.6 / Haiku 4.5).
+- `CLAUDE_CONFIG_DIR`: support not confirmed; we use `--settings` + `CC_ROUTER_CONFIG_DIR`.
+- Exact `UserPromptSubmit` hook schema (`additionalContext`): to validate in a real session (deferred).
 
-## 6. Décision issue de la veille
+## 6. Decision from the research
 
-- Router par **alias** (`haiku` / `sonnet` / `opus`) par défaut.
-- Versions épinglables via `tiers.<tier>.model` en config.
-- Aucun modèle codé en dur dans le code.
+- Route by **alias** (`haiku` / `sonnet` / `opus`) by default.
+- Pin versions through `tiers.<tier>.model` in config.
+- No model hardcoded in the code.

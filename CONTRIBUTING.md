@@ -1,5 +1,7 @@
 # Contributing
 
+[English](CONTRIBUTING.md) · [Français](CONTRIBUTING.fr.md)
+
 Thanks for helping. This project routes Claude Code tasks to the cheapest model that can do the job, without degrading quality.
 
 ## Ground rules
@@ -16,6 +18,7 @@ Requirements: Node.js >= 18. For the benchmark: Python 3 + PyYAML.
 ```bash
 npm test
 npm run bench:verify
+npm run docs:check
 ```
 
 For the TUI integration (statusline + hook in a real Claude Code session, requires `claude`, `tmux` and a login; opt-in because it spends a small amount of quota):
@@ -27,7 +30,7 @@ npm run test:tui -- --sonnet-first
 
 ## Benchmark contributions
 
-The benchmark is the evidence layer of the project. Its canonical protocol is [`bench/README.md`](bench/README.md) (French; commands, file names and schemas are language-neutral).
+The benchmark is the evidence layer of the project. Its canonical protocol is [`bench/README.md`](bench/README.md) (commands, file names and schemas are language-neutral; a French version is in [`bench/README.fr.md`](bench/README.fr.md)).
 
 To add a task:
 

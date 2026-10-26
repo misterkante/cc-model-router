@@ -1,388 +1,384 @@
-# Concurrence, positionnement et lancement
+# Competition, positioning and launch
 
-> Veille datée du **2026-10-26**. Les chiffres d'adoption (étoiles, forks, versions,
-> téléchargements) et les prix bougent vite : re-vérifier avant chaque annonce publique.
+[English](COMPETITION.md) · [Français](COMPETITION.fr.md)
+
+> Research dated **2026-10-26**. Adoption numbers (stars, forks, versions, downloads) and
+> prices move fast: re-check before every public announcement.
 >
-> Règle : sources primaires (docs Anthropic, dépôts GitHub, npm, benchmarks publiés).
-> Les données auto-déclarées sont marquées comme telles. Les liens sont en fin de document.
+> Rule: primary sources (Anthropic docs, GitHub repositories, npm, published benchmarks).
+> Self-reported data is marked as such. Links are at the end of the document.
 
-## 1. Résumé exécutif
+## 1. Executive summary
 
-- **La demande est réelle et documentée.** Les issues Anthropic sur le routage automatique
-  totalisent 30+ demandes liées ; une analyse d'usage d'un abonné Max (17 jours) montre
-  **93,8 % des tokens envoyés à Opus** et **97,8 % du coût**. Un power user rapporte
-  **5 489 $ en 44 jours**,
-  dont 60–70 % de tâches qui auraient pu tourner sur Sonnet ou Haiku.
-- **Le marché est encombré, mais pas là où nous sommes.** Les gateways multi-provider
-  (Claude Code Router, Weave, LiteLLM, ClaudeRipple) occupent le terrain « router tout,
-  plusieurs fournisseurs ». Les hooks Claude-only existent aussi (le plus proche :
-  `tzachbon/claude-model-router-hook`, 105 ★), mais **aucun des hooks examinés ne publie
-  de benchmark de qualité par tâche Claude Code avec vérification post-run**.
-- **Notre créneau : natif + preuve + rattrapage.** Trois tiers, un benchmark de 48 runs avec
-  checks déterministes, et `run --verify` / `--escalate` pour rattraper l'échec qualité.
-  Pas de proxy, pas de clé API à changer, pas de télémétrie.
-- **Verdict : Go en open source / portfolio, No-Go comme entreprise seule.** Le projet est
-  crédible et différenciant pour un lancement OSS et une vitrine de compétences. Ce n'est
-  pas un business défendable sans équipe, dashboard, support et couche commerciale.
-- **Lancement : le benchmark est le produit d'appel.** Le message n'est pas « premier
-  routeur » ni « zéro perte de qualité » ; c'est « voici 48 runs, 23/24 vs 21/24, -34,1 %
-  de coût par tâche acceptée, et voici comment on rattrape l'échec ».
+- **Demand is real and documented.** Anthropic issues about automatic routing total 30+
+  related requests; a usage analysis from one Max subscriber (17 days) shows **93.8% of
+  tokens sent to Opus** and **97.8% of the cost**. One power user reports **$5,489 in 44
+  days**, of which 60–70% of tasks could have run on Sonnet or Haiku.
+- **The market is crowded, but not where we are.** Multi-provider gateways (Claude Code
+  Router, Weave, LiteLLM, ClaudeRipple) own the "route everything, several providers"
+  space. Claude-only hooks also exist (the closest: `tzachbon/claude-model-router-hook`,
+  105 ★), but **none of the hooks examined publishes a per-task Claude Code quality
+  benchmark with post-run verification**.
+- **Our slot: native + evidence + recovery.** Three tiers, a 48-run benchmark with
+  deterministic checks, and `run --verify` / `--escalate` to recover from a quality
+  failure. No proxy, no API key to change, no telemetry.
+- **Verdict: Go for open source / portfolio, No-Go as a standalone company.** The project
+  is credible and differentiated for an OSS launch and a skills showcase. It is not a
+  defensible business without a team, dashboard, support and commercial layer.
+- **Launch: the benchmark is the lead product.** The message is not "first router" or
+  "zero quality loss"; it is "here are 48 runs, 23/24 vs 21/24, -34.1% cost per accepted
+  task, and here is how we recover from the failure".
 
-## 2. Preuves de demande
+## 2. Evidence of demand
 
-### 2.1 Données Anthropic (auto-déclarées, à présenter comme telles)
+### 2.1 Anthropic data (self-reported, present it as such)
 
-**Issue #27665** — ouverte le 2026-02-22, toujours ouverte, 30+ issues liées.
-Un abonné Max (17 jours, plan à 200 $/mois, Claude Code v2.1.50) mesure avec `ccusage` :
+**Issue #27665** — opened 2026-02-22, still open, 30+ related issues.
+A Max subscriber (17 days, $200/month plan, Claude Code v2.1.50) measures with `ccusage`:
 
-| Modèle | Tokens | Part | Coût API-équivalent |
+| Model | Tokens | Share | API-equivalent cost |
 |---|---:|---:|---:|
-| Opus 4.6 | 1 405 957 116 | 77,0 % | 1 011,59 $ |
-| Opus 4.5 | 305 903 815 | 16,8 % | 234,43 $ |
-| Haiku 4.5 | 94 216 971 | 5,2 % | 16,02 $ |
-| Sonnet 4.5 / 4.6 | 18 331 138 | 1,0 % | 12,36 $ |
-| **Total** | **1 825 500 411** | **100 %** | **1 274,40 $** |
+| Opus 4.6 | 1,405,957,116 | 77.0% | $1,011.59 |
+| Opus 4.5 | 305,903,815 | 16.8% | $234.43 |
+| Haiku 4.5 | 94,216,971 | 5.2% | $16.02 |
+| Sonnet 4.5 / 4.6 | 18,331,138 | 1.0% | $12.36 |
+| **Total** | **1,825,500,411** | **100%** | **$1,274.40** |
 
-- **93,8 % des tokens et 97,8 % du coût vont à Opus.**
-- 96 % de ces tokens Opus sont des **cache reads** : le contexte complet est renvoyé à
-  chaque tour, même pour un « oui, vas-y » ou un `grep`.
-- L'auteur qualifie `opusplan` de cassé et trop grossier (plan vs exécution), et liste
-  30+ issues liées (routage par compétence, par outil, par sous-agent, par complexité).
+- **93.8% of tokens and 97.8% of the cost go to Opus.**
+- 96% of those Opus tokens are **cache reads**: the full context is sent back on every
+  turn, even for a "yes, go ahead" or a `grep`.
+- The author calls `opusplan` broken and too coarse (plan vs execution), and lists 30+
+  related issues (routing by skill, tool, subagent, complexity).
 
-**Issue #44976** — ouverte le 2026-04-08, fermée comme doublon de #15721.
-Un power user rapporte **5 489 $ en 44 jours** (février–avril 2026), dont **60–70 %**
-de tokens sur des tâches où Sonnet ou Haiku auraient suffi (lectures de fichiers, edits
-simples, exploration, chat). Estimation : **2 000–3 000 $/mois** d'économie pour un gros
-utilisateur, sans perte de qualité.
+**Issue #44976** — opened 2026-04-08, closed as a duplicate of #15721.
+A power user reports **$5,489 in 44 days** (February–April 2026), of which **60–70%** of
+tokens were on tasks where Sonnet or Haiku would have been enough (file reads, simple
+edits, exploration, chat). Estimate: **$2,000–3,000/month** saved for a heavy user,
+without quality loss.
 
-**Ce qu'il faut retenir :** ce sont des données individuelles, auto-déclarées, pas une
-étude contrôlée. Elles prouvent un **signal fort**, pas une population. Le benchmark du
-projet est justement là pour produire une mesure reproductible, à notre échelle.
+**Takeaway:** this is individual, self-reported data, not a controlled study. It proves a
+**strong signal**, not a population. The project benchmark exists precisely to produce a
+reproducible measurement at our scale.
 
-### 2.2 Ce que Claude Code fait nativement (et ce qui manque)
+### 2.2 What Claude Code does natively (and what is missing)
 
-- `/model`, `--model`, `--effort`, `--fallback-model` : sélection **manuelle** ou au
-  lancement, pas de routage automatique par type de tâche.
-- `opusplan` : Opus en mode plan, Sonnet en exécution. Couvre **plan → code**, pas
-  mechanical vs implementation vs debugging ; les utilisateurs le trouvent trop grossier
-  (issue #15721, fermée comme « couverte » par un collaborateur, mais les demandes
-  continuent).
-- Sous-agents : un fichier d'agent peut déclarer `model:` ; c'est du routage **par
-  sous-agent**, pas par tâche, et le sous-agent hérite du modèle parent par défaut.
-- **Pas de changement de modèle en cours de session** via un hook public. C'est la limite
-  qui structure tout le design : le hook observe/recommande, `ccmr run` applique au
-  lancement.
+- `/model`, `--model`, `--effort`, `--fallback-model`: **manual** selection or at launch,
+  no automatic routing by task type.
+- `opusplan`: Opus in plan mode, Sonnet in execution. Covers **plan → code**, not
+  mechanical vs implementation vs debugging; users find it too coarse (issue #15721,
+  closed as "covered" by a collaborator, but requests continue).
+- Subagents: an agent file can declare `model:`; that is routing **per subagent**, not per
+  task, and the subagent inherits the parent model by default.
+- **No mid-session model switch** through a public hook. That is the constraint that
+  shapes the whole design: the hook observes/recommends, `ccmr run` applies at launch.
 
-### 2.3 La contrainte de cache qui rend le routage par tour dangereux
+### 2.3 The cache constraint that makes per-turn routing dangerous
 
-Le cache de prompt est **par modèle**. Changer de modèle en cours de conversation
-invalide le cache : tout l'historique est relu au prix plein sur le nouveau modèle.
-Dans l'issue #27665, plusieurs utilisateurs documentent ce piège :
+The prompt cache is **per model**. Changing model mid-conversation invalidates the cache:
+the whole history is re-read at full price on the new model. In issue #27665, several users
+document this trap:
 
-- quelques switches dans une session de 50K–200K tokens peuvent coûter **plus cher** que
-  rester sur Opus ;
-- la granularité saine est donc **au lancement de session** (ou au spawn d'un sous-agent),
-  pas à chaque tour ;
-- l'escalade quand la tâche est **visiblement bloquée** peut être moins chère que cinq
-  cycles ratés sur un modèle plus faible.
+- a few switches in a 50K–200K token session can cost **more** than staying on Opus;
+- the healthy granularity is therefore **at session launch** (or subagent spawn), not at
+  every turn;
+- escalation when the task is **visibly stuck** can be cheaper than five failed cycles on
+  a weaker model.
 
-C'est exactement le compromis du projet : **un modèle par run**, puis `--verify` et
-`--escalate` qui démarrent une nouvelle session seulement en cas d'échec. On paie un
-cache froid au retry, mais uniquement quand la première tentative a échoué.
+That is exactly the project's trade-off: **one model per run**, then `--verify` and
+`--escalate` that start a new session only on failure. You pay a cold cache on retry, but
+only when the first attempt failed.
 
-## 3. Paysage concurrentiel (au 2026-10-26)
+## 3. Competitive landscape (as of 2026-10-26)
 
-| Acteur | Type | Licence | Adoption | Ce qu'il fait | Limite vs nous |
+| Actor | Type | License | Adoption | What it does | Limit vs us |
 |---|---|---|---|---|---|
-| **Claude Code natif** (`/model`, `opusplan`, sous-agents) | Intégré | Propriétaire | Gratuit, installé | Sélection manuelle ; Opus plan → Sonnet exécution ; `model:` par sous-agent | Pas de routage par type de tâche ; pas de benchmark tâche ; `opusplan` grossier |
-| **tzachbon/claude-model-router-hook** | Hook Claude Code | MIT | **105 ★**, 14 forks, 40 commits | 5 classes + abstain, routage des sous-agents, warn/autoswitch, config globale/projet | Opus par défaut sur implementation/debugging (conservateur) ; **pas de benchmark de qualité publié** ; pas de vérification post-run |
-| **edagher92-coder/claude-model-router** | Routeur Python/API | MIT | **0 ★**, 90 commits | Tiers haiku/sonnet/glm/opus/fable, fallback/escalade, log CSV, abonnement via `claude -p` | Routeur séparé, pas un hook natif ; bench de modèles, pas de benchmark de tâches Claude Code ; adoption quasi nulle |
-| **musistudio/claude-code-router (CCR)** | Gateway local | MIT | **37,8k ★**, 3,2k forks, v3.1.3, ~9k téléchargements/semaine | Gateway/control plane multi-provider, dashboard, règles, fallback, nombreux agents | Lourd ; changement d'endpoint/proxy ; pas de benchmark qualité par tâche Claude Code |
-| **weave-os/router** | Gateway | Apache-2.0 | **5,6k ★**, 160 forks | Go, < 50 ms, « 40–70 % de coût en moins » via changement d'endpoint | Routeur généraliste agentique ; pas de benchmark Claude Code par tâche |
-| **LiteLLM Auto Router** | Gateway | OSS | Très utilisé | Classifieur heuristique, tiers SIMPLE/MEDIUM/COMPLEX/REASONING ; **40,4 % moins cher à 97,1 % de qualité** (220 prompts) ; **74,5 % moins cher à 87,3 %** (8 399 prompts) | Généraliste, proxy ; la qualité baisse sur RouterArena (68,6 % vs 78,5 %) ; pas natif Claude Code |
-| **RouteLLM** | Routeur de recherche | Apache-2.0 | Projet de recherche | Classifieurs entraînés, serveur OpenAI-compatible | Généraliste ; pas d'intégration Claude Code |
-| **ClaudeRipple** | Proxy multi-provider | GPL-3.0 | **72 ★**, 16 forks, 850 commits | Claude Desktop/Code avec GPT/DeepSeek/etc., effort par prompt, sous-agents | Pas un routeur Claude-only par tier ; proxy lourd ; GPL |
+| **Native Claude Code** (`/model`, `opusplan`, subagents) | Built-in | Proprietary | Free, installed | Manual selection; Opus plan → Sonnet execution; `model:` per subagent | No routing by task type; no task benchmark; `opusplan` coarse |
+| **tzachbon/claude-model-router-hook** | Claude Code hook | MIT | **105 ★**, 14 forks, 40 commits | 5 classes + abstain, subagent routing, warn/autoswitch, global/project config | Opus by default on implementation/debugging (conservative); **no published quality benchmark**; no post-run verification |
+| **edagher92-coder/claude-model-router** | Python/API router | MIT | **0 ★**, 90 commits | haiku/sonnet/glm/opus/fable tiers, fallback/escalation, CSV log, subscription via `claude -p` | Separate router, not a native hook; model bench, not a Claude Code task benchmark; almost no adoption |
+| **musistudio/claude-code-router (CCR)** | Local gateway | MIT | **37.8k ★**, 3.2k forks, v3.1.3, ~9k downloads/week | Multi-provider gateway/control plane, dashboard, rules, fallback, many agents | Heavy; endpoint/proxy change; no per-task Claude Code quality benchmark |
+| **weave-os/router** | Gateway | Apache-2.0 | **5.6k ★**, 160 forks | Go, < 50 ms, "40–70% lower cost" via endpoint change | Generalist agentic router; no per-task Claude Code benchmark |
+| **LiteLLM Auto Router** | Gateway | OSS | Widely used | Heuristic classifier, SIMPLE/MEDIUM/COMPLEX/REASONING tiers; **40.4% cheaper at 97.1% quality** (220 prompts); **74.5% cheaper at 87.3%** (8,399 prompts) | Generalist, proxy; quality drops on RouterArena (68.6% vs 78.5%); not native Claude Code |
+| **RouteLLM** | Research router | Apache-2.0 | Research project | Trained classifiers, OpenAI-compatible server | Generalist; no Claude Code integration |
+| **ClaudeRipple** | Multi-provider proxy | GPL-3.0 | **72 ★**, 16 forks, 850 commits | Claude Desktop/Code with GPT/DeepSeek/etc., effort per prompt, subagents | Not a Claude-only per-tier router; heavy proxy; GPL |
 
-**Travaux voisins (pas des routeurs complets) :** `better-model` (agents + `CLAUDE.md`),
-`attune-ai` (routage multi-tier), `claude-router` (28 ★, un mainteneur, cité dans
-#27665). Ils valident la demande mais ne publient pas de benchmark de qualité par tâche.
+**Adjacent work (not complete routers):** `better-model` (agents + `CLAUDE.md`),
+`attune-ai` (multi-tier routing), `claude-router` (28 ★, one maintainer, cited in
+#27665). They validate demand but do not publish a per-task quality benchmark.
 
-### Ce que le tableau dit vraiment
+### What the table really says
 
-- **Le concurrent direct le plus proche est `tzachbon`**, pas CCR/Weave/LiteLLM : même
-  idée (hook, tiers, config globale/projet), même licence, déjà 105 ★. Il est plus mûr
-  sur les sous-agents et les classes de tâches.
-- **Les gateways sont un autre marché** : multi-provider, dashboard, entreprises. Ils
-  résolvent « utiliser GPT/DeepSeek/Ollama dans Claude Code », pas « choisir entre
-  Haiku/Sonnet/Opus pour cette tâche Claude Code ».
-- **LiteLLM est la référence de preuve** : 8 619 prompts, des chiffres publics, mais un
-  routeur généraliste et une perte de qualité visible sur les benchmarks difficiles.
-  C'est un concurrent indirect et un modèle méthodologique.
-- **Aucun des projets examinés ne combine** natif Claude Code + tiers par tâche +
-  benchmark reproductible + vérification/escalade. C'est notre espace, pas une
-  révolution technique.
+- **The closest direct competitor is `tzachbon`**, not CCR/Weave/LiteLLM: same idea
+  (hook, tiers, global/project config), same license, already 105 ★. It is more mature on
+  subagents and task classes.
+- **Gateways are another market**: multi-provider, dashboard, enterprises. They solve
+  "use GPT/DeepSeek/Ollama in Claude Code", not "choose between Haiku/Sonnet/Opus for
+  this Claude Code task".
+- **LiteLLM is the evidence reference**: 8,619 prompts, public numbers, but a generalist
+  router and a visible quality loss on hard benchmarks. It is an indirect competitor and
+  a methodological model.
+- **None of the projects examined combines** native Claude Code + per-task tiers +
+  reproducible benchmark + verification/escalation. That is our space, not a technical
+  revolution.
 
-## 4. Carte de positionnement
+## 4. Positioning map
 
 ```
-                    preuve qualité publiée
+                    published quality evidence
                             ▲
                             │
              LiteLLM        │        cc-model-router
-          (gateway, gros    │        (natif, 48 runs,
-           benchmark)       │         vérification)
+          (gateway, large   │        (native, 48 runs,
+           benchmark)       │         verification)
                             │
-   gateway ◄────────────────┼────────────────► natif
+   gateway ◄────────────────┼────────────────► native
                             │
         CCR / Weave /       │        tzachbon (hook)
-        ClaudeRipple        │        Claude Code natif
+        ClaudeRipple        │        Native Claude Code
                             │        (opusplan, /model)
                             ▼
-                    pas de preuve tâche
+                    no task evidence
 ```
 
-- **Axe horizontal** : intégration (proxy/gateway ↔ natif Claude Code).
-- **Axe vertical** : preuve (aucun benchmark de qualité ↔ benchmark publié).
-- **Notre case** : natif + preuve + rattrapage. C'est étroit, mais c'est cohérent avec
-  la contrainte de cache et avec la promesse « coût/quota à qualité égale ».
+- **Horizontal axis**: integration (proxy/gateway ↔ native Claude Code).
+- **Vertical axis**: evidence (no quality benchmark ↔ published benchmark).
+- **Our cell**: native + evidence + recovery. It is narrow, but consistent with the cache
+  constraint and the "cost/quota at equal quality" promise.
 
-## 5. Différenciation (honnête)
+## 5. Differentiation (honest)
 
-### Ce que nous faisons que les autres ne font pas (parmi les projets examinés, au 2026-10-26)
+### What we do that others do not (among the projects examined, as of 2026-10-26)
 
-1. **Un benchmark de tâches Claude Code reproductible** : 12 tâches × 2 variantes ×
-   2 répétitions = 48 runs, checks déterministes, coût par tâche **acceptée**, dataset
-   publié et assaini, protocole dans `bench/README.md`.
-2. **Une vérification post-run** : `ccmr run "<task>" --verify "<commande>"` exécute
-   le check après Claude ; `--escalate` rejoue avec le tier suivant et injecte la sortie
-   d'échec dans le prompt. C'est la réponse directe au seul échec qualité mesuré
-   (YAML invalide de Sonnet sur `impl-angular`).
-3. **Une intégration native, sans proxy** : alias `haiku`/`sonnet`/`opus`, `--model`,
-   `--effort`, `--fallback-model`, `--settings` pour l'isolation. Pas de clé API, pas de
-   `ANTHROPIC_BASE_URL`, pas de télémétrie.
-4. **La simplicité** : 3 tiers, Node ≥ 18, MIT, zéro dépendance runtime. Le concurrent
-   le plus proche est bash/Python avec 5 classes et des hooks sous-agents ; les gateways
-   sont des plateformes.
-5. **Une politique debugging Sonnet-first opt-in** : Sonnet d'abord, Opus sur échec de
-   `--verify`, avec une simulation à **-15,5 % de coût par accepté** vs Opus direct à 8/8 (3/8 retries).
-   Un pilot réel de 4 runs sur `debug-calc` + `debug-search` passe 4/4 avec Sonnet, sans
-   escalade. Un second pilot, sans hook, a reproduit l'échec Sonnet connu sur `debug-calc` :
-   Sonnet échoue au check, Opus reçoit l'erreur et réussit, pour **0,2132 $ vs 0,1559 $**
-   Opus direct (+36,7 %). C'est un échec réel et un coût mesuré, pas un taux ; un premier
-   essai raté peut coûter plus cher qu'Opus direct. Pas un claim de benchmark.
+1. **A reproducible Claude Code task benchmark**: 12 tasks × 2 variants × 2 repeats = 48
+   runs, deterministic checks, cost per **accepted** task, published and sanitized
+   dataset, protocol in `bench/README.md`.
+2. **Post-run verification**: `ccmr run "<task>" --verify "<command>"` runs the check
+   after Claude; `--escalate` retries with the next tier and injects the failure output
+   into the prompt. This is the direct answer to the only measured quality failure
+   (Sonnet's invalid YAML on `impl-angular`).
+3. **Native integration, no proxy**: `haiku`/`sonnet`/`opus` aliases, `--model`,
+   `--effort`, `--fallback-model`, `--settings` for isolation. No API key, no
+   `ANTHROPIC_BASE_URL`, no telemetry.
+4. **Simplicity**: 3 tiers, Node ≥ 18, MIT, zero runtime dependencies. The closest
+   competitor is bash/Python with 5 classes and subagent hooks; the gateways are
+   platforms.
+5. **An opt-in Sonnet-first debugging policy**: Sonnet first, Opus on `--verify` failure,
+   with a simulation at **-15.5% cost per accepted** vs Opus direct at 8/8 (3/8 retries).
+   A real 4-run pilot on `debug-calc` + `debug-search` passes 4/4 with Sonnet, no
+   escalation. A second pilot, without the hook, reproduced the known Sonnet failure on
+   `debug-calc`: Sonnet fails the check, Opus receives the error and succeeds, for
+   **$0.2132 vs $0.1559** Opus direct (+36.7%). That is one real failure and a measured
+   cost, not a rate; a failed first attempt can cost more than Opus direct. Not a
+   benchmark claim.
 
-### Ce que les autres font mieux (à assumer)
+### What others do better (acknowledge it)
 
-- **tzachbon** : routage des sous-agents (`Agent`/`Task`), 5 classes + abstain, installateur,
-  fallback classifieur via `claude -p`, 105 ★. Nous n'avons pas encore de routage de
-  sous-agents.
-- **CCR / ClaudeRipple / Weave** : multi-provider, dashboard, desktop app, observabilité,
-  scale. Nous sommes Claude-only et CLI.
-- **LiteLLM** : 8 619 prompts, gateway de production, observabilité. Notre échantillon
-  est beaucoup plus petit (12 tâches, 2 répétitions).
-- **Natif** : zéro installation, zéro risque, `opusplan` déjà là. Notre outil doit
-  justifier une installation supplémentaire par la mesure et le rattrapage.
+- **tzachbon**: subagent routing (`Agent`/`Task`), 5 classes + abstain, installer,
+  classifier fallback via `claude -p`, 105 ★. We do not yet route subagents.
+- **CCR / ClaudeRipple / Weave**: multi-provider, dashboard, desktop app, observability,
+  scale. We are Claude-only and CLI.
+- **LiteLLM**: 8,619 prompts, production gateway, observability. Our sample is much
+  smaller (12 tasks, 2 repeats).
+- **Native**: zero install, zero risk, `opusplan` already there. Our tool must justify an
+  extra install through measurement and recovery.
 
-### Discipline de claim
+### Claim discipline
 
-- **Ne pas dire** : « premier routeur », « zéro perte de qualité », « tokens économisés »,
-  « fonctionne pour tout le monde ».
-- **Dire** : « 48 runs, 23/24 vs 21/24 acceptés, -34,1 % de coût par tâche acceptée vs un
-  baseline mixte Sonnet/Opus ; échantillon petit ; le debugging est un garde-fou qualité,
-  pas une économie ».
-- **Baseline exacte** : Sonnet/medium pour mechanical et debugging, Opus/high pour
-  implementation. Ce n'est **pas** un baseline tout-Opus. C'est le comportement que le
-  routeur cible ; le comparer à tout-Opus gonflerait artificiellement l'économie.
-- **Le chiffre à ne pas cacher** : Sonnet a échoué 1/8 en implementation (YAML invalide).
-  `--verify`/`--escalate` est la réponse ; un échec réel de debugging a été récupéré dans un
-  pilot (Sonnet → Opus, +36,7 % vs Opus direct), mais le taux et le coût moyen ne sont pas
-  encore mesurés dans les 48 runs.
+- **Do not say**: "first router", "zero quality loss", "tokens saved", "works for
+  everyone".
+- **Say**: "48 runs, 23/24 vs 21/24 accepted, -34.1% cost per accepted task vs a mixed
+  Sonnet/Opus baseline; small sample; debugging is a quality guard, not a saving".
+- **Exact baseline**: Sonnet/medium for mechanical and debugging, Opus/high for
+  implementation. It is **not** an all-Opus baseline. It is the behaviour the router
+  targets; comparing against all-Opus would artificially inflate the saving.
+- **The number not to hide**: Sonnet failed 1/8 in implementation (invalid YAML).
+  `--verify`/`--escalate` is the answer; one real debugging failure was recovered in a
+  pilot (Sonnet → Opus, +36.7% vs Opus direct), but the rate and average cost are not yet
+  measured in the 48 runs.
 
-## 6. Viabilité
+## 6. Viability
 
-### Feu vert
+### Green light
 
-- **Demande** : documentée par les issues, les concurrents et les coûts réels.
-- **Niche** : les gateways sont gros mais généralistes ; le hook concurrent le plus proche
-  est petit (105 ★) et sans benchmark. Un outil natif, mesuré, vérifié, MIT, a une place.
-- **Coût de développement** : faible (Node, zéro dépendance, déjà 53 tests).
-- **Valeur portfolio** : élevée (recherche, CLI, hooks, isolation, tests, benchmark,
-  analyse coût/qualité, documentation honnête).
+- **Demand**: documented by issues, competitors and real costs.
+- **Niche**: gateways are big but generalist; the closest competing hook is small (105 ★)
+  and has no benchmark. A native, measured, verified, MIT tool has a place.
+- **Development cost**: low (Node, zero dependencies, already 53 tests).
+- **Portfolio value**: high (research, CLI, hooks, isolation, tests, benchmark,
+  cost/quality analysis, honest documentation).
 
-### Feu rouge / risques
+### Red light / risks
 
-| Risque | Probabilité | Impact | Mitigation |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| Anthropic livre le routage natif | Moyenne | Élevé | Se déplacer vers la **preuve** et la **vérification** ; le routage de base sera commoditisé |
-| Un gateway ajoute le routage par tâche | Élevée | Moyen | Rester natif, simple, sans proxy ; cibler les utilisateurs qui refusent un gateway |
-| `tzachbon` ajoute un benchmark | Moyenne | Moyen | Collaborer / créditer ; notre avantage est la vérification et les données |
-| Échantillon trop petit | Certaine | Moyen | Élargir à 20–30 tâches, 3 répétitions, revue aveugle, IC avant les gros claims |
-| Lineup/prix changent | Élevée | Faible | Alias, config, re-vérification datée |
-| Cache invalidé au retry | Certaine | Faible | Retry seulement sur échec ; documenter le coût |
-| `--verify` exécute une commande utilisateur | Certaine | Moyen | Documenter « read-only checks », pas de secrets, pas de télémétrie |
-| Confusion marque Anthropic | Faible | Moyen | MIT, mention « non affilié », pas de logo Anthropic |
+| Anthropic ships native routing | Medium | High | Move toward **evidence** and **verification**; basic routing will be commoditized |
+| A gateway adds per-task routing | High | Medium | Stay native, simple, no proxy; target users who refuse a gateway |
+| `tzachbon` adds a benchmark | Medium | Medium | Collaborate / credit; our advantage is verification and data |
+| Sample too small | Certain | Medium | Expand to 20–30 tasks, 3 repeats, blind review, confidence intervals before big claims |
+| Lineup/prices change | High | Low | Aliases, config, dated re-check |
+| Cache invalidated on retry | Certain | Low | Retry only on failure; document the cost |
+| `--verify` runs a user command | Certain | Medium | Document "read-only checks", no secrets, no telemetry |
+| Anthropic brand confusion | Low | Medium | MIT, "not affiliated" notice, no Anthropic logo |
 
 ### Verdict
 
-**Go pour l'open source et le portfolio. No-Go comme entreprise standalone en l'état.**
+**Go for open source and portfolio. No-Go as a standalone company as it stands.**
 
-Le projet peut devenir un outil de référence pour « router Claude Code par tâche avec une
-preuve ». Il ne peut pas, seul, battre CCR/Weave/LiteLLM sur le multi-provider, ni
-Anthropic sur l'intégration native. Sa défense est **la preuve, la vérification, la
-simplicité et la confiance** — pas la technologie.
+The project can become a reference tool for "route Claude Code by task with evidence".
+Alone, it cannot beat CCR/Weave/LiteLLM on multi-provider, nor Anthropic on native
+integration. Its defense is **evidence, verification, simplicity and trust** — not
+technology.
 
-Si monétisation un jour : dashboard d'équipe, politique de routage partagée, intégration
-CI, support. Valider la demande par le lancement OSS avant d'écrire une ligne de code
-commerciale.
+If monetization ever happens: team dashboard, shared routing policy, CI integration,
+support. Validate demand through the OSS launch before writing a line of commercial code.
 
-## 7. Plan de lancement
+## 7. Launch plan
 
-### 7.1 Pré-lancement (2 semaines)
+### 7.1 Pre-launch (2 weeks)
 
-- [x] **Figer le scope** : 3 tiers, `run --verify`/`--escalate`, politique Sonnet-first opt-in, benchmark 48 runs.
-- [x] **npm (métadonnées)** : `cc-model-router` est **disponible** (vérifié le 2026-10-26) ;
-      `repository`, `homepage`, `bugs`, `files`, `author` ajoutés ; `npm pack --dry-run` OK.
-- [ ] **npm (publication)** : publier le tarball après validation dans un répertoire propre.
-- [x] **Nom du binaire** : décidé — package `cc-model-router`, binaires `cc-model-router`
-      et alias `ccmr`. `cc-router` est déjà pris sur npm (`cc-router@4.0.0`) et n’est pas utilisé.
-- [x] **GitHub** : dépôt public créé et poussé, description, homepage, 12 topics
+- [x] **Freeze scope**: 3 tiers, `run --verify`/`--escalate`, opt-in Sonnet-first policy, 48-run benchmark.
+- [x] **npm (metadata)**: `cc-model-router` is **available** (checked 2026-10-26);
+      `repository`, `homepage`, `bugs`, `files`, `author` added; `npm pack --dry-run` OK.
+- [ ] **npm (publication)**: publish the tarball after validation in a clean directory.
+- [x] **Binary name**: decided — package `cc-model-router`, binaries `cc-model-router`
+      and alias `ccmr`. `cc-router` is already taken on npm (`cc-router@4.0.0`) and is not used.
+- [x] **GitHub**: public repository created and pushed, description, homepage, 12 topics
       (`claude-code`, `model-router`, `cost-optimization`, `llm`, `mit-license`, etc.),
-      issues/projects/discussions activés, CI verte.
-- [ ] **GitHub (web-only)** : social preview et épinglage du dépôt sur le profil. Aucune API
-      GitHub publique ne permet de les modifier (voir note ci-dessous). L’image de social
-      preview est prête : [`docs/assets/social-preview.png`](assets/social-preview.png).
-- [x] **CI** : `npm test` + `npm run bench:verify` (aucun appel Claude réel) — `.github/workflows/ci.yml`.
-- [x] **README** : installation, référence CLI, tableau de comparaison, limitations visibles,
-      liens vers `docs/BENCHMARK.md`, `docs/COMPETITION.md` et `docs/README.md`.
-- [ ] **Démo visuelle** : GIF de démo et graphique du benchmark.
-- [ ] **Reproduire le benchmark** depuis un clone propre ; vérifier le JSON publié.
-- [ ] **Démo 60 s** : `classify`, `run --verify` (dry-run ou petit run), `status`.
-- [ ] **Blog post** : « J'ai mesuré 48 runs Claude Code : -34 % de coût par tâche
-      acceptée, et l'échec qui compte » — méthode, YAML invalide, vérification.
-- [x] **Sécurité** : `SECURITY.md`, templates d'issues/PR, rappel « non affilié à Anthropic ».
+      issues/projects/discussions enabled, CI green.
+- [ ] **GitHub (web-only)**: social preview and repository pin on the profile. No public
+      GitHub API allows changing them (see note below). The social preview image is ready:
+      [`docs/assets/social-preview.png`](assets/social-preview.png).
+- [x] **CI**: `npm test` + `npm run docs:check` + `npm run bench:verify` (no real Claude call) — `.github/workflows/ci.yml`.
+- [x] **README**: installation, CLI reference, comparison table, visible limitations,
+      links to `docs/BENCHMARK.md` / `.fr.md`, `docs/COMPETITION.md` / `.fr.md` and the docs index in both languages.
+- [ ] **Visual demo**: demo GIF. Localized benchmark charts are done.
+- [ ] **Reproduce the full 48-run benchmark** from a clean clone; protocol check and escalation simulation already pass without model calls.
+- [ ] **60 s demo**: `classify`, `run --verify` (dry-run or small run), `status`.
+- [ ] **Blog post**: "I measured 48 Claude Code runs: -34% cost per accepted task, and
+      the failure that matters" — method, invalid YAML, verification.
+- [x] **Security**: `SECURITY.md`, issue/PR templates, "not affiliated with Anthropic" notice.
 
-> **Épinglage du profil** : GitHub ne fournit pas de mutation publique (`pinRepository`
-> n'existe pas ; `/user/pinned_repositories` renvoie 404). L'épinglage se fait via
-> l'interface web : profil → *Customize your pins* → sélectionner `cc-model-router` →
-> *Save pins*. Le README du profil peut aussi le mettre en avant.
+> **Profile pinning**: GitHub does not provide a public mutation (`pinRepository` does not
+> exist; `/user/pinned_repositories` returns 404). Pinning is done in the web UI: profile →
+> *Customize your pins* → select `cc-model-router` → *Save pins*. The profile README can
+> also feature it.
 
-### 7.2 Jour J
+### 7.2 Launch day
 
-- **Show HN** : « Show HN: A Claude Code model router with a 48-run quality benchmark ».
-  Publier un mardi–jeudi matin (heure US), être présent dans les commentaires, lien direct
-  vers le benchmark et les limitations.
-- **Reddit** : r/ClaudeAI et r/ClaudeCode ; suivre les règles d'auto-promotion ; poster le
-  benchmark, pas juste le lien.
-- **X/Twitter** : thread court avec le chiffre, le graphique et l'échec YAML ; #ClaudeCode.
-- **dev.to / Hashnode** : article méthode + résultats.
-- **LinkedIn** : angle portfolio/career, pas hype.
-- **À éviter** : spammer l'issue tracker Anthropic ; si commentaire, apporter la donnée
-  et divulguer le projet.
+- **Show HN**: "Show HN: A Claude Code model router with a 48-run quality benchmark".
+  Post on a Tuesday–Thursday morning (US time), be present in the comments, link directly
+  to the benchmark and limitations.
+- **Reddit**: r/ClaudeAI and r/ClaudeCode; follow self-promotion rules; post the
+  benchmark, not just the link.
+- **X/Twitter**: short thread with the number, the chart and the YAML failure; #ClaudeCode.
+- **dev.to / Hashnode**: method + results article.
+- **LinkedIn**: portfolio/career angle, not hype.
+- **Avoid**: spamming the Anthropic issue tracker; if commenting, bring the data and
+  disclose the project.
 
 ### 7.3 Message
 
-**Une phrase :**
-> Claude Code routé par tâche — Haiku pour le mécanique, Sonnet pour l'implémentation,
-> Opus pour le debugging — avec un benchmark de 48 runs et une boucle vérifier/escalader.
+**One sentence:**
+> Claude Code routed by task — Haiku for mechanical work, Sonnet for implementation, Opus
+> for debugging — with a 48-run benchmark and a verify/escalate loop.
 
-**Preuve :**
-> 23/24 vs 21/24 acceptés ; 0,0906 $ vs 0,1375 $ par tâche acceptée (-34,1 %) ;
-> 12 tâches, 2 répétitions ; debugging = garde-fou qualité (+29,7 %), pas économie ;
-> baseline sans hook (comparaison produit, pas A/B de modèles isolés).
+**Evidence:**
+> 23/24 vs 21/24 accepted; $0.0906 vs $0.1375 per accepted task (-34.1%); 12 tasks, 2
+> repeats; debugging = quality guard (+29.7%), not a saving; baseline without the hook
+> (product comparison, not an isolated model A/B).
 
-**Honnêteté :**
-> Échantillon petit, pas une preuve statistique ; Sonnet a échoué 1/8 en implémentation ;
-> `--verify`/`--escalate` est la réponse, pas encore dans les 48 runs ; la politique
-> Sonnet-first est une simulation + deux petits pilots, pas un benchmark. Un échec réel a été
-> récupéré (Sonnet → Opus, 0,2132 $ vs 0,1559 $ Opus direct, +36,7 %), mais le taux d'escalade
-> reste inconnu ; pas de proxy, pas de clé API, MIT.
+**Honesty:**
+> Small sample, not statistical proof; Sonnet failed 1/8 in implementation;
+> `--verify`/`--escalate` is the answer, not yet in the 48 runs; the Sonnet-first policy
+> is a simulation + two small pilots, not a benchmark. One real failure was recovered
+> (Sonnet → Opus, $0.2132 vs $0.1559 Opus direct, +36.7%), but the escalation rate remains
+> unknown; no proxy, no API key, MIT.
 
-### 7.4 Métriques post-lancement
+### 7.4 Post-launch metrics
 
-| Horizon | À suivre | Cible réaliste |
+| Horizon | Track | Realistic target |
 |---|---|---|
-| 30 jours | étoiles, téléchargements npm, issues, reproductions du benchmark | 100 ★, 500 dl, 5 retours utiles |
-| 60 jours | contributeurs, PR, benchmarks externes, savings rapportés | 250 ★, 1k dl, 1 contributeur |
-| 90 jours | décision OpenCode / dashboard / commercial | Go/No-Go documenté |
+| 30 days | stars, npm downloads, issues, benchmark reproductions | 100 ★, 500 dl, 5 useful feedback items |
+| 60 days | contributors, PRs, external benchmarks, reported savings | 250 ★, 1k dl, 1 contributor |
+| 90 days | OpenCode / dashboard / commercial decision | documented Go/No-Go |
 
-Ne pas optimiser les étoiles. Optimiser : **reproductions du benchmark**, **retours
-d'usage réels**, **issues actionnables**.
+Do not optimize stars. Optimize: **benchmark reproductions**, **real usage feedback**,
+**actionable issues**.
 
-## 8. Valeur carrière
+## 8. Career value
 
-Ce que le projet démontre, concrètement :
+What the project demonstrates, concretely:
 
-- **Sélection de problème** : partir d'une douleur réelle (coût/quota Claude Code), pas
-  d'une techno.
-- **Recherche datée** : lineup, CLI, issues, concurrents, sources primaires.
-- **Ingénierie** : CLI Node, hooks, config globale/projet, isolation, `spawnSync`,
-  parsing d'arguments, exit codes, dry-run.
-- **Qualité** : 53 tests, faux binaire Claude, tests d'intégration, `bench:verify`,
-  checks déterministes, dataset assaini, smoke TUI automatisé (`test:tui`, tmux).
-- **Analyse coût/qualité** : coût par tâche acceptée, baseline, tokens vs coût, limites.
-- **Communication** : README, benchmark reproductible, documentation honnête, ce document.
+- **Problem selection**: start from a real pain (Claude Code cost/quota), not from a
+  technology.
+- **Dated research**: lineup, CLI, issues, competitors, primary sources.
+- **Engineering**: Node CLI, hooks, global/project config, isolation, `spawnSync`,
+  argument parsing, exit codes, dry-run.
+- **Quality**: 53 tests, fake Claude binary, integration tests, `bench:verify`,
+  deterministic checks, sanitized dataset, automated TUI smoke test (`test:tui`, tmux).
+- **Cost/quality analysis**: cost per accepted task, baseline, tokens vs cost, limits.
+- **Communication**: README, reproducible benchmark, honest documentation, this document.
 
-Artefacts réutilisables : dépôt MIT, dataset JSON, article de blog, talk « mesurer un
-routeur de modèles sans se mentir », éventuel conseil en coût/qualité Claude Code.
+Reusable artifacts: MIT repository, JSON dataset, blog post, talk "measuring a model
+router without lying to yourself", possible Claude Code cost/quality consulting.
 
 ## 9. Sources
 
 ### Anthropic / Claude Code
 
-- Issue #27665 — *Intelligent Model Routing — 93.8 % of Max subscriber tokens to Opus* :
-  <https://github.com/anthropics/claude-code/issues/27665> (ouverte 2026-02-22).
-- Issue #44976 — *Auto model routing by task type* :
-  <https://github.com/anthropics/claude-code/issues/44976> (2026-04-08, fermée doublon).
-- Issue #15721 — *Automatic Model Switching for Plan Mode* :
-  <https://github.com/anthropics/claude-code/issues/15721> (fermée 2026-08-17).
-- Docs modèle Claude Code (alias, `opusplan`, effort) :
+- Issue #27665 — *Intelligent Model Routing — 93.8% of Max subscriber tokens to Opus*:
+  <https://github.com/anthropics/claude-code/issues/27665> (opened 2026-02-22).
+- Issue #44976 — *Auto model routing by task type*:
+  <https://github.com/anthropics/claude-code/issues/44976> (2026-04-08, closed duplicate).
+- Issue #15721 — *Automatic Model Switching for Plan Mode*:
+  <https://github.com/anthropics/claude-code/issues/15721> (closed 2026-08-17).
+- Claude Code model docs (aliases, `opusplan`, effort):
   <https://code.claude.com/docs/en/model-config>.
-- Docs prompt caching :
+- Prompt caching docs:
   <https://platform.claude.com/docs/en/build-with-claude/prompt-caching>.
 
-### Concurrence
+### Competition
 
-- `tzachbon/claude-model-router-hook` :
-  <https://github.com/tzachbon/claude-model-router-hook> (MIT, 105 ★ au 2026-10-26).
-- `edagher92-coder/claude-model-router` :
-  <https://github.com/edagher92-coder/claude-model-router> (MIT, 0 ★ au 2026-10-26).
-- `musistudio/claude-code-router` :
-  <https://github.com/musistudio/claude-code-router> (MIT, 37,8k ★ au 2026-10-26).
-- `@musistudio/claude-code-router` npm :
+- `tzachbon/claude-model-router-hook`:
+  <https://github.com/tzachbon/claude-model-router-hook> (MIT, 105 ★ on 2026-10-26).
+- `edagher92-coder/claude-model-router`:
+  <https://github.com/edagher92-coder/claude-model-router> (MIT, 0 ★ on 2026-10-26).
+- `musistudio/claude-code-router`:
+  <https://github.com/musistudio/claude-code-router> (MIT, 37.8k ★ on 2026-10-26).
+- `@musistudio/claude-code-router` npm:
   <https://www.npmjs.com/package/@musistudio/claude-code-router> (v3.1.3).
-- `weave-os/router` :
-  <https://github.com/weave-os/router> (Apache-2.0, 5,6k ★ au 2026-10-26).
-- Show HN Weave :
-  <https://news.ycombinator.com/item?id=48688700> (216 points, 113 commentaires).
-- LiteLLM Auto Router — benchmark coût/qualité :
+- `weave-os/router`:
+  <https://github.com/weave-os/router> (Apache-2.0, 5.6k ★ on 2026-10-26).
+- Weave Show HN:
+  <https://news.ycombinator.com/item?id=48688700> (216 points, 113 comments).
+- LiteLLM Auto Router — cost/quality benchmark:
   <https://docs.litellm.ai/blog/auto-router-cost-quality-benchmark>.
-- LiteLLM — benchmarks publics :
+- LiteLLM — public benchmarks:
   <https://docs.litellm.ai/docs/auto_router/benchmarks>.
-- `lm-sys/RouteLLM` :
+- `lm-sys/RouteLLM`:
   <https://github.com/lm-sys/RouteLLM> (Apache-2.0).
-- `PBJ-2/clauderipple` :
-  <https://github.com/PBJ-2/clauderipple> (GPL-3.0, 72 ★ au 2026-10-26).
+- `PBJ-2/clauderipple`:
+  <https://github.com/PBJ-2/clauderipple> (GPL-3.0, 72 ★ on 2026-10-26).
 
-### Projet
+### Project
 
-- `docs/BENCHMARK.md` — résultats 48 runs, analyse, incident, limites.
-- `docs/benchmarks/2026-10-26-expanded.json` — dataset publié, assaini.
-- `bench/README.md` — protocole canonique, merge, publication.
-- `docs/RESEARCH.md` — veille lineup/CLI (2026-10-24).
+- `docs/BENCHMARK.md` — 48-run results, analysis, incident, limits.
+- `docs/benchmarks/2026-10-26-expanded.json` — published, sanitized dataset.
+- `bench/README.md` — canonical protocol, merge, publication.
+- `docs/RESEARCH.md` — lineup/CLI research (2026-10-24).
 
-## 10. Incertitudes à re-vérifier avant publication
+## 10. Uncertainties to re-check before publication
 
-- **Chiffres d'adoption** (étoiles, forks, téléchargements) : snapshot 2026-10-26, à
-  actualiser le jour du lancement.
-- **Routage natif Anthropic** : `opusplan` est là, #15721 est fermée, mais #27665 reste
-  ouverte et les utilisateurs demandent plus. Surveiller une éventuelle version native.
-- **Lineup et prix** : Fable 5.1 / Opus 5.5 / Sonnet 5.5 / Haiku 5.5 au 2026-10-24 ;
-  revérifier avant tout chiffre public.
-- **Nom npm/bin** : `cc-model-router` est disponible (vérifié le 2026-10-26) ; le binaire
-  `cc-router` est déjà pris par le package npm `cc-router@4.0.0`. Décision : package
-  `cc-model-router`, binaires `cc-model-router` + alias `ccmr`, pas de collision.
-- **Benchmark** : 12 tâches, 2 répétitions ; pas d'IC, pas de revue aveugle. Ne pas
-  présenter comme une preuve statistique.
-- **Marque** : ne pas suggérer une affiliation Anthropic ; MIT, mention explicite.
-- **Concurrent direct** : `tzachbon` peut ajouter un benchmark ou changer de stratégie ;
-  relire son README avant le lancement.
+- **Adoption numbers** (stars, forks, downloads): 2026-10-26 snapshot, refresh on launch
+  day.
+- **Native Anthropic routing**: `opusplan` is there, #15721 is closed, but #27665 remains
+  open and users ask for more. Watch for a possible native version.
+- **Lineup and prices**: Fable 5.1 / Opus 5.5 / Sonnet 5.5 / Haiku 5.5 on 2026-10-24;
+  re-check before any public number.
+- **npm/bin name**: `cc-model-router` is available (checked 2026-10-26); the `cc-router`
+  binary is already taken by the npm package `cc-router@4.0.0`. Decision: package
+  `cc-model-router`, binaries `cc-model-router` + alias `ccmr`, no collision.
+- **Benchmark**: 12 tasks, 2 repeats; no confidence intervals, no blind review. Do not present it as
+  statistical proof.
+- **Brand**: do not suggest an Anthropic affiliation; MIT, explicit notice.
+- **Direct competitor**: `tzachbon` may add a benchmark or change strategy; re-read its
+  README before launch.

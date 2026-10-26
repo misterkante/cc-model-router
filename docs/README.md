@@ -1,5 +1,7 @@
 # Documentation
 
+[English](README.md) · [Français](README.fr.md)
+
 Start with the [README](../README.md) for installation and usage.
 
 | Document | What it covers |
@@ -13,7 +15,8 @@ Start with the [README](../README.md) for installation and usage.
 | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Development, benchmark and commit conventions. |
 | [`../SECURITY.md`](../SECURITY.md) | Threat model for verification commands and vulnerability reporting. |
 | [`../CHANGELOG.md`](../CHANGELOG.md) | Release history. |
-| [`assets/social-preview.png`](assets/social-preview.png) | 1280×640 social preview image, ready to upload in GitHub repository settings. |
+| [`assets/`](assets/) | Social preview and benchmark charts used by the READMEs. |
+| [`../scripts/make-benchmark-charts.py`](../scripts/make-benchmark-charts.py) | Regenerates the localized benchmark charts from the published JSON. |
 
 ## Reading the numbers
 
@@ -28,3 +31,10 @@ Start with the [README](../README.md) for installation and usage.
   cost/quota saved at equal quality, never "tokens saved".
 - The sample is 12 tasks × 2 repeats. It has no confidence intervals or blind
   review; do not generalize beyond it.
+
+## Language versions
+
+All root docs (`CHANGELOG`, `CODE_OF_CONDUCT`, `CONTRIBUTING`, `IMPLEMENTATION_PLAN`, `SECURITY`) also have a `.fr.md` version.
+
+- English: [project README](../README.md), [docs index](README.md), [`BENCHMARK.md`](BENCHMARK.md), [`COMPETITION.md`](COMPETITION.md), [`RESEARCH.md`](RESEARCH.md), [`../bench/README.md`](../bench/README.md).
+- French: [project README](../README.fr.md), [docs index](README.fr.md), [`BENCHMARK.fr.md`](BENCHMARK.fr.md), [`COMPETITION.fr.md`](COMPETITION.fr.md), [`RESEARCH.fr.md`](RESEARCH.fr.md), [`../bench/README.fr.md`](../bench/README.fr.md).

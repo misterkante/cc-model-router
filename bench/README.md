@@ -1,237 +1,265 @@
-# Benchmark qualité — protocole
+# Quality benchmark — protocol
 
-> Document **canonique** du process benchmark. Toute contribution suit ce document.
-> Résultats publiés : [`docs/BENCHMARK.md`](../docs/BENCHMARK.md) et [`docs/benchmarks/`](../docs/benchmarks/).
+[English](README.md) · [Français](README.fr.md)
+
+> **Canonical** document for the benchmark process. Every contribution follows it.
+> Published results: [`docs/BENCHMARK.md`](../docs/BENCHMARK.md) and [`docs/benchmarks/`](../docs/benchmarks/).
 
 ## 1. Question
 
-Le routing économise-t-il du **coût/quota** **sans dégrader la qualité** ?
+Does routing save **cost/quota** **without degrading quality**?
 
-Le benchmark ne cherche **pas** à prouver une économie de tokens bruts. Un modèle moins cher peut être plus bavard ; l'économie vient du prix/poids de quota par token. Toute publication qui parle de « tokens économisés » est hors protocole.
+The benchmark does **not** try to prove a raw-token saving. A cheaper model can be more
+verbose; the saving comes from the price/quota weight per token. Any publication that talks
+about "tokens saved" is outside the protocol.
 
-Ce que le benchmark ne mesure pas (encore) : style, maintenabilité, architecture, sessions interactives longues, erreurs de classification, quota exact d'un abonnement.
+What the benchmark does not measure (yet): style, maintainability, architecture, long
+interactive sessions, classification errors, the exact quota of a subscription.
 
-## 2. Vocabulaire
+## 2. Vocabulary
 
-| Terme | Définition |
+| Term | Definition |
 |---|---|
-| **Run** | Une exécution d'une tâche dans une variante. |
-| **Variante** | `routed` (le router choisit) ou `baseline` (modèle de référence imposé). |
-| **Tâche acceptée** | Check vert, code de sortie 0 **et** aucun fichier hors `allowedChanges`. |
-| **Check** | Fonction déterministe, locale, sans réseau, qui rend `{ pass, detail }`. |
-| **Fixture** | Dépôt minimal et synthétique dans lequel le run travaille. |
-| **Baseline** | Modèle/effort qu'un utilisateur aurait utilisés sans le router. |
-| **Coût API-équivalent** | `total_cost_usd` renvoyé par Claude Code ; proxy du quota, pas une facture. |
-| **Contrefactuel** | Le baseline choisi ; le gain dépend de lui (voir §3.6). |
+| **Run** | One execution of a task in a variant. |
+| **Variant** | `routed` (the router chooses) or `baseline` (imposed reference model). |
+| **Accepted task** | Green check, exit code 0 **and** no file outside `allowedChanges`. |
+| **Check** | Deterministic, local, network-free function that returns `{ pass, detail }`. |
+| **Fixture** | Minimal, synthetic repository in which the run works. |
+| **Baseline** | Model/effort a user would have used without the router. |
+| **API-equivalent cost** | `total_cost_usd` returned by Claude Code; a quota proxy, not a bill. |
+| **Counterfactual** | The chosen baseline; the gain depends on it (see §3.6). |
 
-## 3. Protocole
+## 3. Protocol
 
 ### 3.1 Isolation
 
-- Chaque run part d'une **copie neuve** de la fixture (`mkdtemp` + `cpSync`). Le dépôt source n'est jamais modifié.
-- La config du router est déplacée via `CC_ROUTER_CONFIG_DIR` vers un **répertoire temporaire vide** : le routing benchmarké est celui par défaut, sans config projet ni config globale personnelle.
-- Le hook est chargé **uniquement pour la variante routée** via `claude --settings .sandbox/claude-settings.json`. La baseline est un appel Claude nu, sans hook : la comparaison est « routeur complet vs Claude nu », pas un A/B de modèles isolés.
-- `HOME` n'est **pas** modifié : l'auth Claude Code reste intacte.
-- Interdit : modifier `~/.claude/settings.json`, `~/.claude/model-router.json`, ou le dépôt réel.
+- Each run starts from a **fresh copy** of the fixture (`mkdtemp` + `cpSync`). The source
+  repository is never modified.
+- The router config is moved via `CC_ROUTER_CONFIG_DIR` to an **empty temporary directory**:
+  the benchmarked routing is the default one, without project config or personal global
+  config.
+- The hook is loaded **only for the routed variant** via
+  `claude --settings .sandbox/claude-settings.json`. The baseline is a plain Claude call,
+  without the hook: the comparison is "full router vs plain Claude", not an isolated model
+  A/B.
+- `HOME` is **not** modified: Claude Code auth stays intact.
+- Forbidden: modifying `~/.claude/settings.json`, `~/.claude/model-router.json`, or the real
+  repository.
 
-### 3.2 Variantes
+### 3.2 Variants
 
-| Variante | Commande | Modèle |
+| Variant | Command | Model |
 |---|---|---|
-| `routed` | `ccmr run "<prompt>" -- <flags>` | choisi par le classifieur |
-| `baseline` | `claude --model <m> --effort <e> <flags> "<prompt>"` | imposé par la tâche |
+| `routed` | `ccmr run "<prompt>" -- <flags>` | chosen by the classifier |
+| `baseline` | `claude --model <m> --effort <e> <flags> "<prompt>"` | imposed by the task |
 
-Les deux variantes reçoivent les mêmes flags de run, mais seule la variante routée ajoute `--settings` pour le hook :
+Both variants receive the same run flags, but only the routed variant adds `--settings` for
+the hook:
 
 ```text
 -p --output-format json --max-budget-usd <budget> --permission-mode acceptEdits
 ```
 
-Pas de `--dangerously-skip-permissions`. Pas de réseau demandé par les tâches. Timeout : 300 s.
+No `--dangerously-skip-permissions`. No network requested by the tasks. Timeout: 300 s.
 
-**Limite headless importante** : `--permission-mode acceptEdits` auto-approuve les edits de fichiers, **pas les commandes Bash**. Un modèle qui tente `mkdir`/`cat` en Bash peut être bloqué et croire avoir créé le fichier. Ce n'est pas un échec de raisonnement : c'est une limite du harness. Les fixtures doivent **pré-créer les répertoires cibles** (ex. `parcours/.gitkeep`) pour que le modèle puisse utiliser Write. Un run bloqué ainsi est documenté et rejoué après correction de la fixture, jamais compté comme une victoire du routeur.
+**Important headless limitation**: `--permission-mode acceptEdits` auto-approves file edits,
+**not Bash commands**. A model that tries `mkdir`/`cat` in Bash can be blocked and believe it
+created the file. This is not a reasoning failure: it is a harness limitation. Fixtures must
+**pre-create target directories** (e.g. `parcours/.gitkeep`) so the model can use Write. A run
+blocked this way is documented and re-run after fixing the fixture, never counted as a router
+win.
 
 ### 3.3 Checks
 
-Un check doit être :
+A check must be:
 
-- **déterministe** : même entrée → même résultat ;
-- **local** : pas d'appel réseau, pas de modèle juge ;
-- **rouge avant, vert après** : sur une copie neuve de la fixture, le check doit échouer ;
-- **borné** : il ne modifie rien, il lit et exécute éventuellement des tests locaux ;
-- **aligné sur le spec**, pas sur une implémentation particulière (ex. accepter `pistes` ou `pistes_actives`).
+- **deterministic**: same input → same result;
+- **local**: no network call, no judge model;
+- **red before, green after**: on a fresh fixture copy, the check must fail;
+- **bounded**: it modifies nothing, it reads and may run local tests;
+- **spec-aligned**, not tied to a particular implementation (e.g. accept `pistes` or
+  `pistes_actives`).
 
-Pour les tâches d'édition, `allowedChanges` liste les seuls fichiers autorisés. Tout autre changement rend la tâche non acceptée.
+For editing tasks, `allowedChanges` lists the only allowed files. Any other change makes the
+task unaccepted.
 
-### 3.4 Métriques
+### 3.4 Metrics
 
-| Métrique | Calcul | Rôle |
+| Metric | Calculation | Role |
 |---|---|---|
-| **Pass rate** | acceptés / runs | qualité binaire |
-| **Coût / tâche acceptée** | coût total / acceptés | métrique principale |
-| **Tokens bruts** | input + cache + output | secondaire, jamais l'argument de vente |
-| **Changements inattendus** | fichiers hors `allowedChanges` | garde-fou qualité |
-| **Rework / escalade** | runs échoués + reprises | à mesurer (Phase 3) |
+| **Pass rate** | accepted / runs | binary quality |
+| **Cost / accepted task** | total cost / accepted | main metric |
+| **Raw tokens** | input + cache + output | secondary, never the sales argument |
+| **Unexpected changes** | files outside `allowedChanges` | quality guard |
+| **Rework / escalation** | failed runs + retries | to measure (Phase 3) |
 
-### 3.5 Taille et répétitions
+### 3.5 Size and repeats
 
-- Un pilote peut avoir 5 tâches × 1 run : il détecte les écarts grossiers, il ne conclut pas.
-- Une publication « preuve » exige **≥ 12 tâches** et **≥ 2 répétitions** par tâche, avec des fixtures variées.
-- Le run de référence est :
+- A pilot can have 5 tasks × 1 run: it detects coarse gaps, it does not conclude.
+- A "proof" publication requires **≥ 12 tasks** and **≥ 2 repeats** per task, with varied
+  fixtures.
+- The reference run is:
   ```bash
   npm run bench -- --repeats 2 --budget 0.50
   ```
-  soit 12 tâches × 2 variantes × 2 répétitions = **48 runs**.
-- Toute publication indique `n`, le nombre de runs et les limites.
+  i.e. 12 tasks × 2 variants × 2 repeats = **48 runs**.
+- Every publication states `n`, the number of runs and the limitations.
 
-### 3.6 Interprétation
+### 3.6 Interpretation
 
-- Le gain dépend du **baseline** : si l'utilisateur est déjà sur Sonnet, router l'implémentation vers Sonnet n'économise rien.
-- Un baseline qui échoue n'est pas un baseline de qualité : pour le debugging, comparer Opus à Opus (pas de gain) ou documenter que le baseline moins cher échoue.
-- Ne jamais généraliser au-delà de l'échantillon.
-- Publier le JSON brut, y compris les échecs.
+- The gain depends on the **baseline**: if the user is already on Sonnet, routing
+  implementation to Sonnet saves nothing.
+- A baseline that fails is not a quality baseline: for debugging, compare Opus to Opus (no
+  gain) or document that the cheaper baseline fails.
+- Never generalize beyond the sample.
+- Publish the raw JSON, including failures.
 
-## 4. Tâches actuelles
+## 4. Current tasks
 
 | Id | Tier | Fixture | Baseline | Check |
 |---|---|---|---|---|
-| `mech-questions` | mechanical | devquiz | sonnet / medium | IDs Q-01..Q-11 présents |
-| `mech-features` | mechanical | devquiz | sonnet / medium | IDs F-01..F-14 présents |
+| `mech-questions` | mechanical | devquiz | sonnet / medium | IDs Q-01..Q-11 present |
+| `mech-features` | mechanical | devquiz | sonnet / medium | IDs F-01..F-14 present |
 | `mech-lots` | mechanical | devquiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
-| `mech-questions-json` | mechanical | devquiz | sonnet / medium | JSON de 11 questions avec texte |
-| `impl-roadmap` | implementation | devquiz | opus / high | fichier + IDs + lots A/B/C |
-| `impl-profile` | implementation | devquiz | opus / high | YAML valide + AC1 (Python) |
-| `impl-angular` | implementation | devquiz | opus / high | YAML + ≥ 8 notions + URLs Angular |
-| `impl-questions` | implementation | devquiz | opus / high | 11 réponses avec rationale |
-| `debug-calc` | debugging | buggy-python | sonnet / medium | tests verts + test intact |
-| `debug-parse` | debugging | buggy-python-parse | sonnet / medium | tests verts + test intact |
-| `debug-state` | debugging | buggy-python-state | sonnet / medium | tests verts + test intact |
-| `debug-search` | debugging | buggy-python-search | sonnet / medium | tests verts + test intact |
+| `mech-questions-json` | mechanical | devquiz | sonnet / medium | JSON of 11 questions with text |
+| `impl-roadmap` | implementation | devquiz | opus / high | file + IDs + lots A/B/C |
+| `impl-profile` | implementation | devquiz | opus / high | valid YAML + AC1 (Python) |
+| `impl-angular` | implementation | devquiz | opus / high | YAML + ≥ 8 concepts + Angular URLs |
+| `impl-questions` | implementation | devquiz | opus / high | 11 answers with rationale |
+| `debug-calc` | debugging | buggy-python | sonnet / medium | tests green + test file intact |
+| `debug-parse` | debugging | buggy-python-parse | sonnet / medium | tests green + test file intact |
+| `debug-state` | debugging | buggy-python-state | sonnet / medium | tests green + test file intact |
+| `debug-search` | debugging | buggy-python-search | sonnet / medium | tests green + test file intact |
 
-La fixture `devquiz` est **locale et synthétique** (`bench/fixtures/devquiz/`). Pour tester ton vrai dépôt :
+The `devquiz` fixture is **local and synthetic** (`bench/fixtures/devquiz/`). To test your real
+repository:
 
 ```bash
-node bench/run.mjs --repo /chemin/vers/devquiz --budget 0.50
+node bench/run.mjs --repo /path/to/devquiz --budget 0.50
 ```
 
-## 5. Ajouter une tâche
+## 5. Add a task
 
-1. **Choisir le tier** et le baseline. Le baseline représente ce que l'utilisateur aurait utilisé sans router.
-2. **Écrire le prompt** de façon à ce qu'il route vers le tier visé. Vérifier :
+1. **Choose the tier** and the baseline. The baseline represents what the user would have
+   used without the router.
+2. **Write the prompt** so it routes to the target tier. Check:
    ```bash
    node bin/cc-model-router.js classify "<prompt>"
    ```
-3. **Déclarer la tâche** dans [`tasks.mjs`](tasks.mjs) : `id`, `tier`, `fixture`, `baseline`, `prompt`, `allowedChanges`, `check`.
-4. **Écrire le check** dans [`checks.mjs`](checks.mjs) (voir §6).
-5. **Ajouter une fixture** si nécessaire (voir §7).
-6. **Vérifier le protocole** :
+3. **Declare the task** in [`tasks.mjs`](tasks.mjs): `id`, `tier`, `fixture`, `baseline`,
+   `prompt`, `allowedChanges`, `check`.
+4. **Write the check** in [`checks.mjs`](checks.mjs) (see §6).
+5. **Add a fixture** if needed (see §7).
+6. **Verify the protocol**:
    ```bash
    npm run bench:verify
    ```
-   Le check doit être rouge avant la tâche ; le prompt doit router vers le bon tier.
-7. **Smoke test routé seul**, budget faible :
+   The check must be red before the task; the prompt must route to the right tier.
+7. **Routed-only smoke test**, low budget:
    ```bash
    node bench/run.mjs --tasks <id> --variants routed --budget 0.05
    ```
-8. **Run complet**, puis publier (voir §9).
+8. **Full run**, then publish (see §9).
 
-Conventions :
+Conventions:
 
-- une tâche = un comportement vérifiable ;
-- prompt réaliste, sans indication de la réponse ni du modèle ;
-- pas de secret, pas de donnée personnelle, pas de dépendance réseau ;
-- fixture petite (quelques fichiers), lisible, versionnable ;
-- `allowedChanges` minimal.
+- one task = one verifiable behaviour;
+- realistic prompt, no hint about the answer or the model;
+- no secret, no personal data, no network dependency;
+- small fixture (a few files), readable, versionable;
+- minimal `allowedChanges`.
 
-## 6. Écrire un check
+## 6. Write a check
 
-Signature :
+Signature:
 
 ```js
 // checks.mjs
 const CHECKS = {
-  "mon-check": ({ dir, result, beforeHashes, afterHashes }) => {
-    // lire des fichiers, lancer des tests locaux
+  "my-check": ({ dir, result, beforeHashes, afterHashes }) => {
+    // read files, run local tests
     return { pass: true, detail: "..." };
   }
 };
 ```
 
-Règles :
+Rules:
 
-- `dir` : racine de la copie isolée ;
-- `result` : JSON de Claude Code (`result.result` = texte final) ;
-- `beforeHashes` / `afterHashes` : snapshots SHA-1 pour détecter une triche (ex. test modifié) ;
-- ne jamais écrire dans `dir` ;
-- ne jamais appeler un modèle ni le réseau ;
-- si un prérequis manque (ex. PyYAML), échouer avec un message explicite.
+- `dir`: root of the isolated copy;
+- `result`: Claude Code JSON (`result.result` = final text);
+- `beforeHashes` / `afterHashes`: SHA-1 snapshots to detect cheating (e.g. modified test);
+- never write to `dir`;
+- never call a model or the network;
+- if a prerequisite is missing (e.g. PyYAML), fail with an explicit message.
 
-Exemples de checks :
+Check examples:
 
-- IDs présents dans la réponse ;
-- fichier créé + structure minimale ;
-- YAML parsé + champs requis ;
-- tests locaux verts + fichier de test inchangé (hash).
+- IDs present in the answer;
+- file created + minimal structure;
+- YAML parsed + required fields;
+- local tests green + test file unchanged (hash).
 
-## 7. Ajouter une fixture
+## 7. Add a fixture
 
-- Créer `bench/fixtures/<nom>/` avec le minimum de fichiers.
-- **Pré-créer les répertoires cibles** (ex. `parcours/.gitkeep`) : en headless, Bash n'est pas auto-approuvé, donc un `mkdir` peut être bloqué. Write crée le fichier si le répertoire existe.
-- **Synthétique** : pas de code propriétaire, pas de secrets, pas de données réelles.
-- Pour un bug : les tests doivent **échouer avant** le fix et **passer après**.
-- Documenter la fixture dans `tasks.mjs` (champ `fixture`).
-- Vérifier : `npm run bench:verify` doit confirmer que le check est rouge avant.
+- Create `bench/fixtures/<name>/` with the minimum files.
+- **Pre-create target directories** (e.g. `parcours/.gitkeep`): in headless mode, Bash is not
+  auto-approved, so `mkdir` can be blocked. Write creates the file if the directory exists.
+- **Synthetic**: no proprietary code, no secrets, no real data.
+- For a bug: tests must **fail before** the fix and **pass after**.
+- Document the fixture in `tasks.mjs` (`fixture` field).
+- Verify: `npm run bench:verify` must confirm the check is red before.
 
-## 8. Lancer
+## 8. Run
 
 ```bash
-# Vérifier le protocole (obligatoire avant tout run)
+# Verify the protocol (mandatory before any run)
 npm run bench:verify
 
-# Smoke test : une tâche, une variante, budget faible
+# Smoke test: one task, one variant, low budget
 npm run bench -- --tasks mech-questions --variants routed --budget 0.05
 
-# Run complet (12 tâches, 2 variantes, 2 répétitions)
+# Full run (12 tasks, 2 variants, 2 repeats)
 npm run bench -- --repeats 2 --budget 0.50
 
-# Rapport Markdown lisible
-npm run bench:report -- bench/results/<fichier>.json
+# Readable Markdown report
+npm run bench:report -- bench/results/<file>.json
 
-# Contre ton vrai dépôt devquiz
-npm run bench -- --repo /chemin/vers/devquiz --budget 0.50
+# Against your real devquiz repository
+npm run bench -- --repo /path/to/devquiz --budget 0.50
 
-# Re-scorer un résultat après correction d'un check (sans relancer les modèles)
-npm run bench:recheck -- bench/results/<fichier>.json <taskId>
+# Re-score a result after fixing a check (without re-running the models)
+npm run bench:recheck -- bench/results/<file>.json <taskId>
 
-# Simuler une politique Sonnet-first (aucun appel modèle)
+# Simulate a Sonnet-first policy (no model call)
 npm run bench:simulate-escalation
 
-# Vérifier une tâche dans une copie (checks qui lisent seulement le répertoire)
-node bench/check-one.mjs impl-angular <copie>
+# Check one task in a copy (checks that only read the directory)
+node bench/check-one.mjs impl-angular <copy>
 
-# Fusionner un re-run de tâche après correction de fixture
+# Merge a task re-run after a fixture fix
 npm run bench:merge -- bench/results/<base>.json bench/results/<rerun>.json --out bench/results/<merged>.json
 ```
 
-Options :
+Options:
 
-| Option | Défaut | Rôle |
+| Option | Default | Role |
 |---|---|---|
-| `--tasks` | toutes | liste d'ids séparés par des virgules |
-| `--variants` | `routed,baseline` | variantes à exécuter |
-| `--repeats` | `1` | nombre de répétitions par tâche et par variante |
-| `--budget` | `0.20` | plafond API-équivalent par run |
-| `--repo` | fixture locale | dépôt devquiz alternatif |
-| `--out` | `bench/results/run-<date>.json` | fichier de sortie |
+| `--tasks` | all | comma-separated id list |
+| `--variants` | `routed,baseline` | variants to run |
+| `--repeats` | `1` | repeats per task and variant |
+| `--budget` | `0.20` | API-equivalent cap per run |
+| `--repo` | local fixture | alternative devquiz repository |
+| `--out` | `bench/results/run-<date>.json` | output file |
 
-## 9. Résultats
+## 9. Results
 
-- Les runs locaux vont dans `bench/results/` (ignoré par git).
-- Les résultats **publiés** vont dans `docs/benchmarks/<date>-<nom>.json`, sans `dir`, `beforeHashes`, `afterHashes` ni `stderr` :
+- Local runs go to `bench/results/` (git-ignored).
+- **Published** results go to `docs/benchmarks/<date>-<name>.json`, without `dir`,
+  `beforeHashes`, `afterHashes` or `stderr`:
   ```bash
-  npm run bench:publish -- bench/results/<fichier>.json 2026-10-26-expanded
+  npm run bench:publish -- bench/results/<file>.json 2026-10-26-expanded
   ```
-- Champs principaux d'un résultat :
+- Main fields of a result:
 
 ```json
 {
@@ -263,8 +291,11 @@ Options :
 }
 ```
 
-- Si un check était faux et a été corrigé, **re-scorer** les sorties existantes avec `bench:recheck` et publier un fichier `-rescored.json` en documentant la correction. Ne pas relancer les modèles pour « améliorer » un résultat.
-- Si une **fixture** était fautive (ex. répertoire manquant qui bloque Bash), corriger la fixture, **rejouer la tâche seule**, puis fusionner avec `bench:merge` :
+- If a check was wrong and has been fixed, **re-score** existing outputs with `bench:recheck`
+  and publish a `-rescored.json` file documenting the correction. Do not re-run the models to
+  "improve" a result.
+- If a **fixture** was faulty (e.g. a missing directory that blocks Bash), fix the fixture,
+  **re-run the task alone**, then merge with `bench:merge`:
   ```bash
   npm run bench -- --tasks impl-angular --repeats 2 --budget 0.50 \
     --out bench/results/impl-angular-rerun.json
@@ -272,47 +303,51 @@ Options :
     bench/results/impl-angular-rerun.json \
     --out bench/results/<base>-merged.json
   ```
-  Documenter la raison du re-run et les tâches remplacées ; le JSON publié porte `mergedAt` et `mergedTasks`. Ne jamais fusionner un re-run sans le dire.
-- `bench:publish` retire `dir`, `beforeHashes`, `afterHashes`, `stderr` et `resultPreview` du JSON publié.
+  Document the reason for the re-run and the replaced tasks; the published JSON carries
+  `mergedAt` and `mergedTasks`. Never merge a re-run silently.
+- `bench:publish` removes `dir`, `beforeHashes`, `afterHashes`, `stderr` and `resultPreview`
+  from the published JSON.
 
-### Simulation Sonnet-first (sans appel modèle)
+### Sonnet-first simulation (no model call)
 
-`npm run bench:simulate-escalation` lit `docs/benchmarks/2026-10-26-expanded.json`, apparie les
-enregistrements debugging baseline (Sonnet) et routés (Opus), puis simule « Sonnet d'abord, Opus
-sur échec de vérification ». Il imprime un tableau ; `--json` produit du JSON, `--out <fichier>`
-l'écrit, `--data <fichier>` change de dataset.
+`npm run bench:simulate-escalation` reads `docs/benchmarks/2026-10-26-expanded.json`, pairs the
+debugging baseline (Sonnet) and routed (Opus) records, then simulates "Sonnet first, Opus on
+verification failure". It prints a table; `--json` produces JSON, `--out <file>` writes it,
+`--data <file>` changes the dataset.
 
-- **Aucun appel modèle**, aucun quota consommé, aucun changement des résultats de référence.
-- Le coût du retry Opus est **proxied** par le run Opus frais ; le vrai retry part de l'arbre Sonnet
-  échoué et reçoit la sortie d'échec.
-- On suppose que le retry Opus réussit quand le run Opus frais a réussi ; pas de deuxième échec,
-  pas de latence, pas de cache froid.
-- C'est une **analyse**, pas un benchmark. Le dire explicitement dans toute communication.
+- **No model call**, no quota consumed, no change to the reference results.
+- The Opus retry cost is **proxied** by the fresh Opus run; the real retry starts from the
+  failed Sonnet tree and receives the failure output.
+- It assumes the Opus retry succeeds when the fresh Opus run succeeded; no second failure, no
+  latency, no cold cache.
+- This is an **analysis**, not a benchmark. Say so explicitly in any communication.
 
-## 10. Checklist avant publication
+## 10. Pre-publication checklist
 
-- [ ] `npm run bench:verify` vert.
-- [ ] Tous les runs ont un code de sortie 0, ou l'échec est documenté.
-- [ ] Aucun changement inattendu, ou il est expliqué.
-- [ ] Si des runs ont été rejoués/fusionnés, la raison et `mergedTasks` sont documentées.
-- [ ] `n`, nombre de runs et répétitions indiqués.
-- [ ] Version de Claude Code et lineup de modèles datés (`docs/RESEARCH.md`).
-- [ ] JSON brut publié dans `docs/benchmarks/`.
-- [ ] `docs/BENCHMARK.md` mis à jour (tableau + analyse + limites).
-- [ ] Aucun secret, chemin privé ou token dans le JSON.
-- [ ] Le texte parle **coût/quota**, pas « tokens économisés ».
-- [ ] Le contrefactuel (baseline) est explicite.
+- [ ] `npm run bench:verify` green.
+- [ ] `npm run docs:check` green.
+- [ ] All runs have exit code 0, or the failure is documented.
+- [ ] No unexpected change, or it is explained.
+- [ ] If runs were re-run/merged, the reason and `mergedTasks` are documented.
+- [ ] `n`, number of runs and repeats stated.
+- [ ] Claude Code version and model lineup dated (`docs/RESEARCH.md`).
+- [ ] Raw JSON published in `docs/benchmarks/`.
+- [ ] `docs/BENCHMARK.md` updated (table + analysis + limitations).
+- [ ] No secret, private path or token in the JSON.
+- [ ] The text talks **cost/quota**, not "tokens saved".
+- [ ] The counterfactual (baseline) is explicit.
 
-## 11. Limites connues
+## 11. Known limitations
 
-- Checks binaires : la qualité rédactionnelle n'est pas notée.
-- 12 tâches, 2 répétitions : pas d'intervalle de confiance ni de revue aveugle ; les runs d'une même tâche ne sont pas indépendants.
-- Coût API-équivalent ≠ quota réel d'un abonnement.
-- Les prompts du run de référence routent correctement ; les erreurs de classification ne sont pas mesurées.
-- Les sessions interactives (TUI) ne sont pas couvertes par ce harness.
+- Binary checks: writing quality is not scored.
+- 12 tasks, 2 repeats: no confidence interval or blind review; runs of the same task are not
+  independent.
+- API-equivalent cost ≠ real subscription quota.
+- The reference-run prompts route correctly; classification errors are not measured.
+- Interactive sessions (TUI) are not covered by this harness.
 
-## 12. Références
+## 12. References
 
-- [`docs/BENCHMARK.md`](../docs/BENCHMARK.md) — résultats et analyse.
-- [`docs/RESEARCH.md`](../docs/RESEARCH.md) — faits datés sur le lineup et le CLI.
-- [`CONTRIBUTING.md`](../CONTRIBUTING.md) — règles de contribution.
+- [`docs/BENCHMARK.md`](../docs/BENCHMARK.md) — results and analysis.
+- [`docs/RESEARCH.md`](../docs/RESEARCH.md) — dated facts about the lineup and CLI.
+- [`CONTRIBUTING.md`](../CONTRIBUTING.md) — contribution rules.

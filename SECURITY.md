@@ -1,5 +1,7 @@
 # Security policy
 
+[English](SECURITY.md) · [Français](SECURITY.fr.md)
+
 ## Supported versions
 
 The latest `0.x` release receives security fixes.

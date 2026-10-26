@@ -1,5 +1,7 @@
 # Code of conduct
 
+[English](CODE_OF_CONDUCT.md) · [Français](CODE_OF_CONDUCT.fr.md)
+
 ## Our pledge
 
 We want this project to be a useful, low-drama place to work. Contributors and

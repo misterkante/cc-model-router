@@ -1,5 +1,7 @@
 # buggy-python fixture
 
+[English](README.md) · [Français](README.fr.md)
+
 Minimal Python fixture for the `debug-calc` task.
 
 Three bugs are planted in `calc.py`:

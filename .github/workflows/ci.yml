@@ -24,5 +24,8 @@ jobs:
       - name: Unit and integration tests
         run: npm test
 
+      - name: Documentation links and bilingual pairs
+        run: npm run docs:check
+
       - name: Benchmark protocol check (no model calls)
         run: npm run bench:verify

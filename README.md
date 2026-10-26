@@ -1,10 +1,13 @@
 # cc-model-router
 
+[English](README.md) · [Français](README.fr.md)
+
 > Automatic model routing for Claude Code — classify each task, pick the cheapest model that can do it, never type `/model` again.
 
 [![CI](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml/badge.svg)](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/misterkante/cc-model-router?display_name=tag)](https://github.com/misterkante/cc-model-router/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Benchmark: 48 runs · 34.1% lower cost per accepted](https://img.shields.io/badge/benchmark-48_runs_%C2%B7_34.1%25_lower_cost_per_accepted-f1592c)](#benchmark)
 
 **Status: MVP (0.1.0).** Claude Code first; OpenCode support is on the roadmap. See the [documentation index](docs/README.md) for the benchmark, research and launch notes.
 
@@ -222,11 +225,29 @@ Your `~/.claude/settings.json` and `~/.claude/model-router.json` are never modif
 
 ## Benchmark
 
-Reference run: **12 tasks × 2 variants × 2 repeats = 48 runs**, automatic checks, isolated copies. Routing passed **23/24 (95.8%) vs 21/24 (87.5%)** and cost **$0.0906 per accepted task vs $0.1375** (-34.1%). Raw tokens fell 5.2% overall, but that is not the claim: the saving is in cost/quota, carried by mechanical (-94%) and implementation (-53%). Debugging is a quality guard in this comparison (+30% per accepted vs the Sonnet baseline), not a saving; the baseline does not load the hook (see limitations).
+**12 tasks × 2 variants × 2 repeats = 48 runs**, automatic checks, isolated copies. Headline: **-34.1% cost per accepted task** and **95.8% pass rate vs 87.5%**, with raw tokens **-5.2%** overall.
+
+| Metric | Routed | Baseline | Change |
+|---|---:|---:|---:|
+| Accepted runs | **23/24 (95.8%)** | 21/24 (87.5%) | +2 runs |
+| Cost per accepted task | **$0.0906** | $0.1375 | **-34.1%** |
+| Total cost | $2.0838 | $2.8874 | -27.8% |
+| Raw tokens | 2,147,568 | 2,266,530 | -5.2% |
+| Tokens per accepted task | 93,373 | 107,930 | -13.5% |
+
+<p align="center"><img src="docs/assets/benchmark-cost-quality.en.png" alt="Cost per accepted task and pass rate by tier" width="100%"></p>
+
+<p align="center"><img src="docs/assets/benchmark-savings-tokens.en.png" alt="Cost change vs baseline and tokens per accepted task" width="100%"></p>
+
+**What you actually save.** The repeatable saving is cost/quota on mechanical work (**-94.2%** per accepted) and implementation (**-53.2%**). Debugging is a quality guard: Opus costs **+29.7%** per accepted vs the Sonnet baseline, but passes **8/8 vs 5/8**. Raw tokens fell **5.2%** overall and **13.5%** per accepted task; that is not the main promise, and the sign can change by task.
+
+> **Tokens vs cost:** a cheaper model can be more verbose on some tasks (mechanical is +5.5% tokens per accepted). The benchmark therefore sells cost/quota saved at equal quality, not "tokens saved".
+
+**Read the baseline before quoting the number.** The baseline is mixed (Sonnet/medium for mechanical and debugging, Opus/high for implementation) and does not load the hook; the routed variant does. This is router-as-product, not a pure model A/B. The sample is 12 tasks × 2 repeats; no confidence intervals or blind review.
 
 The run also found the next product gap: Sonnet produced one invalid YAML on an implementation task, and the debugging tier over-routes Opus on simple bugs. `run --verify` + `--escalate` closes the first gap; an opt-in Sonnet-first debugging policy closes the second. A simulation from the same records estimates **-15.5% debugging cost per accepted task** vs Opus-first at 8/8 accepted, with 3/8 retries; it is a simulation, not a new run, and is not included in the 48-run numbers. A 4-run real pilot on `debug-calc` and `debug-search` then passed 4/4 with Sonnet and no escalation. A second real pilot without the hook reproduced the known Sonnet failure on `debug-calc`: Sonnet failed the check, Opus retried and passed, for **$0.2132 vs $0.1559** Opus direct (+36.7%). That is one real failure, not a rate; it validates the mechanism and shows a failed first attempt can cost more than going straight to Opus. None of these pilots is a benchmark.
 
-Full results, per-tier analysis, incident log and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md). Canonical process: [`bench/README.md`](bench/README.md).
+Full results, per-tier analysis, incident log and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md). Canonical process: [`bench/README.md`](bench/README.md). Chart source: [`scripts/make-benchmark-charts.py`](scripts/make-benchmark-charts.py).
 
 ```bash
 npm run bench:verify
@@ -261,6 +282,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [`CODE_OF_CONDUCT.md`](CODE_OF_
 
 ```bash
 npm test
+npm run docs:check
 ```
 
 ### TUI smoke test (opt-in)
