@@ -178,17 +178,18 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 - [x] Rendu TUI automatisé (`scripts/tui-smoke.sh`, tmux) : statusline + hook réels, `~/.claude` et repo inchangés.
 - [ ] Mettre à jour `docs/RESEARCH.fr.md` avant Phase 2 (veille datée).
 - [x] Veille concurrence + positionnement + plan de lancement (`docs/COMPETITION.fr.md`).
-- [x] Préparation lancement (code) : `LICENSE`, `SECURITY.md`, CI, templates d'issues/PR, `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`) ; nom npm `cc-model-router` disponible.
+- [x] Préparation lancement (code) : `LICENSE`, `SECURITY.md`, CI, templates d'issues/PR, `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`) ; package npm
+  `cc-model-router` publié.
 - [x] Nom du binaire : package `cc-model-router`, binaires `cc-model-router` + alias `ccmr` (évite la collision avec `cc-router@4.0.0`).
 - [x] Dépôt GitHub public créé et poussé, description, homepage, 12 topics, issues/projects/discussions, CI verte.
 - [x] Clone propre depuis GitHub : `npm test` 53/53, `bench:verify` 12/12 checks rouges avant, simulation d'escalade OK (aucun run modèle).
-- [ ] Publication npm (tarball validé, pas encore publié).
+- [x] Publication npm : `cc-model-router@0.1.0` publié le 2026-10-26 ; `0.1.1` corrige
+  le README publié ; installation propre vérifiée.
 - [ ] Épinglage du dépôt et social preview : web-only, aucune API GitHub publique.
 - [ ] GIF de démo et article de lancement (les graphiques localisés sont prêts).
 - [ ] Phase 2 — adaptateur OpenCode (routing par tour / plugin).
 - [ ] Phase 3 — dashboard de stats (coût/quota économisé, escalade).
 - [ ] Golden tests sur des prompts réels.
-- [ ] Publication npm réelle (le README et les métadonnées sont prêts).
 
 ## 📝 Suivi
 

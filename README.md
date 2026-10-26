@@ -7,9 +7,10 @@
 [![CI](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml/badge.svg)](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/misterkante/cc-model-router?display_name=tag)](https://github.com/misterkante/cc-model-router/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![npm](https://img.shields.io/npm/v/cc-model-router.svg)](https://www.npmjs.com/package/cc-model-router)
 [![Benchmark: 48 runs · 34.1% lower cost per accepted](https://img.shields.io/badge/benchmark-48_runs_%C2%B7_34.1%25_lower_cost_per_accepted-f1592c)](#benchmark)
 
-**Status: MVP (0.1.0).** Claude Code first; OpenCode support is on the roadmap. See the [documentation index](docs/README.md) for the benchmark, research and launch notes.
+**Status: MVP (0.1.1).** Claude Code first; OpenCode support is on the roadmap. See the [documentation index](docs/README.md) for the benchmark, research and launch notes.
 
 <p align="center"><img src="docs/assets/social-preview.png" alt="cc-model-router: -34.1% cost per accepted task, 23/24 accepted vs 21/24 baseline" width="100%"></p>
 
@@ -20,15 +21,13 @@ npm install -g cc-model-router
 ccmr status
 ```
 
-> The npm package is not published yet. Until it is, use the clone + `npm link` path below.
-
-The package exposes two equivalent commands: `cc-model-router` and `ccmr`. After publication, without a global install:
+The package exposes two equivalent commands: `cc-model-router` and `ccmr`. Without a global install:
 
 ```bash
 npx cc-model-router status
 ```
 
-From a clone, before the npm release:
+From a clone (development):
 
 ```bash
 git clone https://github.com/misterkante/cc-model-router.git

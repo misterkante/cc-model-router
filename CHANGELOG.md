@@ -14,6 +14,16 @@ All notable changes to this project are documented here. The format follows
   reproducible chart generator.
 - Automated documentation link and bilingual-pair check (`npm run docs:check`).
 
+## [0.1.1] - 2026-10-26
+
+### Fixed
+
+- README install instructions now state that the package is published on npm.
+
+### Changed
+
+- npm package badge and version `0.1.1`.
+
 ## [0.1.0] - 2026-10-26
 
 ### Added
@@ -42,11 +52,12 @@ All notable changes to this project are documented here. The format follows
 ### Notes
 
 - First public release. Package name `cc-model-router`; commands
-  `cc-model-router` and `ccmr`.
+  `cc-model-router` and `ccmr`. Published on npm as `cc-model-router@0.1.0`.
 - The benchmark compares the router as a product against a documented baseline;
   it is not an all-Opus A/B test.
 - Subscription quota is estimated with Claude Code's API-equivalent
   `total_cost_usd`, not billed subscription dollars.
 
-[Unreleased]: https://github.com/misterkante/cc-model-router/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/misterkante/cc-model-router/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/misterkante/cc-model-router/releases/tag/v0.1.1
 [0.1.0]: https://github.com/misterkante/cc-model-router/releases/tag/v0.1.0

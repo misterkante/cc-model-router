@@ -7,9 +7,10 @@
 [![CI](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml/badge.svg)](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/misterkante/cc-model-router?display_name=tag)](https://github.com/misterkante/cc-model-router/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![npm](https://img.shields.io/npm/v/cc-model-router.svg)](https://www.npmjs.com/package/cc-model-router)
 [![Benchmark : 48 runs · 34,1 % de coût en moins par tâche acceptée](https://img.shields.io/badge/benchmark-48_runs_%C2%B7_34%2C1_%25_de_co%C3%BBt_en_moins_par_t%C3%A2che_accept%C3%A9e-f1592c)](#benchmark)
 
-**Statut : MVP (0.1.0).** Claude Code d’abord ; le support OpenCode est sur la roadmap. Voir l’[index de documentation](docs/README.fr.md) pour le benchmark, la veille et les notes de lancement.
+**Statut : MVP (0.1.1).** Claude Code d’abord ; le support OpenCode est sur la roadmap. Voir l’[index de documentation](docs/README.fr.md) pour le benchmark, la veille et les notes de lancement.
 
 <p align="center"><img src="docs/assets/social-preview.png" alt="cc-model-router : -34,1 % de coût par tâche acceptée, 23/24 acceptées vs 21/24 baseline" width="100%"></p>
 
@@ -20,15 +21,14 @@ npm install -g cc-model-router
 ccmr status
 ```
 
-> Le package npm n’est pas encore publié. En attendant, utilise le clone + `npm link` ci-dessous.
 
-Le package expose deux commandes équivalentes : `cc-model-router` et `ccmr`. Après publication, sans installation globale :
+Le package expose deux commandes équivalentes : `cc-model-router` et `ccmr`. Sans installation globale :
 
 ```bash
 npx cc-model-router status
 ```
 
-Depuis un clone, avant la release npm :
+Depuis un clone (développement) :
 
 ```bash
 git clone https://github.com/misterkante/cc-model-router.git

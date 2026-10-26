@@ -208,7 +208,7 @@ pilot below give a first estimate; the escalation rate remains to be measured.
   support and commercial layer.
 - Launch: the benchmark is the evidence; Show HN + Reddit + article. Measured claims,
   explicit mixed baseline, small sample acknowledged.
-- Next action: GitHub/npm publication, GIF, article; expand the benchmark before big claims.
+- Next action: launch content (GIF, article, Show HN); expand the benchmark before big claims.
 
 ## ⚠️ Known limitation (document for users)
 
@@ -244,21 +244,21 @@ Claude Code does not yet allow a hook to change the model mid-session (issues #4
 - [ ] Update `docs/RESEARCH.md` before Phase 2 (dated research).
 - [x] Competition research + positioning + launch plan (`docs/COMPETITION.md`).
 - [x] Launch preparation (code): `LICENSE`, `SECURITY.md`, CI, issue/PR templates,
-  `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`); npm name `cc-model-router`
-  available.
+  `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`); npm package
+  `cc-model-router` published.
 - [x] Binary name: package `cc-model-router`, binaries `cc-model-router` + alias `ccmr`
   (avoids the collision with `cc-router@4.0.0`).
 - [x] Public GitHub repository created and pushed, description, homepage, 12 topics,
   issues/projects/discussions, CI green.
 - [x] Clean clone from GitHub: `npm test` 53/53, `bench:verify` 12/12 checks red before,
   escalation simulation OK (no model run).
-- [ ] npm publication (tarball validated, not yet published).
+- [x] npm publication: `cc-model-router@0.1.0` published on 2026-10-26; `0.1.1` fixes the
+  published README; clean install verified.
 - [ ] Repository pin and social preview: web-only, no public GitHub API.
 - [ ] Demo GIF and launch article (localized charts are done).
 - [ ] Phase 2 — OpenCode adapter (per-turn routing / plugin).
 - [ ] Phase 3 — stats dashboard (cost/quota saved, escalation).
 - [ ] Golden tests on real prompts.
-- [ ] Real npm publication (README and metadata ready).
 
 ## 📝 Tracking
 

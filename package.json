@@ -1,6 +1,6 @@
 {
   "name": "cc-model-router",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Automatic model routing for Claude Code: classify each task, pick the cheapest model that can do it, then verify and escalate when needed.",
   "type": "module",
   "bin": {

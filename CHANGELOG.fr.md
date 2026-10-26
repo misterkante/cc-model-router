@@ -15,6 +15,16 @@ Toutes les évolutions notables du projet sont documentées ici. Le format suit
 - Vérification automatisée des liens de documentation et des paires bilingues
   (`npm run docs:check`).
 
+## [0.1.1] - 2026-10-26
+
+### Corrigé
+
+- Les instructions d’installation du README indiquent maintenant que le package est publié sur npm.
+
+### Modifié
+
+- Badge npm et version `0.1.1`.
+
 ## [0.1.0] - 2026-10-26
 
 ### Ajouté
@@ -44,11 +54,12 @@ Toutes les évolutions notables du projet sont documentées ici. Le format suit
 ### Notes
 
 - Première release publique. Nom du package `cc-model-router` ; commandes
-  `cc-model-router` et `ccmr`.
+  `cc-model-router` et `ccmr`. Publié sur npm en `cc-model-router@0.1.0`.
 - Le benchmark compare le routeur comme produit à un baseline documenté ; ce
   n’est pas un A/B tout-Opus.
 - Le quota d’abonnement est estimé avec le `total_cost_usd` API-équivalent de
   Claude Code, pas avec des dollars facturés.
 
-[Non publié]: https://github.com/misterkante/cc-model-router/compare/v0.1.0...HEAD
+[Non publié]: https://github.com/misterkante/cc-model-router/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/misterkante/cc-model-router/releases/tag/v0.1.1
 [0.1.0]: https://github.com/misterkante/cc-model-router/releases/tag/v0.1.0

@@ -242,9 +242,10 @@ commerciale.
 ### 7.1 Pré-lancement (2 semaines)
 
 - [x] **Figer le scope** : 3 tiers, `run --verify`/`--escalate`, politique Sonnet-first opt-in, benchmark 48 runs.
-- [x] **npm (métadonnées)** : `cc-model-router` est **disponible** (vérifié le 2026-10-26) ;
-      `repository`, `homepage`, `bugs`, `files`, `author` ajoutés ; `npm pack --dry-run` OK.
-- [ ] **npm (publication)** : publier le tarball après validation dans un répertoire propre.
+- [x] **npm (métadonnées)** : `repository`, `homepage`, `bugs`, `files`, `author` ajoutés ;
+      `npm pack --dry-run` OK.
+- [x] **npm (publication)** : `cc-model-router@0.1.0` publié le 2026-10-26 ; `0.1.1`
+      corrige le README publié ; installation propre vérifiée avec `ccmr` et `cc-model-router`.
 - [x] **Nom du binaire** : décidé — package `cc-model-router`, binaires `cc-model-router`
       et alias `ccmr`. `cc-router` est déjà pris sur npm (`cc-router@4.0.0`) et n’est pas utilisé.
 - [x] **GitHub** : dépôt public créé et poussé, description, homepage, 12 topics
@@ -380,7 +381,7 @@ routeur de modèles sans se mentir », éventuel conseil en coût/qualité Claud
   ouverte et les utilisateurs demandent plus. Surveiller une éventuelle version native.
 - **Lineup et prix** : Fable 5.1 / Opus 5.5 / Sonnet 5.5 / Haiku 5.5 au 2026-10-24 ;
   revérifier avant tout chiffre public.
-- **Nom npm/bin** : `cc-model-router` est disponible (vérifié le 2026-10-26) ; le binaire
+- **Nom npm/bin** : `cc-model-router` est publié (`0.1.1`, 2026-10-26) ; le binaire
   `cc-router` est déjà pris par le package npm `cc-router@4.0.0`. Décision : package
   `cc-model-router`, binaires `cc-model-router` + alias `ccmr`, pas de collision.
 - **Benchmark** : 12 tâches, 2 répétitions ; pas d'IC, pas de revue aveugle. Ne pas
