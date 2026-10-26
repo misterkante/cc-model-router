@@ -204,6 +204,17 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). Run `npm test` and `npm run bench:veri
 npm test
 ```
 
+### TUI smoke test (opt-in)
+
+The statusline and hook can be checked end-to-end in a real Claude Code TUI. It needs `claude`, `tmux` and a working login, starts in a temporary directory, sends one tiny prompt, and verifies that the real `~/.claude` settings and the repository are unchanged:
+
+```bash
+npm run test:tui
+npm run test:tui -- --sonnet-first
+```
+
+This is not part of `npm test` or CI because it uses the real Claude Code session and spends a small amount of quota.
+
 ## Roadmap
 
 - [x] Heuristic classifier + tier routing

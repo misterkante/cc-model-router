@@ -309,7 +309,7 @@ Ce que le projet démontre, concrètement :
 - **Ingénierie** : CLI Node, hooks, config globale/projet, isolation, `spawnSync`,
   parsing d'arguments, exit codes, dry-run.
 - **Qualité** : 53 tests, faux binaire Claude, tests d'intégration, `bench:verify`,
-  checks déterministes, dataset assaini.
+  checks déterministes, dataset assaini, smoke TUI automatisé (`test:tui`, tmux).
 - **Analyse coût/qualité** : coût par tâche acceptée, baseline, tokens vs coût, limites.
 - **Communication** : README, benchmark reproductible, documentation honnête, ce document.
 

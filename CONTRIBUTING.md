@@ -18,6 +18,13 @@ npm test
 npm run bench:verify
 ```
 
+For the TUI integration (statusline + hook in a real Claude Code session, requires `claude`, `tmux` and a login; opt-in because it spends a small amount of quota):
+
+```bash
+npm run test:tui
+npm run test:tui -- --sonnet-first
+```
+
 ## Benchmark contributions
 
 The benchmark is the evidence layer of the project. Its canonical protocol is [`bench/README.md`](bench/README.md) (French; commands, file names and schemas are language-neutral).

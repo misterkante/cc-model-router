@@ -378,7 +378,7 @@ Voir le protocole complet : [`../bench/README.md`](../bench/README.md).
    Sonnet : le parser renvoie 1, puis Opus reçoit l'erreur et corrige.
 3. **Élargir à 20–30 tâches, 3 répétitions**, avec revue aveugle des diffs et intervalles de
    confiance.
-4. **Valider la session interactive** (hook + statusline en TUI).
+4. **Session interactive validée** : `npm run test:tui` (tmux) vérifie la statusline et le hook dans un vrai TUI, et que `~/.claude` + le repo restent inchangés.
 5. **Phase 2 — OpenCode**, après une veille datée fraîche.
 6. **Phase 3 — dashboard** branché sur ces métriques (coût/quota, escalade, rework).
 7. **Positionnement et lancement** : voir [`COMPETITION.md`](COMPETITION.md) (veille du 2026-10-26).

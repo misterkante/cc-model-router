@@ -59,13 +59,13 @@
 
 ## 🧪 Preuves Phase 1
 
-- `node --test tests/*.test.js` → **16/16 tests passent**
+- `node --test tests/*.test.js` → **53/53 tests passent**
 - `cc-router classify "debug why the login test is flaky"` → `debugging` / `opus` / confidence 1
 - `cc-router run` (dry-run) → `claude --model sonnet "implement the auth endpoint"`
 - Hook `UserPromptSubmit` → log dans `.sandbox/config/router.log` (isolation) + `additionalContext` correct
 - `./scripts/sandbox.sh` → smoke test complet sans toucher `~/.claude`
 - [x] Validation en session réelle Claude Code (headless `-p`) : ✅ 2026-10-25 (voir résultats ci-dessous)
-- [ ] Validation en session interactive (hook + statusline en TUI) : à faire
+- [x] Validation en session interactive (hook + statusline en TUI) : `npm run test:tui` (tmux, 2026-10-26)
 
 ## 🔧 Correctifs d'alignement Claude Code (2026-10-24)
 
@@ -126,7 +126,7 @@ Implémentation :
 - `bin/cc-router.js` : wiring `spawnSync`, dry-run avec plan d'escalade, exit code de la vérification.
 - Tests : 24 tests runner + 18 tests classifier/config + 3 tests CLI (faux binaire Claude, zéro quota) + 7 tests d'intégration hook/statusline + 1 test `check-one`. `npm test` = **53 tests**.
 - Limites : pas de rollback ; le retry réutilise l'arbre de travail ; la commande de vérification est fournie par l'utilisateur ; simulation + pilot réel 4/4 sur `debug-calc` + `debug-search` ; un second pilot sans hook a exercé l'escalade réelle (voir ci-dessous).
-- Hook + statusline validés avec des payloads réels (config globale + override projet) ; le rendu TUI lui-même reste à vérifier à la main.
+- Hook + statusline validés avec des payloads réels (config globale + override projet) ; le rendu TUI est vérifié automatiquement par `npm run test:tui` (tmux, statusline + hook réels, settings réels inchangés).
 
 Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré. Un `--verify` qui parse le YAML aurait renvoyé 1, et `--escalate` aurait laissé Opus corriger avec l'erreur sous les yeux. La simulation Sonnet-first, le pilot réel 4/4 et le pilot d'escalade ci-dessous donnent une première estimation ; le taux d'escalade reste à mesurer.
 
@@ -172,7 +172,7 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 - [ ] Élargir le benchmark à 20–30 tâches, 3 répétitions, revue aveugle.
 - [ ] Mesurer le rework (temps perdu, runs échoués).
 - [x] Hook + statusline validés hors TUI (payloads réels, config projet).
-- [ ] Rendu TUI manuel (hook + statusline) — nécessite un humain.
+- [x] Rendu TUI automatisé (`scripts/tui-smoke.sh`, tmux) : statusline + hook réels, `~/.claude` et repo inchangés.
 - [ ] Mettre à jour `docs/RESEARCH.md` avant Phase 2 (veille datée).
 - [x] Veille concurrence + positionnement + plan de lancement (`docs/COMPETITION.md`).
 - [x] Préparation lancement (code) : `LICENSE`, `SECURITY.md`, CI, templates d'issues/PR, `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`) ; nom npm `cc-model-router` disponible.

@@ -32,7 +32,8 @@
     "bench:publish": "node bench/publish.mjs",
     "bench:merge": "node bench/merge.mjs",
     "bench:recheck": "node bench/recheck.mjs",
-    "bench:simulate-escalation": "node bench/simulate-escalation.mjs"
+    "bench:simulate-escalation": "node bench/simulate-escalation.mjs",
+    "test:tui": "bash scripts/tui-smoke.sh"
   },
   "engines": {
     "node": ">=18"
