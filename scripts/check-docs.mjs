@@ -24,6 +24,7 @@ const BILINGUAL_PAIRS = [
   ["docs/COMPETITION.md", "docs/COMPETITION.fr.md"],
   ["docs/RESEARCH.md", "docs/RESEARCH.fr.md"],
   ["docs/PLUGIN.md", "docs/PLUGIN.fr.md"],
+  ["docs/LAUNCH.md", "docs/LAUNCH.fr.md"],
   ["bench/README.md", "bench/README.fr.md"],
   ["bench/fixtures/README.md", "bench/fixtures/README.fr.md"],
   ["bench/fixtures/buggy-python/README.md", "bench/fixtures/buggy-python/README.fr.md"]

@@ -8,6 +8,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Bilingual launch kit with claims, caveats, Show HN, Reddit, X, article and
+  LinkedIn drafts.
+
 ## [0.2.0] - 2026-10-26
 
 ### Added

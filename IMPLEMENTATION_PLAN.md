@@ -220,6 +220,10 @@ Evidence:
   install succeeded, plugin `0.2.0` was enabled, and `/ccmr` returned
   `current=claude-opus-5-5`, `last=no decision yet`, `mode=per-turn` with no
   model call.
+- A real project config validated with no model call: `ccmr classify` routed a
+  French mechanical prompt to Haiku and a debugging prompt to Opus; `/ccmr` in
+  that project loaded the plugin and cost `$0`. A real model task there is still
+  pending.
 - Limits: no plugin benchmark; per-turn cache behavior is a guardrail; no
   subagent routing; no verification/escalation in the plugin.
 
@@ -258,7 +262,7 @@ Evidence:
   support and commercial layer.
 - Launch: the benchmark is the evidence; Show HN + Reddit + article. Measured claims,
   explicit mixed baseline, small sample acknowledged.
-- Next action: launch content (GIF, article, Show HN); expand the benchmark before big claims.
+- Next action: publish the launch kit (`docs/LAUNCH.md`), record the GIF and post; expand the benchmark before big claims.
 
 ## ⚠️ Known limitation (document for users)
 
@@ -311,7 +315,8 @@ A settings hook still cannot change the model mid-session (issues #44976, #43326
   marketplace manifest and 7 plugin tests.
 - [ ] npm publication of `0.2.0` (blocked until a valid npm credential is available).
 - [ ] Repository pin and social preview: web-only, no public GitHub API.
-- [ ] Demo GIF and launch article (localized charts are done).
+- [x] Bilingual launch kit (`docs/LAUNCH.md`, `docs/LAUNCH.fr.md`).
+- [ ] Demo GIF and published article (localized charts are done).
 - [ ] Phase 2 — OpenCode adapter (per-turn routing / plugin).
 - [ ] Phase 3 — stats dashboard (cost/quota saved, escalation).
 - [ ] Golden tests on real prompts.

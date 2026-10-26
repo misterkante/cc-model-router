@@ -184,6 +184,10 @@ Preuves :
   et installation réussis, plugin `0.2.0` activé, et `/ccmr` a renvoyé
   `current=claude-opus-5-5`, `last=no decision yet`, `mode=per-turn` sans appel
   modèle.
+- Config d'un projet réel validée sans appel modèle : `ccmr classify` a routé un
+  prompt mechanical français vers Haiku et un prompt debugging vers Opus ;
+  `/ccmr` dans ce projet a chargé le plugin pour `0 $`. Une vraie tâche modèle
+  reste à faire.
 - Limites : pas de benchmark du plugin ; le comportement cache par tour est un
   garde-fou ; pas de routage des sous-agents ; pas de vérification/escalade dans
   le plugin.
@@ -205,7 +209,7 @@ Preuves :
 - Créneau : **natif Claude Code + tiers par tâche + benchmark 48 runs + vérification/escalade**. Pas de proxy, pas de clé API, MIT.
 - Verdict : **Go OSS/portfolio ; No-Go comme entreprise seule** sans équipe, dashboard, support et couche commerciale.
 - Lancement : le benchmark est la preuve ; Show HN + Reddit + article. Claims mesurés, baseline mixte explicite, échantillon petit assumé.
-- Prochaine action : publication GitHub/npm, GIF, article ; élargir le benchmark avant les gros claims.
+- Prochaine action : publier le kit de lancement (`docs/LAUNCH.fr.md`), enregistrer le GIF et poster ; élargir le benchmark avant les gros claims.
 
 ## ⚠️ Limite connue (à documenter pour les users)
 
@@ -251,7 +255,8 @@ séparée :
 - [ ] Publication npm de `0.2.0` (bloquée tant qu'un identifiant npm valide n'est
   pas disponible).
 - [ ] Épinglage du dépôt et social preview : web-only, aucune API GitHub publique.
-- [ ] GIF de démo et article de lancement (les graphiques localisés sont prêts).
+- [x] Kit de lancement bilingue (`docs/LAUNCH.md`, `docs/LAUNCH.fr.md`).
+- [ ] GIF de démo et article publié (les graphiques localisés sont prêts).
 - [ ] Phase 2 — adaptateur OpenCode (routing par tour / plugin).
 - [ ] Phase 3 — dashboard de stats (coût/quota économisé, escalade).
 - [ ] Golden tests sur des prompts réels.

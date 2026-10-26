@@ -8,6 +8,11 @@ Toutes les évolutions notables du projet sont documentées ici. Le format suit
 
 ## [Non publié]
 
+### Ajouté
+
+- Kit de lancement bilingue avec preuves, limites, brouillons Show HN, Reddit,
+  X, article et LinkedIn.
+
 ## [0.2.0] - 2026-10-26
 
 ### Ajouté

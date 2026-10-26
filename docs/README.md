@@ -10,6 +10,7 @@ Start with the [README](../README.md) for installation and usage.
 | [`COMPETITION.md`](COMPETITION.md) | Dated competitive research, positioning, launch plan and risks. |
 | [`RESEARCH.md`](RESEARCH.md) | Dated facts about the Claude Code model lineup, flags and related issues. |
 | [`PLUGIN.md`](PLUGIN.md) | Claude Code plugin: install, per-turn routing, cache-aware switching, limits and verification. |
+| [`LAUNCH.md`](LAUNCH.md) | Launch kit: claims, caveats, Show HN, Reddit, X, article, LinkedIn and checklist. |
 | [`benchmarks/`](benchmarks/) | Sanitized raw JSON for the published runs and pilots. |
 | [`../bench/README.md`](../bench/README.md) | Canonical benchmark protocol: fixtures, checks, commands and publication rules. |
 | [`../IMPLEMENTATION_PLAN.md`](../IMPLEMENTATION_PLAN.md) | Build log, decisions, test count and remaining work. |
@@ -37,5 +38,5 @@ Start with the [README](../README.md) for installation and usage.
 
 All root docs (`CHANGELOG`, `CODE_OF_CONDUCT`, `CONTRIBUTING`, `IMPLEMENTATION_PLAN`, `SECURITY`) also have a `.fr.md` version.
 
-- English: [project README](../README.md), [docs index](README.md), [`BENCHMARK.md`](BENCHMARK.md), [`COMPETITION.md`](COMPETITION.md), [`RESEARCH.md`](RESEARCH.md), [`PLUGIN.md`](PLUGIN.md), [`../bench/README.md`](../bench/README.md).
+- English: [project README](../README.md), [docs index](README.md), [`BENCHMARK.md`](BENCHMARK.md), [`COMPETITION.md`](COMPETITION.md), [`RESEARCH.md`](RESEARCH.md), [`PLUGIN.md`](PLUGIN.md), [`LAUNCH.md`](LAUNCH.md), [`../bench/README.md`](../bench/README.md).
 - French: [project README](../README.fr.md), [docs index](README.fr.md), [`BENCHMARK.fr.md`](BENCHMARK.fr.md), [`COMPETITION.fr.md`](COMPETITION.fr.md), [`RESEARCH.fr.md`](RESEARCH.fr.md), [`PLUGIN.fr.md`](PLUGIN.fr.md), [`../bench/README.fr.md`](../bench/README.fr.md).

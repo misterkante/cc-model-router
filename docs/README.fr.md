@@ -10,6 +10,7 @@ Commence par le [README principal](../README.fr.md) pour l’installation et l�
 | [`COMPETITION.fr.md`](COMPETITION.fr.md) | Veille concurrentielle datée, positionnement, plan de lancement et risques. |
 | [`RESEARCH.fr.md`](RESEARCH.fr.md) | Faits datés sur la lineup Claude Code, les flags et les issues liées. |
 | [`PLUGIN.fr.md`](PLUGIN.fr.md) | Plugin Claude Code : installation, routage par tour, changements compatibles avec le cache, limites et vérification. |
+| [`LAUNCH.fr.md`](LAUNCH.fr.md) | Kit de lancement : preuves, limites, Show HN, Reddit, X, article, LinkedIn et checklist. |
 | [`benchmarks/`](benchmarks/) | JSON brut sanitisé des runs et pilotes publiés. |
 | [`../bench/README.fr.md`](../bench/README.fr.md) | Protocole benchmark canonique : fixtures, checks, commandes et règles de publication. |
 | [`../IMPLEMENTATION_PLAN.fr.md`](../IMPLEMENTATION_PLAN.fr.md) | Journal de construction, décisions, nombre de tests et travail restant. |
@@ -39,4 +40,4 @@ Commence par le [README principal](../README.fr.md) pour l’installation et l�
 Tous les docs racine (`CHANGELOG`, `CODE_OF_CONDUCT`, `CONTRIBUTING`, `IMPLEMENTATION_PLAN`, `SECURITY`) ont aussi une version `.fr.md`.
 
 - Anglais : [README principal](../README.md), [index docs](README.md), [`BENCHMARK.md`](BENCHMARK.md), [`COMPETITION.md`](COMPETITION.md), [`RESEARCH.md`](RESEARCH.md), [`PLUGIN.md`](PLUGIN.md), [`../bench/README.md`](../bench/README.md).
-- Français : [README principal](../README.fr.md), [index docs](README.fr.md), [`BENCHMARK.fr.md`](BENCHMARK.fr.md), [`COMPETITION.fr.md`](COMPETITION.fr.md), [`RESEARCH.fr.md`](RESEARCH.fr.md), [`PLUGIN.fr.md`](PLUGIN.fr.md), [`../bench/README.fr.md`](../bench/README.fr.md).
+- Français : [README principal](../README.fr.md), [index docs](README.fr.md), [`BENCHMARK.fr.md`](BENCHMARK.fr.md), [`COMPETITION.fr.md`](COMPETITION.fr.md), [`RESEARCH.fr.md`](RESEARCH.fr.md), [`PLUGIN.fr.md`](PLUGIN.fr.md), [`LAUNCH.fr.md`](LAUNCH.fr.md), [`../bench/README.fr.md`](../bench/README.fr.md).
