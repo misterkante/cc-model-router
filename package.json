@@ -1,11 +1,21 @@
 {
   "name": "cc-model-router",
   "version": "0.1.0",
-  "description": "Automatic model routing for Claude Code: classify each task and pick the cheapest model that can do it.",
+  "description": "Automatic model routing for Claude Code: classify each task, pick the cheapest model that can do it, then verify and escalate when needed.",
   "type": "module",
   "bin": {
-    "cc-router": "./bin/cc-router.js"
+    "cc-model-router": "./bin/cc-model-router.js",
+    "ccmr": "./bin/cc-model-router.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/misterkante/cc-model-router.git"
+  },
+  "homepage": "https://github.com/misterkante/cc-model-router#readme",
+  "bugs": {
+    "url": "https://github.com/misterkante/cc-model-router/issues"
+  },
+  "author": "Gilchrist Kante (https://github.com/misterkante)",
   "files": [
     "bin",
     "src",
@@ -17,6 +27,8 @@
     "bench/*.mjs",
     "bench/fixtures",
     "tests",
+    "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
     "LICENSE",
     "README.md",
@@ -41,10 +53,14 @@
   "license": "MIT",
   "keywords": [
     "claude-code",
+    "claude",
+    "anthropic",
+    "model-routing",
     "routing",
+    "cost-optimization",
     "tokens",
-    "cost",
     "llm",
-    "cli"
+    "cli",
+    "benchmark"
   ]
 }

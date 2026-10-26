@@ -34,7 +34,7 @@ To add a task:
 1. Pick a tier and a baseline (the model a user would have used without the router).
 2. Write a prompt that routes to that tier:
    ```bash
-   node bin/cc-router.js classify "<prompt>"
+   node bin/cc-model-router.js classify "<prompt>"
    ```
 3. Add the task to `bench/tasks.mjs` and its check to `bench/checks.mjs`.
 4. Add a synthetic fixture under `bench/fixtures/` if needed.

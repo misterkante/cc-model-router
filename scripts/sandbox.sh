@@ -21,9 +21,9 @@ run() {
   echo
 }
 
-run node "$ROOT/bin/cc-router.js" classify "debug why the login test is flaky"
-run node "$ROOT/bin/cc-router.js" run "implement the auth endpoint"
-run node "$ROOT/bin/cc-router.js" status
+run node "$ROOT/bin/cc-model-router.js" classify "debug why the login test is flaky"
+run node "$ROOT/bin/cc-model-router.js" run "implement the auth endpoint"
+run node "$ROOT/bin/cc-model-router.js" status
 
 echo '{"prompt":"implement a REST endpoint"}' | node "$ROOT/hooks/user-prompt-submit.js"
 echo

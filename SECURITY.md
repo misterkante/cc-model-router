@@ -21,7 +21,7 @@ time to fix the issue before public disclosure.
 
 - `cc-model-router` runs locally. It does not proxy model traffic, does not
   collect telemetry, and never writes to `~/.claude/settings.json`.
-- `cc-router run --verify "<command>"` executes a **user-provided shell
+- `ccmr run --verify "<command>"` executes a **user-provided shell
   command** with the user's permissions. Only use commands you trust, and
   prefer read-only checks (tests, typecheck, lint).
 - The router reads `~/.claude/model-router.json` and the project's

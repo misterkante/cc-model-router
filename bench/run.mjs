@@ -137,7 +137,7 @@ function runVariant(task, variant, dir) {
   if (variant === "routed") {
     command = process.execPath;
     args = [
-      path.join(ROOT, "bin", "cc-router.js"),
+      path.join(ROOT, "bin", "cc-model-router.js"),
       "run",
       task.prompt,
       "--",

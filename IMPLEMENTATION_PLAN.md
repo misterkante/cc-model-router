@@ -49,7 +49,7 @@
 |---|---|
 | `src/classifier.js` | Classifieur heuristique (3 tiers, scoring, confidence) |
 | `src/config.js` | Merge config globale + projet |
-| `bin/cc-router.js` | CLI : `classify`, `run`, `status`, `hook` |
+| `bin/cc-model-router.js` | CLI : `classify`, `run`, `status`, `hook` |
 | `src/hook.js` | Hook `UserPromptSubmit` (log + contexte) |
 | `hooks/user-prompt-submit.js` | Entrée hook pour Claude Code |
 | `bin/statusline.js` | Status line : modèle courant + mapping des tiers |
@@ -60,8 +60,8 @@
 ## 🧪 Preuves Phase 1
 
 - `node --test tests/*.test.js` → **53/53 tests passent**
-- `cc-router classify "debug why the login test is flaky"` → `debugging` / `opus` / confidence 1
-- `cc-router run` (dry-run) → `claude --model sonnet "implement the auth endpoint"`
+- `ccmr classify "debug why the login test is flaky"` → `debugging` / `opus` / confidence 1
+- `ccmr run` (dry-run) → `claude --model sonnet "implement the auth endpoint"`
 - Hook `UserPromptSubmit` → log dans `.sandbox/config/router.log` (isolation) + `additionalContext` correct
 - `./scripts/sandbox.sh` → smoke test complet sans toucher `~/.claude`
 - [x] Validation en session réelle Claude Code (headless `-p`) : ✅ 2026-10-25 (voir résultats ci-dessous)
@@ -71,7 +71,7 @@
 
 Vérifiés sur le CLI 2.1.309 (`claude --help` + inspection du binaire) :
 - `effort: "none"` était invalide → `"low"` (valeurs : low/medium/high/xhigh/max).
-- `cc-router run` applique désormais `--effort` et `--fallback-model`.
+- `ccmr run` applique désormais `--effort` et `--fallback-model`.
 - Fallbacks par tier : mechanical → sonnet ; implementation → haiku ; debugging → sonnet,haiku.
 - Passthrough d'arguments Claude via `-- <args>` (ex: `-- -p`).
 - Alias `haiku` / `sonnet` / `opus` / `fable` confirmés.
@@ -120,10 +120,10 @@ Problème mesuré : sur 48 runs, Sonnet a produit un YAML invalide sur `impl-ang
 
 Implémentation :
 
-- `cc-router run "<task>" --verify "<commande>"` exécute la commande après Claude, dans le répertoire courant.
+- `ccmr run "<task>" --verify "<commande>"` exécute la commande après Claude, dans le répertoire courant.
 - `--escalate` rejoue avec le tier suivant (`mechanical → implementation → debugging`) et inclut la sortie d'échec dans le prompt de retry.
 - `src/runner.js` : parsing des flags, plan d'escalade, prompt de retry, orchestration injectable (`runClaude` / `runVerify`).
-- `bin/cc-router.js` : wiring `spawnSync`, dry-run avec plan d'escalade, exit code de la vérification.
+- `bin/cc-model-router.js` : wiring `spawnSync`, dry-run avec plan d'escalade, exit code de la vérification.
 - Tests : 24 tests runner + 18 tests classifier/config + 3 tests CLI (faux binaire Claude, zéro quota) + 7 tests d'intégration hook/statusline + 1 test `check-one`. `npm test` = **53 tests**.
 - Limites : pas de rollback ; le retry réutilise l'arbre de travail ; la commande de vérification est fournie par l'utilisateur ; simulation + pilot réel 4/4 sur `debug-calc` + `debug-search` ; un second pilot sans hook a exercé l'escalade réelle (voir ci-dessous).
 - Hook + statusline validés avec des payloads réels (config globale + override projet) ; le rendu TUI est vérifié automatiquement par `npm run test:tui` (tmux, statusline + hook réels, settings réels inchangés).
@@ -134,7 +134,7 @@ Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré.
 
 - `debuggingStrategy: "sonnet-first"` : premier essai Sonnet/medium (configurable via `debuggingFirst`), retry Opus/high sur échec de `--verify`.
 - Ne s'applique que si `--verify` **et** `--escalate` sont fournis ; sinon le debugging reste Opus. Le défaut `"opus"` est inchangé.
-- Simulation sur les 16 enregistrements debugging : **8/8 acceptés**, 1,1191 $ vs 1,3247 $ Opus direct (**-15,5 %**), 3/8 retries. `bench/simulate-escalation.mjs` (aucun appel modèle).
+- Simulation sur les 16 enregistrements debugging : **8/8 acceptés**, 1,1191 $ vs 1,3247 $ Opus direct (**-15,5 % par accepté**), 3/8 retries. `bench/simulate-escalation.mjs` (aucun appel modèle).
 - Pilot réel (4 runs, `debug-calc` + `debug-search`) : Sonnet **4/4**, 0,0770 $ / 0,0812 $ / 0,0827 $ / 0,0784 $, checks OK, **pas d'escalade** ; ~-49 % sur `debug-calc`, ~-46 % sur `debug-search` vs Opus routé. Le baseline Sonnet du benchmark était **1/4** sur ces deux tâches **sans hook** → confondant hook/stochasticité.
 - Pilot réel d'escalade (1 run, `debug-calc`, **sans hook**) : Sonnet échoue `test_average_empty` (`ZeroDivisionError`), Opus reçoit la sortie et réussit. Coût **0,2132 $** (0,0707 $ + 0,1425 $) vs **0,1559 $** Opus direct, soit **+36,7 %** ; seul `calc.py` change. Un échec réel, pas un taux : il valide le mécanisme et montre qu'un premier essai raté peut coûter plus cher.
 - Implémentation : `src/config.js` (merge), `src/runner.js` (`initialDecision`, `escalationPlanFor`), CLI dry-run/status, statusline `D:sonnet→opus`, note dans le hook.
@@ -147,13 +147,13 @@ Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré.
 - Créneau : **natif Claude Code + tiers par tâche + benchmark 48 runs + vérification/escalade**. Pas de proxy, pas de clé API, MIT.
 - Verdict : **Go OSS/portfolio ; No-Go comme entreprise seule** sans équipe, dashboard, support et couche commerciale.
 - Lancement : le benchmark est la preuve ; Show HN + Reddit + article. Claims mesurés, baseline mixte explicite, échantillon petit assumé.
-- Prochaine action : GitHub/npm publication, GIF, article, décision sur le bin ; élargir le benchmark avant les gros claims.
+- Prochaine action : publication GitHub/npm, GIF, article ; élargir le benchmark avant les gros claims.
 
 ## ⚠️ Limite connue (à documenter pour les users)
 
 Claude Code ne permet pas encore à un hook de changer le modèle en cours de session (issues #44976, #43326, #27665). Donc :
 - le hook **observe et recommande** ;
-- `cc-router run` applique le modèle **au lancement** ;
+- `ccmr run` applique le modèle **au lancement** ;
 - en interactif, l'alias natif `opusplan` couvre le plan → code.
 
 ## ⚠️ Critères de succès
@@ -176,7 +176,8 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 - [ ] Mettre à jour `docs/RESEARCH.md` avant Phase 2 (veille datée).
 - [x] Veille concurrence + positionnement + plan de lancement (`docs/COMPETITION.md`).
 - [x] Préparation lancement (code) : `LICENSE`, `SECURITY.md`, CI, templates d'issues/PR, `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`) ; nom npm `cc-model-router` disponible.
-- [ ] Lancement restant : GitHub/npm publication, GIF, article, décision sur le bin `cc-router` (déjà pris sur npm).
+- [x] Nom du binaire : package `cc-model-router`, binaires `cc-model-router` + alias `ccmr` (évite la collision avec `cc-router@4.0.0`).
+- [ ] Lancement restant : GitHub/npm publication, GIF, article.
 - [ ] Phase 2 — adaptateur OpenCode (routing par tour / plugin).
 - [ ] Phase 3 — dashboard de stats (coût/quota économisé, escalade).
 - [ ] Golden tests sur des prompts réels.

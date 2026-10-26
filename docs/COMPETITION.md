@@ -70,7 +70,7 @@ projet est justement là pour produire une mesure reproductible, à notre échel
 - Sous-agents : un fichier d'agent peut déclarer `model:` ; c'est du routage **par
   sous-agent**, pas par tâche, et le sous-agent hérite du modèle parent par défaut.
 - **Pas de changement de modèle en cours de session** via un hook public. C'est la limite
-  qui structure tout le design : le hook observe/recommande, `cc-router run` applique au
+  qui structure tout le design : le hook observe/recommande, `ccmr run` applique au
   lancement.
 
 ### 2.3 La contrainte de cache qui rend le routage par tour dangereux
@@ -153,7 +153,7 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
 1. **Un benchmark de tâches Claude Code reproductible** : 12 tâches × 2 variantes ×
    2 répétitions = 48 runs, checks déterministes, coût par tâche **acceptée**, dataset
    publié et assaini, protocole dans `bench/README.md`.
-2. **Une vérification post-run** : `cc-router run "<task>" --verify "<commande>"` exécute
+2. **Une vérification post-run** : `ccmr run "<task>" --verify "<commande>"` exécute
    le check après Claude ; `--escalate` rejoue avec le tier suivant et injecte la sortie
    d'échec dans le prompt. C'est la réponse directe au seul échec qualité mesuré
    (YAML invalide de Sonnet sur `impl-angular`).
@@ -164,7 +164,7 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
    le plus proche est bash/Python avec 5 classes et des hooks sous-agents ; les gateways
    sont des plateformes.
 5. **Une politique debugging Sonnet-first opt-in** : Sonnet d'abord, Opus sur échec de
-   `--verify`, avec une simulation à **-15,5 %** vs Opus direct à 8/8 (3/8 retries).
+   `--verify`, avec une simulation à **-15,5 % de coût par accepté** vs Opus direct à 8/8 (3/8 retries).
    Un pilot réel de 4 runs sur `debug-calc` + `debug-search` passe 4/4 avec Sonnet, sans
    escalade. Un second pilot, sans hook, a reproduit l'échec Sonnet connu sur `debug-calc` :
    Sonnet échoue au check, Opus reçoit l'erreur et réussit, pour **0,2132 $ vs 0,1559 $**
@@ -243,9 +243,8 @@ commerciale.
 - [ ] **npm** : `cc-model-router` est **disponible** (vérifié le 2026-10-26) ; `npm pack
       --dry-run` ; ajouter `repository`, `homepage`, `bugs`, `files`, `author` dans
       `package.json`.
-- [ ] **Nom du binaire** : `cc-router` est déjà pris sur npm (`cc-router@4.0.0`) ; décider
-      avant publication : garder `cc-router` (collision possible en global) ou renommer
-      (`cc-model-router`, `ccmr`). Le nom du package reste `cc-model-router`.
+- [x] **Nom du binaire** : décidé — package `cc-model-router`, binaires `cc-model-router`
+      et alias `ccmr`. `cc-router` est déjà pris sur npm (`cc-router@4.0.0`) et n’est pas utilisé.
 - [ ] **GitHub** : créer le dépôt, pousser, description, topics (`claude-code`,
       `model-router`, `cost-optimization`, `llm`, `mit`), social preview.
 - [x] **CI** : `npm test` + `npm run bench:verify` (aucun appel Claude réel) — `.github/workflows/ci.yml`.
@@ -370,8 +369,8 @@ routeur de modèles sans se mentir », éventuel conseil en coût/qualité Claud
 - **Lineup et prix** : Fable 5.1 / Opus 5.5 / Sonnet 5.5 / Haiku 5.5 au 2026-10-24 ;
   revérifier avant tout chiffre public.
 - **Nom npm/bin** : `cc-model-router` est disponible (vérifié le 2026-10-26) ; le binaire
-  `cc-router` est déjà pris par le package npm `cc-router@4.0.0` → renommer le binaire ou
-  assumer la collision avant publication.
+  `cc-router` est déjà pris par le package npm `cc-router@4.0.0`. Décision : package
+  `cc-model-router`, binaires `cc-model-router` + alias `ccmr`, pas de collision.
 - **Benchmark** : 12 tâches, 2 répétitions ; pas d'IC, pas de revue aveugle. Ne pas
   présenter comme une preuve statistique.
 - **Marque** : ne pas suggérer une affiliation Anthropic ; MIT, mention explicite.

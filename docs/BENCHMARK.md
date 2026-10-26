@@ -23,7 +23,7 @@ Le détail canonique, les règles d'ajout de tâche et la checklist de publicati
 
 - Chaque run part d'une **copie isolée** : fixture devquiz synthétique pour mechanical/implementation,
   fixtures Python dédiées pour debugging. Le repo source n'est jamais modifié.
-- Variante `routed` : `cc-router run`, hook chargé via `--settings`, config isolée
+- Variante `routed` : `ccmr run`, hook chargé via `--settings`, config isolée
   (`CC_ROUTER_CONFIG_DIR`).
 - Variante `baseline` : `claude --model <modèle> --effort <effort>` avec les mêmes flags
   (`-p --output-format json --max-budget-usd 0.50 --permission-mode acceptEdits`), **sans le hook**.
@@ -264,7 +264,7 @@ Claude Code 2.1.309.
 - Reproduire (settings vides, config temporaire) :
 
 ```bash
-CC_ROUTER_CONFIG_DIR=<tmp-config> node bin/cc-router.js run \
+CC_ROUTER_CONFIG_DIR=<tmp-config> node bin/cc-model-router.js run \
   "Debug the failing tests: there is a bug in calc.py, fix it so all tests pass. Do not modify test_calc.py or any other file." \
   --verify "python3 -m unittest test_calc.py" --escalate \
   -- --settings <empty-settings.json> --permission-mode acceptEdits \
@@ -275,7 +275,7 @@ CC_ROUTER_CONFIG_DIR=<tmp-config> node bin/cc-router.js run \
 
 Sonnet a créé `parcours/angular.yaml` avec un titre non quoté contenant `:`. PyYAML refuse le
 fichier. Opus a produit un YAML valide sur les deux répétitions. Ce n'est pas un échec de routing au
-sens « mauvais tier » : c'est un échec de **validation**. Un `cc-router run --verify "python3 -c
+sens « mauvais tier » : c'est un échec de **validation**. Un `ccmr run --verify "python3 -c
 'import yaml; yaml.safe_load(open(...))'"` (ou un check de projet) aurait renvoyé un échec, puis un
 retry Sonnet ou une escalade Opus aurait récupéré le run. C'est la deuxième priorité produit.
 Le pilot d'escalade ci-dessus a depuis exercé ce chemin sur un échec de debugging réel.
@@ -373,7 +373,7 @@ Voir le protocole complet : [`../bench/README.md`](../bench/README.md).
    un échec Sonnet réel sur `debug-calc` puis une réussite Opus (0,2132 $ vs 0,1559 $ Opus direct,
    +36,7 %). Il reste à mesurer le **taux** d'escalade, le coût moyen et l'effet du cache sur
    plusieurs runs et les 4 tâches.
-2. **Validation post-run** : `cc-router run --verify "<commande>"` + `--escalate` (implémenté
+2. **Validation post-run** : `ccmr run --verify "<commande>"` + `--escalate` (implémenté
    le 2026-10-26, hors chiffres de ce run). C'est ce qui aurait rattrapé le YAML invalide de
    Sonnet : le parser renvoie 1, puis Opus reçoit l'erreur et corrige.
 3. **Élargir à 20–30 tâches, 3 répétitions**, avec revue aveugle des diffs et intervalles de

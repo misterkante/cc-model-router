@@ -38,7 +38,7 @@ Ce que le benchmark ne mesure pas (encore) : style, maintenabilité, architectur
 
 | Variante | Commande | Modèle |
 |---|---|---|
-| `routed` | `cc-router run "<prompt>" -- <flags>` | choisi par le classifieur |
+| `routed` | `ccmr run "<prompt>" -- <flags>` | choisi par le classifieur |
 | `baseline` | `claude --model <m> --effort <e> <flags> "<prompt>"` | imposé par la tâche |
 
 Les deux variantes reçoivent les mêmes flags de run, mais seule la variante routée ajoute `--settings` pour le hook :
@@ -119,7 +119,7 @@ node bench/run.mjs --repo /chemin/vers/devquiz --budget 0.50
 1. **Choisir le tier** et le baseline. Le baseline représente ce que l'utilisateur aurait utilisé sans router.
 2. **Écrire le prompt** de façon à ce qu'il route vers le tier visé. Vérifier :
    ```bash
-   node bin/cc-router.js classify "<prompt>"
+   node bin/cc-model-router.js classify "<prompt>"
    ```
 3. **Déclarer la tâche** dans [`tasks.mjs`](tasks.mjs) : `id`, `tier`, `fixture`, `baseline`, `prompt`, `allowedChanges`, `check`.
 4. **Écrire le check** dans [`checks.mjs`](checks.mjs) (voir §6).

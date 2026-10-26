@@ -35,16 +35,16 @@ function splitArgs(args) {
 }
 
 function usage() {
-  console.log(`cc-router — automatic model routing for Claude Code
+  console.log(`cc-model-router (ccmr) — automatic model routing for Claude Code
 
 Usage:
-  cc-router classify "<task>"     Print tier, model and confidence (JSON)
-  cc-router run "<task>" [--verify "<command>"] [--escalate] [-- <claude args>]
+  ccmr classify "<task>"     Print tier, model and confidence (JSON)
+  ccmr run "<task>" [--verify "<command>"] [--escalate] [-- <claude args>]
                                   Classify then run with --model/--effort/--fallback-model.
                                   --verify runs a command after the task.
                                   --escalate retries with the next tier on failure.
-  cc-router status                Show the effective tier -> model mapping
-  cc-router hook                  Hook mode: reads JSON on stdin (UserPromptSubmit)
+  ccmr status                Show the effective tier -> model mapping
+  ccmr hook                  Hook mode: reads JSON on stdin (UserPromptSubmit)
 
 Env:
   CC_ROUTER_CLAUDE_BIN   Claude binary used by "run" (default: claude)
@@ -60,7 +60,7 @@ switch (cmd) {
   case "classify": {
     const prompt = readPrompt(rest);
     if (!prompt) {
-      console.error('usage: cc-router classify "<task>"');
+      console.error('usage: ccmr classify "<task>"');
       process.exit(2);
     }
     console.log(JSON.stringify(classify(prompt, loadConfig()), null, 2));
@@ -73,14 +73,14 @@ switch (cmd) {
     try {
       parsed = parseRunArgs(promptArgs);
     } catch (err) {
-      console.error(`cc-router: ${err.message}`);
+      console.error(`cc-model-router: ${err.message}`);
       process.exit(2);
     }
 
     const prompt = parsed.prompt.trim() || readPrompt([]);
     if (!prompt) {
       console.error(
-        'usage: cc-router run "<task>" [--verify "<command>"] [--escalate] [-- <claude args...>]'
+        'usage: ccmr run "<task>" [--verify "<command>"] [--escalate] [-- <claude args...>]'
       );
       process.exit(2);
     }
@@ -160,7 +160,7 @@ switch (cmd) {
     });
 
     if (outcome.error) {
-      console.error(`cc-router: could not run ${bin}: ${outcome.error}`);
+      console.error(`cc-model-router: could not run ${bin}: ${outcome.error}`);
       process.exit(1);
     }
     if (outcome.ok) process.exit(0);

@@ -14,7 +14,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const CLI = path.join(ROOT, "bin", "cc-router.js");
+const CLI = path.join(ROOT, "bin", "cc-model-router.js");
 
 test("run --verify --escalate retries with the next tier after a failed check", () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), "cc-router-cli-"));

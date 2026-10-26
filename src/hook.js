@@ -11,7 +11,7 @@ import { loadConfig } from "./config.js";
  * to ~/.claude/router.log and returns an additionalContext message.
  *
  * Note: Claude Code does not currently let a hook change the active model
- * mid-session. This hook observes and recommends; use `cc-router run` (or the
+ * mid-session. This hook observes and recommends; use `ccmr run` (or the
  * native `opusplan` alias) to actually launch with the selected model.
  */
 export function runHook({
@@ -54,12 +54,12 @@ export function runHook({
         JSON.stringify({
           hookSpecificOutput: {
             hookEventName: "UserPromptSubmit",
-            additionalContext: `[cc-router] task tier: ${result.tier} → recommended model: ${result.model} (effort: ${result.effort}, confidence: ${result.confidence})${strategyNote}`
+            additionalContext: `[cc-model-router] task tier: ${result.tier} → recommended model: ${result.model} (effort: ${result.effort}, confidence: ${result.confidence})${strategyNote}`
           }
         })
       );
     } catch (err) {
-      stderr.write(`[cc-router] hook error: ${err.message}\n`);
+      stderr.write(`[cc-model-router] hook error: ${err.message}\n`);
     }
   });
 }

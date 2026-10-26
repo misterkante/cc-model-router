@@ -190,12 +190,12 @@ export function runWithVerification({
   for (let index = 0; index < plan.length; index += 1) {
     if (index > 0) {
       current = decisionForTier(plan[index], config, decision);
-      log(`cc-router: escalating to ${current.model} (${current.tier})`);
+      log(`cc-model-router: escalating to ${current.model} (${current.tier})`);
     }
 
     if (verify) {
       log(
-        `cc-router: attempt ${index + 1}/${plan.length} with ${current.model} (${current.tier})`
+        `cc-model-router: attempt ${index + 1}/${plan.length} with ${current.model} (${current.tier})`
       );
     }
     const run = runClaude({ prompt, decision: current, passthrough });
@@ -211,7 +211,7 @@ export function runWithVerification({
 
     let verification = { status: 0, output: "" };
     if (verify) {
-      log(`cc-router: verifying with: ${verify}`);
+      log(`cc-model-router: verifying with: ${verify}`);
       verification = runVerify({ command: verify, attempt: index + 1 });
     }
 
@@ -219,16 +219,16 @@ export function runWithVerification({
 
     const runStatus = run?.status ?? 0;
     if (verify && runStatus !== 0) {
-      log(`cc-router: claude exited with status ${runStatus}`);
+      log(`cc-model-router: claude exited with status ${runStatus}`);
     }
     const ok = verify ? verification.status === 0 : runStatus === 0;
     if (ok) {
-      if (verify) log("cc-router: verification passed");
+      if (verify) log("cc-model-router: verification passed");
       return { ok: true, attempts: index + 1, ...last };
     }
 
     if (verify) {
-      log(`cc-router: verification failed (exit ${verification.status})`);
+      log(`cc-model-router: verification failed (exit ${verification.status})`);
     }
 
     if (!escalate || index === plan.length - 1) break;
