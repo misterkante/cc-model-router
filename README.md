@@ -8,6 +8,8 @@
 
 **Status: MVP (0.1.0).** Claude Code first; OpenCode support is on the roadmap. See the [documentation index](docs/README.md) for the benchmark, research and launch notes.
 
+<p align="center"><img src="docs/assets/social-preview.png" alt="cc-model-router: -34.1% cost per accepted task, 23/24 accepted vs 21/24 baseline" width="100%"></p>
+
 ## Install
 
 ```bash

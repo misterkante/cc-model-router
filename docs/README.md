@@ -13,6 +13,7 @@ Start with the [README](../README.md) for installation and usage.
 | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Development, benchmark and commit conventions. |
 | [`../SECURITY.md`](../SECURITY.md) | Threat model for verification commands and vulnerability reporting. |
 | [`../CHANGELOG.md`](../CHANGELOG.md) | Release history. |
+| [`assets/social-preview.png`](assets/social-preview.png) | 1280×640 social preview image, ready to upload in GitHub repository settings. |
 
 ## Reading the numbers
 

@@ -249,7 +249,8 @@ commerciale.
       (`claude-code`, `model-router`, `cost-optimization`, `llm`, `mit-license`, etc.),
       issues/projects/discussions activés, CI verte.
 - [ ] **GitHub (web-only)** : social preview et épinglage du dépôt sur le profil. Aucune API
-      GitHub publique ne permet de les modifier (voir note ci-dessous).
+      GitHub publique ne permet de les modifier (voir note ci-dessous). L’image de social
+      preview est prête : [`docs/assets/social-preview.png`](assets/social-preview.png).
 - [x] **CI** : `npm test` + `npm run bench:verify` (aucun appel Claude réel) — `.github/workflows/ci.yml`.
 - [x] **README** : installation, référence CLI, tableau de comparaison, limitations visibles,
       liens vers `docs/BENCHMARK.md`, `docs/COMPETITION.md` et `docs/README.md`.
