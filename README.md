@@ -3,6 +3,7 @@
 > Automatic model routing for Claude Code — classify each task, pick the cheapest model that can do it, never type `/model` again.
 
 [![CI](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml/badge.svg)](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/misterkante/cc-model-router?display_name=tag)](https://github.com/misterkante/cc-model-router/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **Status: MVP (0.1.0).** Claude Code first; OpenCode support is on the roadmap. See the [documentation index](docs/README.md) for the benchmark, research and launch notes.
