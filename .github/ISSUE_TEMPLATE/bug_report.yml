@@ -1,0 +1,54 @@
+name: Bug report
+description: Something does not work as expected
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please **do not paste secrets**, API keys, or full
+        `~/.claude` files. Sanitize paths and outputs.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "0.1.0, or a commit hash"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - classification
+        - run / verify / escalate
+        - hook
+        - statusline
+        - benchmark
+        - docs
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Command, expected result, actual result. Sanitize paths.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: |
+        Minimal steps. Prefer an isolated config:
+        `CC_ROUTER_CONFIG_DIR=$(mktemp -d)` and a temporary project copy.
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "OS, Node version, Claude Code version"
+    validations:
+      required: true

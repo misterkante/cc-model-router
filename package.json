@@ -6,8 +6,23 @@
   "bin": {
     "cc-router": "./bin/cc-router.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "hooks",
+    "examples",
+    "scripts",
+    "docs",
+    "bench/README.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "README.md",
+    "SECURITY.md"
+  ],
   "scripts": {
     "test": "node --test tests/*.test.js",
+    "demo": "bash scripts/demo.sh",
+    "prepublishOnly": "npm test",
     "bench": "node bench/run.mjs",
     "bench:verify": "node bench/verify.mjs",
     "bench:report": "node bench/report.mjs",

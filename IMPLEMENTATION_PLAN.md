@@ -163,7 +163,8 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 - [ ] Rendu TUI manuel (hook + statusline) — nécessite un humain.
 - [ ] Mettre à jour `docs/RESEARCH.md` avant Phase 2 (veille datée).
 - [x] Veille concurrence + positionnement + plan de lancement (`docs/COMPETITION.md`).
-- [ ] Préparer le lancement : npm, GitHub, CI, démo, article (voir `docs/COMPETITION.md` §7).
+- [x] Préparation lancement (code) : `LICENSE`, `SECURITY.md`, CI, templates d'issues/PR, `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`) ; nom npm `cc-model-router` disponible.
+- [ ] Lancement restant : GitHub/npm publication, GIF, article, décision sur le bin `cc-router` (déjà pris sur npm).
 - [ ] Phase 2 — adaptateur OpenCode (routing par tour / plugin).
 - [ ] Phase 3 — dashboard de stats (coût/quota économisé, escalade).
 - [ ] Golden tests sur des prompts réels.

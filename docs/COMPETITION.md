@@ -239,14 +239,14 @@ commerciale.
       (`cc-model-router`, `ccmr`). Le nom du package reste `cc-model-router`.
 - [ ] **GitHub** : créer le dépôt, pousser, description, topics (`claude-code`,
       `model-router`, `cost-optimization`, `llm`, `mit`), social preview.
-- [ ] **CI** : `npm test` + `npm run bench:verify` (aucun appel Claude réel).
+- [x] **CI** : `npm test` + `npm run bench:verify` (aucun appel Claude réel) — `.github/workflows/ci.yml`.
 - [ ] **README** : tableau de comparaison, GIF de démo, graphique du benchmark,
       limitations visibles, lien vers `docs/BENCHMARK.md` et `docs/COMPETITION.md`.
 - [ ] **Reproduire le benchmark** depuis un clone propre ; vérifier le JSON publié.
 - [ ] **Démo 60 s** : `classify`, `run --verify` (dry-run ou petit run), `status`.
 - [ ] **Blog post** : « J'ai mesuré 48 runs Claude Code : -34 % de coût par tâche
       acceptée, et l'échec qui compte » — méthode, YAML invalide, vérification.
-- [ ] **Sécurité** : `SECURITY.md`, issue templates, rappel « non affilié à Anthropic ».
+- [x] **Sécurité** : `SECURITY.md`, templates d'issues/PR, rappel « non affilié à Anthropic ».
 
 ### 7.2 Jour J
 
