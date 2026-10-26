@@ -177,11 +177,14 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 - [x] Veille concurrence + positionnement + plan de lancement (`docs/COMPETITION.md`).
 - [x] Préparation lancement (code) : `LICENSE`, `SECURITY.md`, CI, templates d'issues/PR, `scripts/demo.sh`, `package.json` (`files`, `prepublishOnly`) ; nom npm `cc-model-router` disponible.
 - [x] Nom du binaire : package `cc-model-router`, binaires `cc-model-router` + alias `ccmr` (évite la collision avec `cc-router@4.0.0`).
-- [ ] Lancement restant : GitHub/npm publication, GIF, article.
+- [x] Dépôt GitHub public créé et poussé, description, homepage, 12 topics, issues/projects/discussions, CI verte.
+- [ ] Publication npm (tarball validé, pas encore publié).
+- [ ] Épinglage du dépôt et social preview : web-only, aucune API GitHub publique.
+- [ ] GIF de démo, graphique et article de lancement.
 - [ ] Phase 2 — adaptateur OpenCode (routing par tour / plugin).
 - [ ] Phase 3 — dashboard de stats (coût/quota économisé, escalade).
 - [ ] Golden tests sur des prompts réels.
-- [ ] Publication npm + README final.
+- [ ] Publication npm réelle (le README et les métadonnées sont prêts).
 
 ## 📝 Suivi
 

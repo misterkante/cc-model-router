@@ -239,22 +239,31 @@ commerciale.
 
 ### 7.1 Pré-lancement (2 semaines)
 
-- [ ] **Figer le scope** : 3 tiers, `run --verify`/`--escalate`, politique Sonnet-first opt-in, benchmark 48 runs.
-- [ ] **npm** : `cc-model-router` est **disponible** (vérifié le 2026-10-26) ; `npm pack
-      --dry-run` ; ajouter `repository`, `homepage`, `bugs`, `files`, `author` dans
-      `package.json`.
+- [x] **Figer le scope** : 3 tiers, `run --verify`/`--escalate`, politique Sonnet-first opt-in, benchmark 48 runs.
+- [x] **npm (métadonnées)** : `cc-model-router` est **disponible** (vérifié le 2026-10-26) ;
+      `repository`, `homepage`, `bugs`, `files`, `author` ajoutés ; `npm pack --dry-run` OK.
+- [ ] **npm (publication)** : publier le tarball après validation dans un répertoire propre.
 - [x] **Nom du binaire** : décidé — package `cc-model-router`, binaires `cc-model-router`
       et alias `ccmr`. `cc-router` est déjà pris sur npm (`cc-router@4.0.0`) et n’est pas utilisé.
-- [ ] **GitHub** : créer le dépôt, pousser, description, topics (`claude-code`,
-      `model-router`, `cost-optimization`, `llm`, `mit`), social preview.
+- [x] **GitHub** : dépôt public créé et poussé, description, homepage, 12 topics
+      (`claude-code`, `model-router`, `cost-optimization`, `llm`, `mit-license`, etc.),
+      issues/projects/discussions activés, CI verte.
+- [ ] **GitHub (web-only)** : social preview et épinglage du dépôt sur le profil. Aucune API
+      GitHub publique ne permet de les modifier (voir note ci-dessous).
 - [x] **CI** : `npm test` + `npm run bench:verify` (aucun appel Claude réel) — `.github/workflows/ci.yml`.
-- [ ] **README** : tableau de comparaison, GIF de démo, graphique du benchmark,
-      limitations visibles, lien vers `docs/BENCHMARK.md` et `docs/COMPETITION.md`.
+- [x] **README** : installation, référence CLI, tableau de comparaison, limitations visibles,
+      liens vers `docs/BENCHMARK.md`, `docs/COMPETITION.md` et `docs/README.md`.
+- [ ] **Démo visuelle** : GIF de démo et graphique du benchmark.
 - [ ] **Reproduire le benchmark** depuis un clone propre ; vérifier le JSON publié.
 - [ ] **Démo 60 s** : `classify`, `run --verify` (dry-run ou petit run), `status`.
 - [ ] **Blog post** : « J'ai mesuré 48 runs Claude Code : -34 % de coût par tâche
       acceptée, et l'échec qui compte » — méthode, YAML invalide, vérification.
 - [x] **Sécurité** : `SECURITY.md`, templates d'issues/PR, rappel « non affilié à Anthropic ».
+
+> **Épinglage du profil** : GitHub ne fournit pas de mutation publique (`pinRepository`
+> n'existe pas ; `/user/pinned_repositories` renvoie 404). L'épinglage se fait via
+> l'interface web : profil → *Customize your pins* → sélectionner `cc-model-router` →
+> *Save pins*. Le README du profil peut aussi le mettre en avant.
 
 ### 7.2 Jour J
 

@@ -5,7 +5,7 @@
 [![CI](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml/badge.svg)](https://github.com/misterkante/cc-model-router/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**Status: MVP (0.1.0).** Claude Code first; OpenCode support is on the roadmap.
+**Status: MVP (0.1.0).** Claude Code first; OpenCode support is on the roadmap. See the [documentation index](docs/README.md) for the benchmark, research and launch notes.
 
 ## Install
 
