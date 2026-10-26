@@ -151,7 +151,7 @@ Your `~/.claude/settings.json` and `~/.claude/model-router.json` are never modif
 
 Reference run: **12 tasks × 2 variants × 2 repeats = 48 runs**, automatic checks, isolated copies. Routing passed **23/24 (95.8%) vs 21/24 (87.5%)** and cost **$0.0906 per accepted task vs $0.1375** (-34.1%). Raw tokens fell 5.2% overall, but that is not the claim: the saving is in cost/quota, carried by mechanical (-94%) and implementation (-53%). Debugging is a quality guard (+30% per accepted vs Sonnet), not a saving.
 
-The run also found the next product gap: Sonnet produced one invalid YAML on an implementation task, and the debugging tier over-routes Opus on simple bugs. Validation + escalation is the next step.
+The run also found the next product gap: Sonnet produced one invalid YAML on an implementation task, and the debugging tier over-routes Opus on simple bugs. `run --verify` + `--escalate` is implemented to close the first gap; it is not yet included in the 48-run numbers.
 
 Full results, per-tier analysis, incident log and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md). Canonical process: [`bench/README.md`](bench/README.md).
 
@@ -161,6 +161,15 @@ npm run bench -- --repeats 2 --budget 0.50
 npm run bench:report -- bench/results/<file>.json
 ```
 
+## How it compares
+
+- **Native Claude Code**: `/model`, `--model`, `opusplan`, subagents with `model:`; no per-task tiering and no published task-level quality benchmark.
+- **tzachbon/claude-model-router-hook**: the closest hook-based router (5 task classes, subagent routing, warn/autoswitch); no published task benchmark or post-run verification. It defaults implementation/debugging to Opus, which is more conservative than this router.
+- **Gateways (Claude Code Router, Weave, LiteLLM, ClaudeRipple)**: multi-provider routing at scale, usually through a local proxy or endpoint change; their benchmarks are general, not Claude Code task-level.
+- **cc-model-router**: Claude Code-native, three tiers, a 48-run benchmark with deterministic checks, and `--verify`/`--escalate`; MIT, no proxy, no telemetry.
+
+See [`docs/COMPETITION.md`](docs/COMPETITION.md) for the dated research, links, positioning and launch plan.
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md). Run `npm test` and `npm run bench:verify` before opening a pull request.
@@ -168,6 +177,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). Run `npm test` and `npm run bench:veri
 ## Limitations (honest ones)
 
 - **A hook cannot change the active model mid-session.** Claude Code has no public API for that today (see issues #44976, #43326, #27665). The hook observes and recommends; `cc-router run` applies the model at launch.
+- **Routing is session-level, not turn-level.** Switching models mid-session invalidates the prompt cache; `cc-router run` picks one model at launch. `--verify` starts a new session only after a failure, so a retry pays a cold cache.
 - For interactive plan → code switching, Claude Code's native `opusplan` alias already covers part of the job.
 - Classification is heuristic and can be wrong. The `confidence` and `matched` fields are in the output so you can tune the keywords.
 - **Verification and escalation are opt-in.** The router does not know your test command; a retry reuses the working tree and can duplicate work or cost more. Use a clean git state for important runs.

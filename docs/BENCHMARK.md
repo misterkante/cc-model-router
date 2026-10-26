@@ -262,6 +262,7 @@ Voir le protocole complet : [`../bench/README.md`](../bench/README.md).
 4. **Valider la session interactive** (hook + statusline en TUI).
 5. **Phase 2 — OpenCode**, après une veille datée fraîche.
 6. **Phase 3 — dashboard** branché sur ces métriques (coût/quota, escalade, rework).
+7. **Positionnement et lancement** : voir [`COMPETITION.md`](COMPETITION.md) (veille du 2026-10-26).
 
 ## Annexe — pilote 2026-10-25
 

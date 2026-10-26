@@ -1,6 +1,7 @@
 # Veille — état de l'art
 
-> Dernière vérification : 2026-10-24
+> Dernière vérification lineup/CLI : 2026-10-24
+> Veille concurrence : 2026-10-26 (voir [`COMPETITION.md`](COMPETITION.md))
 > Règle : aucune phase de code ne démarre sans une note de veille datée.
 
 ## 1. Hiérarchie des sources
@@ -34,9 +35,12 @@ Un fait n'entre dans une décision que s'il est daté et sourcé. Les sources qu
 
 ## 4. Écosystème routing
 
-- Claude Code natif : alias `opusplan` (Opus en plan → Sonnet en exécution).
-- Feature requests ouvertes : #44976, #43326, #27665 (auto routing par task type).
-- Hook communautaire : `tzachbon/claude-model-router-hook` (tiers, config globale/projet, subagents).
+- Claude Code natif : alias `opusplan` (Opus en plan → Sonnet en exécution), `/model`, `model:` par sous-agent. Pas de routage automatique par type de tâche ni de switch mid-session.
+- Feature requests : #27665 (ouverte, 93,8 % des tokens Max sur Opus), #44976 (fermée doublon de #15721), #15721 (fermée comme couverte par `opusplan`).
+- Hook communautaire le plus proche : `tzachbon/claude-model-router-hook` (5 classes + abstain, config globale/projet, sous-agents, warn/autoswitch, 105 ★ au 2026-10-26 ; pas de benchmark de qualité publié).
+- Routeur Python/API : `edagher92-coder/claude-model-router` (tiers, fallback/escalade, `claude -p` pour l'abonnement ; 0 ★).
+- Gateways multi-provider : `musistudio/claude-code-router` (37,8k ★), `weave-os/router` (5,6k ★), LiteLLM Auto Router, RouteLLM, ClaudeRipple.
+- Détail, chiffres, liens et positionnement : [`COMPETITION.md`](COMPETITION.md) (veille du 2026-10-26).
 - OpenCode : issue #8456 (auto model par task type), plugins `opencode-model-router`, `Auto (Jev)`.
 
 ## 5. Incertitudes / à revérifier

@@ -130,6 +130,14 @@ Implémentation :
 
 Pourquoi ça compte : c'est la réponse directe au seul échec qualité mesuré. Un `--verify` qui parse le YAML aurait renvoyé 1, et `--escalate` aurait laissé Opus corriger avec l'erreur sous les yeux. La prochaine étape est de mesurer le taux d'escalade et le coût réel (échec + retry) sur les 12 tâches.
 
+## 🔎 Veille concurrence et lancement (2026-10-26)
+
+- [`docs/COMPETITION.md`](docs/COMPETITION.md) : demande (issues #27665 et #44976), ce que fait le natif (`opusplan`, cache), concurrents directs et indirects (tzachbon 105 ★, edagher 0 ★, CCR 37,8k ★, Weave 5,6k ★, LiteLLM, RouteLLM, ClaudeRipple).
+- Créneau : **natif Claude Code + tiers par tâche + benchmark 48 runs + vérification/escalade**. Pas de proxy, pas de clé API, MIT.
+- Verdict : **Go OSS/portfolio ; No-Go comme entreprise seule** sans équipe, dashboard, support et couche commerciale.
+- Lancement : le benchmark est la preuve ; Show HN + Reddit + article. Claims mesurés, baseline mixte explicite, échantillon petit assumé.
+- Prochaine action : préparer npm/GitHub/CI/démo/article, puis élargir le benchmark avant les gros claims.
+
 ## ⚠️ Limite connue (à documenter pour les users)
 
 Claude Code ne permet pas encore à un hook de changer le modèle en cours de session (issues #44976, #43326, #27665). Donc :
@@ -154,6 +162,8 @@ Claude Code ne permet pas encore à un hook de changer le modèle en cours de se
 - [x] Hook + statusline validés hors TUI (payloads réels, config projet).
 - [ ] Rendu TUI manuel (hook + statusline) — nécessite un humain.
 - [ ] Mettre à jour `docs/RESEARCH.md` avant Phase 2 (veille datée).
+- [x] Veille concurrence + positionnement + plan de lancement (`docs/COMPETITION.md`).
+- [ ] Préparer le lancement : npm, GitHub, CI, démo, article (voir `docs/COMPETITION.md` §7).
 - [ ] Phase 2 — adaptateur OpenCode (routing par tour / plugin).
 - [ ] Phase 3 — dashboard de stats (coût/quota économisé, escalade).
 - [ ] Golden tests sur des prompts réels.
