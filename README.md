@@ -17,7 +17,9 @@ npm install -g cc-model-router
 ccmr status
 ```
 
-The package exposes two equivalent commands: `cc-model-router` and `ccmr`. Without a global install:
+> The npm package is not published yet. Until it is, use the clone + `npm link` path below.
+
+The package exposes two equivalent commands: `cc-model-router` and `ccmr`. After publication, without a global install:
 
 ```bash
 npx cc-model-router status
