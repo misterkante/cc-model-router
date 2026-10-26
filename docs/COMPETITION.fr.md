@@ -71,9 +71,10 @@ projet est justement là pour produire une mesure reproductible, à notre échel
   continuent).
 - Sous-agents : un fichier d'agent peut déclarer `model:` ; c'est du routage **par
   sous-agent**, pas par tâche, et le sous-agent hérite du modèle parent par défaut.
-- **Pas de changement de modèle en cours de session** via un hook public. C'est la limite
-  qui structure tout le design : le hook observe/recommande, `ccmr run` applique au
-  lancement.
+- Les hooks des settings ne peuvent pas changer le modèle en cours de session. L'API
+  Mods (Claude Code 2.1.287+) permet à un plugin de réécrire le modèle par requête, ce
+  que ce projet utilise. Le CLI choisit toujours un modèle par run ; le plugin route par
+  tour.
 
 ### 2.3 La contrainte de cache qui rend le routage par tour dangereux
 
@@ -88,9 +89,11 @@ Dans l'issue #27665, plusieurs utilisateurs documentent ce piège :
 - l'escalade quand la tâche est **visiblement bloquée** peut être moins chère que cinq
   cycles ratés sur un modèle plus faible.
 
-C'est exactement le compromis du projet : **un modèle par run**, puis `--verify` et
-`--escalate` qui démarrent une nouvelle session seulement en cas d'échec. On paie un
-cache froid au retry, mais uniquement quand la première tentative a échoué.
+C'est pourquoi le projet a deux chemins. `ccmr run` garde **un modèle par run**, puis
+`--verify` et `--escalate` démarrent une nouvelle session seulement en cas d'échec. Le
+plugin route par tour, mais il escalade immédiatement et retarde les descentes derrière
+un délai et un seuil de confiance. Un changement peut toujours invalider le cache ; le
+garde-fou réduit le nombre de changements, il ne les rend pas gratuits.
 
 ## 3. Paysage concurrentiel (au 2026-10-26)
 
@@ -121,7 +124,8 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
   routeur généraliste et une perte de qualité visible sur les benchmarks difficiles.
   C'est un concurrent indirect et un modèle méthodologique.
 - **Aucun des projets examinés ne combine** natif Claude Code + tiers par tâche +
-  benchmark reproductible + vérification/escalade. C'est notre espace, pas une
+  benchmark reproductible + vérification/escalade + plugin par tour. C'est notre espace,
+  pas une
   révolution technique.
 
 ## 4. Carte de positionnement
@@ -207,7 +211,7 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
 - **Demande** : documentée par les issues, les concurrents et les coûts réels.
 - **Niche** : les gateways sont gros mais généralistes ; le hook concurrent le plus proche
   est petit (105 ★) et sans benchmark. Un outil natif, mesuré, vérifié, MIT, a une place.
-- **Coût de développement** : faible (Node, zéro dépendance, déjà 53 tests).
+- **Coût de développement** : faible (Node, zéro dépendance, déjà 54 tests).
 - **Valeur portfolio** : élevée (recherche, CLI, hooks, isolation, tests, benchmark,
   analyse coût/qualité, documentation honnête).
 
@@ -320,7 +324,7 @@ Ce que le projet démontre, concrètement :
 - **Recherche datée** : lineup, CLI, issues, concurrents, sources primaires.
 - **Ingénierie** : CLI Node, hooks, config globale/projet, isolation, `spawnSync`,
   parsing d'arguments, exit codes, dry-run.
-- **Qualité** : 53 tests, faux binaire Claude, tests d'intégration, `bench:verify`,
+- **Qualité** : 54 tests, faux binaire Claude, tests d'intégration, `bench:verify`,
   checks déterministes, dataset assaini, smoke TUI automatisé (`test:tui`, tmux).
 - **Analyse coût/qualité** : coût par tâche acceptée, baseline, tokens vs coût, limites.
 - **Communication** : README, benchmark reproductible, documentation honnête, ce document.

@@ -29,6 +29,8 @@ Le détail canonique, les règles d'ajout de tâche et la checklist de publicati
   (`CC_ROUTER_CONFIG_DIR`).
 - Variante `baseline` : `claude --model <modèle> --effort <effort>` avec les mêmes flags
   (`-p --output-format json --max-budget-usd 0.50 --permission-mode acceptEdits`), **sans le hook**.
+- Ces chiffres mesurent `ccmr run`, un modèle par processus. Ce n'est **pas** un benchmark du
+  plugin par tour ; voir [`PLUGIN.fr.md`](PLUGIN.fr.md) pour le plugin et sa limite de cache.
 - Checks **automatiques** : IDs présents, JSON structuré, fichiers attendus, YAML valide (PyYAML),
   tests Python, fichier de test non modifié (SHA-1).
 - Un run est **accepté** si le check passe, si le code de sortie est 0 et si aucun fichier hors

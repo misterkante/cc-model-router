@@ -1,0 +1,4 @@
+{
+  "description": "Routes each Claude Code turn to the cheapest model that fits the task.",
+  "modules": ["./register.js"]
+}

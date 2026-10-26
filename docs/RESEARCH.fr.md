@@ -45,12 +45,39 @@ Un fait n'entre dans une décision que s'il est daté et sourcé. Les sources qu
 - Détail, chiffres, liens et positionnement : [`COMPETITION.fr.md`](COMPETITION.fr.md) (veille du 2026-10-26).
 - OpenCode : issue #8456 (auto model par task type), plugins `opencode-model-router`, `Auto (Jev)`.
 
+## 4b. Plugins Claude Code et API Mods (2026-10-26)
+
+- Les mods sont des plugins dont les hooks JavaScript tournent dans Claude Code.
+  Ils exigent Claude Code 2.1.287 ou plus récent dans le terminal. La version
+  locale est 2.1.309.
+- Un mod peut réécrire un prompt ou une requête, y compris le modèle envoyé au
+  provider. Il n’est pas sandboxé : il tourne avec les permissions de
+  l’utilisateur et peut lire des fichiers, lancer des processus et faire des
+  requêtes réseau. L’utilisateur doit lire `claude plugin validate <chemin>`
+  avant d’installer.
+- Un marketplace est un fichier `.claude-plugin/marketplace.json` à la racine du
+  dépôt. Une source de plugin relative se résout depuis cette racine, donc
+  `./plugin` est le dossier du plugin dans ce dépôt.
+- Flux d’installation : `/plugin marketplace add <owner/repo>`, puis
+  `/plugin install <plugin>@<marketplace>` et choisir un scope. Depuis un shell :
+  `claude plugin install <plugin>@<marketplace>`.
+- `--plugin-dir <chemin>` charge un plugin pour une session et sert au
+  développement. Les plugins déjà installés se chargent aussi en `claude -p` ;
+  `/plugin` n’est pas disponible en mode non interactif.
+- Sources : code.claude.com/docs/en/plugins/mods/overview,
+  code.claude.com/docs/en/plugins/install,
+  code.claude.com/docs/en/plugins/marketplace-reference (consultées le 2026-10-26).
+
 ## 5. Incertitudes / à revérifier
 
 - Les prix et la lineup bougent vite : revérifier avant toute publication.
 - Les résultats web se contredisent parfois (articles citant encore Opus 4.6 / Sonnet 4.6 / Haiku 4.5).
 - `CLAUDE_CONFIG_DIR` : support non confirmé ; on utilise `--settings` + `CC_ROUTER_CONFIG_DIR`.
-- Schéma exact du hook `UserPromptSubmit` (`additionalContext`) : à valider en session réelle (reporté).
+- L’API Mods est récente (2.1.287). Les noms d’événements et les signatures
+  peuvent changer ; le plugin est testé sur 2.1.309 et la version est documentée
+  dans le README.
+- Schéma exact du hook `UserPromptSubmit` (`additionalContext`) : validé en
+  session réelle le 2026-10-25 ; le plugin utilise l’API Mods séparée.
 
 ## 6. Décision issue de la veille
 

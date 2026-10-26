@@ -69,8 +69,9 @@ reproducible measurement at our scale.
   closed as "covered" by a collaborator, but requests continue).
 - Subagents: an agent file can declare `model:`; that is routing **per subagent**, not per
   task, and the subagent inherits the parent model by default.
-- **No mid-session model switch** through a public hook. That is the constraint that
-  shapes the whole design: the hook observes/recommends, `ccmr run` applies at launch.
+- Settings hooks cannot change the model mid-session. The Mods API (Claude Code
+  2.1.287+) lets a plugin rewrite the model per request, which this project uses. The
+  CLI still chooses one model per run; the plugin routes per turn.
 
 ### 2.3 The cache constraint that makes per-turn routing dangerous
 
@@ -84,9 +85,11 @@ document this trap:
 - escalation when the task is **visibly stuck** can be cheaper than five failed cycles on
   a weaker model.
 
-That is exactly the project's trade-off: **one model per run**, then `--verify` and
-`--escalate` that start a new session only on failure. You pay a cold cache on retry, but
-only when the first attempt failed.
+That is why the project has two paths. `ccmr run` keeps **one model per run**, then
+`--verify` and `--escalate` start a new session only on failure. The plugin routes per
+turn, but it escalates immediately and delays downgrades behind a cooldown and a
+confidence gate. A switch can still invalidate the cache; the guardrail reduces the
+number of switches, it does not make them free.
 
 ## 3. Competitive landscape (as of 2026-10-26)
 
@@ -117,7 +120,8 @@ only when the first attempt failed.
   router and a visible quality loss on hard benchmarks. It is an indirect competitor and
   a methodological model.
 - **None of the projects examined combines** native Claude Code + per-task tiers +
-  reproducible benchmark + verification/escalation. That is our space, not a technical
+  reproducible benchmark + verification/escalation + a per-turn plugin. That is our
+  space, not a technical
   revolution.
 
 ## 4. Positioning map
@@ -202,7 +206,7 @@ only when the first attempt failed.
 - **Demand**: documented by issues, competitors and real costs.
 - **Niche**: gateways are big but generalist; the closest competing hook is small (105 ★)
   and has no benchmark. A native, measured, verified, MIT tool has a place.
-- **Development cost**: low (Node, zero dependencies, already 53 tests).
+- **Development cost**: low (Node, zero dependencies, already 54 tests).
 - **Portfolio value**: high (research, CLI, hooks, isolation, tests, benchmark,
   cost/quality analysis, honest documentation).
 
@@ -314,7 +318,7 @@ What the project demonstrates, concretely:
 - **Dated research**: lineup, CLI, issues, competitors, primary sources.
 - **Engineering**: Node CLI, hooks, global/project config, isolation, `spawnSync`,
   argument parsing, exit codes, dry-run.
-- **Quality**: 53 tests, fake Claude binary, integration tests, `bench:verify`,
+- **Quality**: 54 tests, fake Claude binary, integration tests, `bench:verify`,
   deterministic checks, sanitized dataset, automated TUI smoke test (`test:tui`, tmux).
 - **Cost/quality analysis**: cost per accepted task, baseline, tokens vs cost, limits.
 - **Communication**: README, reproducible benchmark, honest documentation, this document.

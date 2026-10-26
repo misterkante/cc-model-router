@@ -8,11 +8,32 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-26
+
 ### Added
 
-- Bilingual documentation (English/French), localized benchmark charts and a
-  reproducible chart generator.
-- Automated documentation link and bilingual-pair check (`npm run docs:check`).
+- Native Claude Code plugin (Mods API) that classifies each prompt and applies
+  the model and effort to every step of the turn.
+- Per-turn routing with `routing.mode`: `per-turn`, `session` or `off`.
+- Cache-aware switching: immediate escalation, cooldown and confidence gate for
+  downgrades, and `cacheAware: false` to always follow the classifier.
+- `/ccmr` command showing the current model, the last decision and the routing
+  configuration.
+- Marketplace manifest at the repository root and a plugin icon.
+- Plugin tests with `claude plugin test` and a CLI/plugin classifier parity test.
+- Bilingual plugin documentation.
+
+### Changed
+
+- npm package now includes `plugin/` and `.claude-plugin/`.
+- README documents the plugin as the recommended interactive integration; the
+  settings hook remains available as the observe-only legacy path.
+
+### Fixed
+
+- The plugin now keeps the routed model for tool-call continuations instead of
+  falling back to the session model on the second request of a turn.
+- The cache-aware cooldown no longer switches one turn too early.
 
 ## [0.1.1] - 2026-10-26
 
@@ -58,6 +79,7 @@ All notable changes to this project are documented here. The format follows
 - Subscription quota is estimated with Claude Code's API-equivalent
   `total_cost_usd`, not billed subscription dollars.
 
-[Unreleased]: https://github.com/misterkante/cc-model-router/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/misterkante/cc-model-router/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/misterkante/cc-model-router/releases/tag/v0.2.0
 [0.1.1]: https://github.com/misterkante/cc-model-router/releases/tag/v0.1.1
 [0.1.0]: https://github.com/misterkante/cc-model-router/releases/tag/v0.1.0

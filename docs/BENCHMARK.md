@@ -30,6 +30,8 @@ The canonical details, task-addition rules and publication checklist are in
 - `baseline` variant: `claude --model <model> --effort <effort>` with the same flags
   (`-p --output-format json --max-budget-usd 0.50 --permission-mode acceptEdits`), **without the
   hook**.
+- These numbers measure `ccmr run`, one model per process. They are **not** a benchmark of
+  the per-turn plugin; see [`PLUGIN.md`](PLUGIN.md) for the plugin and its cache caveat.
 - **Automatic** checks: IDs present, structured JSON, expected files, valid YAML (PyYAML), Python
   tests, test file unchanged (SHA-1).
 - A run is **accepted** if the check passes, the exit code is 0, and no file outside

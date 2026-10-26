@@ -28,5 +28,10 @@ time to fix the issue before public disclosure.
   prefer read-only checks (tests, typecheck, lint).
 - The router reads `~/.claude/model-router.json` and the project's
   `.claude/model-router.json`. Do not put secrets in those files.
+- The Claude Code plugin is a mod. Mods run inside Claude Code with the user's
+  permissions and are not sandboxed. This plugin reads the same config files and
+  the session cwd, changes the model and effort of a request, and makes no
+  network requests. It does not run shell commands. Review
+  `claude plugin validate plugin` before installing a copy you did not build.
 - Benchmark fixtures run in isolated temporary copies. The real project and
   `~/.claude` are not modified.

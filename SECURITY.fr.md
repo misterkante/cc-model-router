@@ -28,5 +28,11 @@ temps de corriger avant toute divulgation publique.
   et privilégie les checks en lecture seule (tests, typecheck, lint).
 - Le routeur lit `~/.claude/model-router.json` et le
   `.claude/model-router.json` du projet. Ne mets pas de secrets dans ces fichiers.
+- Le plugin Claude Code est un mod. Les mods tournent dans Claude Code avec les
+  permissions de l’utilisateur et ne sont pas sandboxés. Ce plugin lit les mêmes
+  fichiers de configuration et le dossier de la session, change le modèle et
+  l’effort d’une requête, et ne fait aucune requête réseau. Il ne lance pas de
+  commande shell. Lis `claude plugin validate plugin` avant d’installer une
+  copie que tu n’as pas construite.
 - Les fixtures du benchmark tournent dans des copies temporaires isolées. Le
   vrai projet et `~/.claude` ne sont pas modifiés.

@@ -5,3 +5,4 @@ bench/results/
 *.log
 __pycache__/
 *.pyc
+plugin/.claude-plugin/types/

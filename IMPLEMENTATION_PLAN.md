@@ -3,7 +3,7 @@
 [English](IMPLEMENTATION_PLAN.md) · [Français](IMPLEMENTATION_PLAN.fr.md)
 
 > Last updated: 2026-10-26
-> Status: Phase 1 complete (Claude Code MVP) + expanded benchmark (48 runs) + verification/escalation
+> Status: Phase 1 complete (Claude Code MVP + plugin) + expanded benchmark (48 runs) + verification/escalation
 
 ## 🎯 Vision
 
@@ -52,6 +52,7 @@ per accepted result.
 
 - [x] Phase 0 — Research & discovery: ✅ done (see `docs/RESEARCH.md`)
 - [x] Phase 1 — Claude Code MVP: hook + config + routing + override + status ✅
+- [x] Phase 1.5 — Native Claude Code plugin (Mods API, per-turn routing) ✅
 - [ ] Phase 2 — OpenCode: equivalent routing / plugin
 - [ ] Phase 3 — Measurement & stats: cost/quota saved, costs, quality escalation
 
@@ -71,7 +72,7 @@ per accepted result.
 
 ## 🧪 Phase 1 evidence
 
-- `node --test tests/*.test.js` → **53/53 tests pass**
+- `node --test tests/*.test.js` → **54/54 tests pass**
 - `npm run docs:check` → all relative Markdown links and bilingual pairs resolve
 - `ccmr classify "debug why the login test is flaky"` → `debugging` / `opus` / confidence 1
 - `ccmr run` (dry-run) → `claude --model sonnet "implement the auth endpoint"`
@@ -159,8 +160,8 @@ Implementation:
 - `bin/cc-model-router.js`: `spawnSync` wiring, dry-run with escalation plan, verification
   exit code.
 - Tests: 24 runner tests + 18 classifier/config tests + 3 CLI tests (fake Claude binary,
-  zero quota) + 7 hook/statusline integration tests + 1 `check-one` test. `npm test` = **53
-  tests**.
+  zero quota) + 7 hook/statusline integration tests + 1 `check-one` test + 1 CLI/plugin
+  classifier parity test. `npm test` = **54 tests**.
 - Limits: no rollback; the retry reuses the working tree; the verification command is
   user-provided; simulation + real 4/4 pilot on `debug-calc` + `debug-search`; a second pilot
   without the hook exercised real escalation (see below).
@@ -172,6 +173,55 @@ Why it matters: this is the direct answer to the only measured quality failure. 
 that parses the YAML would have returned 1, and `--escalate` would have let Opus fix it with
 the error in front of it. The Sonnet-first simulation, the real 4/4 pilot and the escalation
 pilot below give a first estimate; the escalation rate remains to be measured.
+
+## 🔌 Native Claude Code plugin (0.2.0, 2026-10-26)
+
+Problem: the settings hook can observe and recommend, but it cannot change the
+model inside an interactive session. Users still had to launch `ccmr run` for
+every task, which is not the direct Claude Code experience they asked for.
+
+Research: official Mods API and marketplace documentation (fetched 2026-10-26,
+recorded in `docs/RESEARCH.md`). Mods require Claude Code 2.1.287+; the local
+version is 2.1.309.
+
+Implementation:
+
+- `plugin/.claude-plugin/plugin.json`: manifest, version `0.2.0`.
+- `plugin/hooks/register.js`: hooks `session.start`, `prompt.submit`,
+  `turn.start`, `turn.step`, `turn.complete`, plus the `/ccmr` command.
+- `plugin/lib/classifier.js` and `plugin/lib/config.js`: plugin copies of the
+  canonical classifier and config merge, checked by a parity test.
+- `.claude-plugin/marketplace.json`: marketplace entry with `source: "./plugin"`.
+- `docs/PLUGIN.md` / `.fr.md`: install, routing modes, cache-aware switching,
+  quality limits and security.
+- `routing` config: `mode` (`per-turn`, `session`, `off`), `cacheAware`,
+  `minTurnsBetweenSwitches`, `minConfidence`.
+- Escalation is immediate; downgrades wait for the cooldown and a confidence
+  threshold. This is a guardrail, not a benchmarked result.
+- `turn.step` rewrites every request in the turn, so tool-call continuations
+  keep the routed model. Subagent requests are left alone.
+- The plugin does not run `--verify` or escalate. `ccmr run` remains the
+  quality-gated path.
+- Fixed the off-by-one in the cache-aware cooldown and the second-request model
+  fallback.
+
+Evidence:
+
+- `claude plugin validate plugin` passes; hooks and API calls are listed.
+- `claude plugin test plugin` → **7/7 tests pass**.
+- `npm test` → **54/54 tests pass**, including CLI/plugin classifier parity.
+- Real smoke test on 2026-10-26:
+  `claude --plugin-dir ./plugin --max-budget-usd 0.02 --output-format json -p "fix typo: teh"`.
+  Result: only `claude-haiku-5-5`, cost `$0.00069732`, success. The earlier
+  version also used Sonnet on the second request; the fix removed that.
+- `/ccmr` in a plugin session reported the current model, last decision and
+  `mode=per-turn cacheAware=true minTurns=2`.
+- Marketplace flow tested in an isolated `CLAUDE_CONFIG_DIR`: marketplace add and
+  install succeeded, plugin `0.2.0` was enabled, and `/ccmr` returned
+  `current=claude-opus-5-5`, `last=no decision yet`, `mode=per-turn` with no
+  model call.
+- Limits: no plugin benchmark; per-turn cache behavior is a guardrail; no
+  subagent routing; no verification/escalation in the plugin.
 
 ## 🧪 Sonnet-first debugging (opt-in, 2026-10-26)
 
@@ -193,7 +243,7 @@ pilot below give a first estimate; the escalation rate remains to be measured.
 - Implementation: `src/config.js` (merge), `src/runner.js` (`initialDecision`,
   `escalationPlanFor`), CLI dry-run/status, statusline `D:sonnet→opus`, note in the hook.
 - Tests: 11 new tests (runner, config, CLI, hook/statusline) + 1 `bench/check-one.mjs` test;
-  `npm test` = **53 tests**.
+  `npm test` = **54 tests**.
 - Limits: simulation + two small pilots; escalation rate and average cost remain to be
   measured; retry reuses the failed tree; requires a reliable check.
 
@@ -212,12 +262,15 @@ pilot below give a first estimate; the escalation rate remains to be measured.
 
 ## ⚠️ Known limitation (document for users)
 
-Claude Code does not yet allow a hook to change the model mid-session (issues #44976,
-#43326, #27665). Therefore:
+A settings hook still cannot change the model mid-session (issues #44976, #43326,
+#27665). The native plugin solves this through the separate Mods API:
 
-- the hook **observes and recommends**;
-- `ccmr run` applies the model **at launch**;
-- interactively, the native `opusplan` alias covers plan → code.
+- the settings hook **observes and recommends**;
+- `ccmr run` applies the model **at launch** and remains the quality-gated path;
+- the plugin applies the model **per turn** and does not verify or escalate;
+- per-turn switches can invalidate the prompt cache, hence the cache-aware
+  cooldown for downgrades;
+- subagents are not routed by the plugin.
 
 ## ⚠️ Success criteria
 
@@ -250,10 +303,13 @@ Claude Code does not yet allow a hook to change the model mid-session (issues #4
   (avoids the collision with `cc-router@4.0.0`).
 - [x] Public GitHub repository created and pushed, description, homepage, 12 topics,
   issues/projects/discussions, CI green.
-- [x] Clean clone from GitHub: `npm test` 53/53, `bench:verify` 12/12 checks red before,
+- [x] Clean clone from GitHub: `npm test` 54/54, `bench:verify` 12/12 checks red before,
   escalation simulation OK (no model run).
 - [x] npm publication: `cc-model-router@0.1.0` published on 2026-10-26; `0.1.1` fixes the
   published README; clean install verified.
+- [x] Native Claude Code plugin: per-turn routing, cache-aware switching, `/ccmr`,
+  marketplace manifest and 7 plugin tests.
+- [ ] npm publication of `0.2.0` (blocked until a valid npm credential is available).
 - [ ] Repository pin and social preview: web-only, no public GitHub API.
 - [ ] Demo GIF and launch article (localized charts are done).
 - [ ] Phase 2 — OpenCode adapter (per-turn routing / plugin).

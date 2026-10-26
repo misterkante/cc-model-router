@@ -45,12 +45,36 @@ A fact only enters a decision if it is dated and sourced. Sources that disagree 
 - Details, numbers, links and positioning: [`COMPETITION.md`](COMPETITION.md) (research dated 2026-10-26).
 - OpenCode: issue #8456 (auto model by task type), plugins `opencode-model-router`, `Auto (Jev)`.
 
+## 4b. Claude Code plugins and Mods API (2026-10-26)
+
+- Mods are plugins whose JavaScript hooks run inside Claude Code. They require
+  Claude Code 2.1.287 or later in the terminal. The local version is 2.1.309.
+- A mod can rewrite a prompt or a request, including the model sent to the
+  provider. It is not sandboxed: it runs with the user's permissions and can
+  read files, start processes and make network requests. Users should review
+  `claude plugin validate <path>` before installing.
+- A marketplace is a `.claude-plugin/marketplace.json` file at the repository
+  root. A relative plugin source resolves from that root, so `./plugin` is the
+  plugin directory in this repository.
+- Install flow: `/plugin marketplace add <owner/repo>`, then
+  `/plugin install <plugin>@<marketplace>` and choose a scope. From a shell:
+  `claude plugin install <plugin>@<marketplace>`.
+- `--plugin-dir <path>` loads a plugin for one session and is the supported
+  development path. Plugins already installed also load in `claude -p`;
+  `/plugin` itself is not available in non-interactive mode.
+- Sources: code.claude.com/docs/en/plugins/mods/overview,
+  code.claude.com/docs/en/plugins/install,
+  code.claude.com/docs/en/plugins/marketplace-reference (fetched 2026-10-26).
+
 ## 5. Uncertainties / to re-check
 
 - Prices and the lineup move fast: re-check before any publication.
 - Web results sometimes contradict each other (articles still citing Opus 4.6 / Sonnet 4.6 / Haiku 4.5).
 - `CLAUDE_CONFIG_DIR`: support not confirmed; we use `--settings` + `CC_ROUTER_CONFIG_DIR`.
-- Exact `UserPromptSubmit` hook schema (`additionalContext`): to validate in a real session (deferred).
+- The Mods API is new (2.1.287). Event names and hook signatures may change;
+  the plugin is tested on 2.1.309 and the version is documented in the README.
+- Exact `UserPromptSubmit` hook schema (`additionalContext`): validated with a
+  real session on 2026-10-25; the plugin uses the separate Mods API instead.
 
 ## 6. Decision from the research
 

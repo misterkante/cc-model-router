@@ -1,0 +1,17 @@
+{
+  "name": "cc-model-router",
+  "owner": {
+    "name": "Gilchrist Kante",
+    "url": "https://github.com/misterkante"
+  },
+  "description": "Automatic model routing for Claude Code.",
+  "plugins": [
+    {
+      "name": "cc-model-router",
+      "source": "./plugin",
+      "description": "Routes each Claude Code turn to Haiku, Sonnet, or Opus based on task complexity, with cache-aware switching.",
+      "category": "productivity",
+      "tags": ["model-routing", "cost", "haiku", "sonnet", "opus"]
+    }
+  ]
+}

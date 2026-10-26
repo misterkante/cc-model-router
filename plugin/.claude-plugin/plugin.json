@@ -1,0 +1,21 @@
+{
+  "name": "cc-model-router",
+  "displayName": "CC Model Router",
+  "version": "0.2.0",
+  "description": "Routes each Claude Code turn to Haiku, Sonnet, or Opus based on task complexity, with cache-aware switching.",
+  "author": {
+    "name": "Gilchrist Kante",
+    "url": "https://github.com/misterkante"
+  },
+  "homepage": "https://github.com/misterkante/cc-model-router",
+  "repository": "https://github.com/misterkante/cc-model-router",
+  "license": "MIT",
+  "keywords": [
+    "model-routing",
+    "cost-optimization",
+    "claude-code",
+    "haiku",
+    "sonnet",
+    "opus"
+  ]
+}

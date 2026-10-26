@@ -19,7 +19,11 @@ Requirements: Node.js >= 18. For the benchmark: Python 3 + PyYAML.
 npm test
 npm run bench:verify
 npm run docs:check
+npm run plugin:validate
+npm run plugin:test
 ```
+
+The plugin checks run without a model call, sign-in or network.
 
 For the TUI integration (statusline + hook in a real Claude Code session, requires `claude`, `tmux` and a login; opt-in because it spends a small amount of quota):
 

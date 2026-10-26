@@ -10,7 +10,7 @@
 [![npm](https://img.shields.io/npm/v/cc-model-router.svg)](https://www.npmjs.com/package/cc-model-router)
 [![Benchmark : 48 runs · 34,1 % de coût en moins par tâche acceptée](https://img.shields.io/badge/benchmark-48_runs_%C2%B7_34%2C1_%25_de_co%C3%BBt_en_moins_par_t%C3%A2che_accept%C3%A9e-f1592c)](#benchmark)
 
-**Statut : MVP (0.1.1).** Claude Code d’abord ; le support OpenCode est sur la roadmap. Voir l’[index de documentation](docs/README.fr.md) pour le benchmark, la veille et les notes de lancement.
+**Statut : MVP (0.2.0).** Claude Code d’abord, avec un CLI et un plugin natif Claude Code. Le support OpenCode est sur la roadmap. Voir l’[index de documentation](docs/README.fr.md) pour le benchmark, la veille et les notes de lancement.
 
 <p align="center"><img src="docs/assets/social-preview.png" alt="cc-model-router : -34,1 % de coût par tâche acceptée, 23/24 acceptées vs 21/24 baseline" width="100%"></p>
 
@@ -21,6 +21,8 @@ npm install -g cc-model-router
 ccmr status
 ```
 
+> npm sert actuellement `0.1.1`. Le plugin est disponible depuis le marketplace
+> GitHub ci-dessous ; npm `0.2.0` est en attente de publication.
 
 Le package expose deux commandes équivalentes : `cc-model-router` et `ccmr`. Sans installation globale :
 
@@ -39,6 +41,23 @@ ccmr status
 
 Prérequis : Node.js >= 18 et une version de Claude Code qui supporte `--effort` et `--fallback-model` (testée sur 2.1.309).
 
+### Plugin natif Claude Code
+
+Utilise le routeur dans une session `claude` normale, sans `ccmr run` :
+
+```text
+/plugin marketplace add misterkante/cc-model-router
+/plugin install cc-model-router@cc-model-router
+```
+
+Lance ensuite `/ccmr` pour voir le modèle courant et la dernière décision de routage. Le plugin classifie chaque prompt et change le modèle par tour. Voir [`docs/PLUGIN.fr.md`](docs/PLUGIN.fr.md) pour la configuration, les changements compatibles avec le cache et les limites.
+
+Développement local :
+
+```bash
+claude --plugin-dir ./plugin
+```
+
 ## Pourquoi
 
 En 2026, tous les devs utilisent Claude Code, et le budget de tokens est le goulot d’étranglement commun. La plupart des sessions restent sur Opus même pour un `git commit`, un renommage ou un lint. Ce routeur mappe trois tiers de tâches vers trois modèles et garde le modèle cher pour le travail qui en a besoin.
@@ -54,10 +73,10 @@ En 2026, tous les devs utilisent Claude Code, et le budget de tokens est le goul
 1. Le classifieur score le prompt contre les trois tiers et renvoie une confiance plus les mots-clés détectés.
 2. La config globale (`~/.claude/model-router.json`) est fusionnée avec la config projet (`.claude/model-router.json`) ; le projet gagne.
 3. `ccmr run` mappe le tier vers `--model`, `--effort` et `--fallback-model`, puis lance Claude Code.
-4. Le hook optionnel logge la recommandation et l’ajoute au contexte de Claude ; la status line affiche le modèle actif et le mapping des tiers.
+4. Le plugin Claude Code classifie chaque prompt et réécrit le modèle et l’effort pour ce tour, y compris les continuations après un outil. Le hook historique observe et recommande seulement.
 5. Avec `--verify`, une commande déterministe décide si le run est accepté. Avec `--escalate`, un check échoué retente avec le tier suivant et inclut la sortie d’échec.
 
-Le hook ne peut pas changer le modèle actif en cours de session ; il observe et recommande. `ccmr run` applique le modèle au lancement.
+`ccmr run` reste le chemin avec porte de qualité : il applique un modèle au lancement et peut vérifier et escalader. Le plugin est le chemin interactif : il route chaque tour, mais ne lance pas `--verify` et n’escalade pas.
 
 ## Démarrage rapide
 
@@ -172,7 +191,39 @@ Une simulation à partir des 48 runs estime **-15,5 % de coût par tâche accept
 
 ## Intégration Claude Code
 
-Ajoute le hook et la status line à tes settings Claude Code :
+### Plugin (recommandé)
+
+Le plugin est l’intégration directe : il se charge dans Claude Code et route chaque tour. Installe-le depuis le marketplace :
+
+```text
+/plugin marketplace add misterkante/cc-model-router
+/plugin install cc-model-router@cc-model-router
+```
+
+Ou charge-le localement pour une session :
+
+```bash
+claude --plugin-dir ./plugin
+```
+
+Le plugin lit la même config globale et projet que le CLI. Ajoute un bloc `routing` pour contrôler les changements compatibles avec le cache :
+
+```json
+{
+  "routing": {
+    "mode": "per-turn",
+    "cacheAware": true,
+    "minTurnsBetweenSwitches": 2,
+    "minConfidence": 0.5
+  }
+}
+```
+
+`per-turn` est le défaut ; `session` choisit une fois et garde le modèle ; `off` observe seulement. L’escalade est immédiate, les descentes attendent le délai, et `cacheAware: false` suit toujours le classifieur. Détails complets : [`docs/PLUGIN.fr.md`](docs/PLUGIN.fr.md).
+
+### Hook et status line historiques
+
+Le hook des settings logge seulement une recommandation et ajoute du contexte. Il ne peut pas changer le modèle actif. Ajoute-le si tu veux l’ancienne intégration en observation seule :
 
 ```json
 {
@@ -255,18 +306,20 @@ npm run bench:report -- bench/results/<fichier>.json
 - **Claude Code natif** : `/model`, `--model`, `opusplan`, sous-agents avec `model:` ; pas de routage par type de tâche ni de benchmark qualité publié au niveau tâche.
 - **tzachbon/claude-model-router-hook** : le hook routeur le plus proche (5 classes, routage de sous-agents, warn/autoswitch) ; pas de benchmark qualité publié ni de vérification post-run. Il met implementation et debugging sur Opus par défaut ; notre défaut est Sonnet pour implementation et Opus pour debugging, avec une politique Sonnet-first opt-in.
 - **Gateways (Claude Code Router, Weave, LiteLLM, ClaudeRipple)** : routage multi-provider à grande échelle, souvent via un proxy local ou un changement d’endpoint ; leurs benchmarks sont généraux, pas au niveau tâche Claude Code.
-- **cc-model-router** : natif Claude Code, trois tiers, un benchmark 48 runs avec checks déterministes, `--verify`/`--escalate`, et une politique debugging Sonnet-first opt-in ; MIT, pas de proxy, pas de télémétrie.
+- **cc-model-router** : plugin natif Claude Code et CLI, trois tiers, un benchmark 48 runs avec checks déterministes, `--verify`/`--escalate`, et une politique debugging Sonnet-first opt-in ; MIT, pas de proxy, pas de télémétrie.
 
 Voir [`docs/COMPETITION.fr.md`](docs/COMPETITION.fr.md) pour la veille datée, les liens, le positionnement et le plan de lancement.
 
 ## Contribuer
 
-Voir [`CONTRIBUTING.fr.md`](CONTRIBUTING.fr.md) et le [`CODE_OF_CONDUCT.fr.md`](CODE_OF_CONDUCT.fr.md). Lance `npm test` et `npm run bench:verify` avant d’ouvrir une pull request. Les notes de release sont dans [`CHANGELOG.fr.md`](CHANGELOG.fr.md).
+Voir [`CONTRIBUTING.fr.md`](CONTRIBUTING.fr.md) et le [`CODE_OF_CONDUCT.fr.md`](CODE_OF_CONDUCT.fr.md). Lance `npm test`, `npm run bench:verify`, `npm run plugin:validate` et `npm run plugin:test` avant d’ouvrir une pull request. Les notes de release sont dans [`CHANGELOG.fr.md`](CHANGELOG.fr.md).
 
 ## Limites (honnêtes)
 
-- **Un hook ne peut pas changer le modèle actif en cours de session.** Claude Code n’a pas d’API publique pour ça aujourd’hui (voir issues #44976, #43326, #27665). Le hook observe et recommande ; `ccmr run` applique le modèle au lancement.
-- **Le routage est au niveau session, pas au niveau tour.** Changer de modèle en cours de session invalide le cache de prompt ; `ccmr run` choisit un modèle au lancement. `--verify` démarre une nouvelle session seulement après un échec, donc un retry paie un cache froid.
+- **Le plugin route par tour, mais le CLI reste au niveau tâche.** `ccmr run` choisit un modèle au lancement. Le plugin utilise l’API mods de Claude Code pour changer le modèle et l’effort à chaque tour.
+- **Changer de modèle par tour peut invalider le cache de prompt.** Le plugin le limite avec un délai pour les descentes et une escalade immédiate pour la qualité. Ce garde-fou n’est pas un benchmark mesuré ; les chiffres des 48 runs viennent d’une tâche par processus.
+- **Le plugin ne vérifie pas et n’escalade pas.** Il route seulement. Utilise `ccmr run --verify "<commande>" --escalate` quand une porte de qualité déterministe compte.
+- **Les sous-agents ne sont pas routés par le plugin.** Ils gardent le modèle de la session.
 - Pour le passage plan → code en interactif, l’alias natif `opusplan` couvre déjà une partie du besoin.
 - La classification est heuristique et peut se tromper. Les champs `confidence` et `matched` sont dans la sortie pour tuner les mots-clés.
 - **Vérification et escalade sont opt-in.** Le routeur ne connaît pas ta commande de test ; un retry réutilise l’arbre de travail et peut dupliquer du travail ou coûter plus cher. Utilise un état git propre pour les runs importants.
@@ -278,7 +331,11 @@ Voir [`CONTRIBUTING.fr.md`](CONTRIBUTING.fr.md) et le [`CODE_OF_CONDUCT.fr.md`](
 ```bash
 npm test
 npm run docs:check
+npm run plugin:validate
+npm run plugin:test
 ```
+
+Les tests du plugin tournent avec `claude plugin test`, sans appel modèle, sans login et sans réseau.
 
 ### Smoke test TUI (opt-in)
 
@@ -302,6 +359,7 @@ Ce n’est pas dans `npm test` ni dans la CI car cela utilise la vraie session C
 - [x] Politique debugging plus fine (Sonnet-first opt-in, Opus sur check échoué)
 - [x] Escalade réelle exercée (un échec Sonnet `debug-calc` → retry Opus ; +36,7 % vs Opus direct)
 - [x] Documentation bilingue anglais/français et graphiques du benchmark
+- [x] Plugin natif Claude Code (routage par tour, changements compatibles avec le cache, `/ccmr`)
 - [ ] Mesurer le taux d’escalade Sonnet-first et le coût moyen de retry sur plusieurs tâches/répétitions
 - [ ] Adaptateur OpenCode
 - [ ] Dashboard de stats (coût/quota économisé, taux d’escalade)

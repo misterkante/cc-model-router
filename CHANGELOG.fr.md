@@ -8,12 +8,33 @@ Toutes les évolutions notables du projet sont documentées ici. Le format suit
 
 ## [Non publié]
 
+## [0.2.0] - 2026-10-26
+
 ### Ajouté
 
-- Documentation bilingue (anglais/français), graphiques de benchmark localisés et
-  générateur de graphiques reproductible.
-- Vérification automatisée des liens de documentation et des paires bilingues
-  (`npm run docs:check`).
+- Plugin natif Claude Code (API Mods) qui classifie chaque prompt et applique le
+  modèle et l’effort à chaque étape du tour.
+- Routage par tour avec `routing.mode` : `per-turn`, `session` ou `off`.
+- Changements compatibles avec le cache : escalade immédiate, délai et seuil de
+  confiance pour les descentes, et `cacheAware: false` pour toujours suivre le
+  classifieur.
+- Commande `/ccmr` affichant le modèle courant, la dernière décision et la
+  configuration de routage.
+- Manifeste marketplace à la racine du dépôt et icône du plugin.
+- Tests du plugin avec `claude plugin test` et test de parité classifieur CLI/plugin.
+- Documentation bilingue du plugin.
+
+### Modifié
+
+- Le paquet npm inclut maintenant `plugin/` et `.claude-plugin/`.
+- Le README documente le plugin comme intégration interactive recommandée ; le
+  hook des settings reste disponible comme ancien chemin en observation seule.
+
+### Corrigé
+
+- Le plugin garde maintenant le modèle routé pour les continuations après un
+  outil, au lieu de revenir au modèle de session à la seconde requête du tour.
+- Le délai compatible avec le cache ne change plus de modèle un tour trop tôt.
 
 ## [0.1.1] - 2026-10-26
 
@@ -60,6 +81,7 @@ Toutes les évolutions notables du projet sont documentées ici. Le format suit
 - Le quota d’abonnement est estimé avec le `total_cost_usd` API-équivalent de
   Claude Code, pas avec des dollars facturés.
 
-[Non publié]: https://github.com/misterkante/cc-model-router/compare/v0.1.1...HEAD
+[Non publié]: https://github.com/misterkante/cc-model-router/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/misterkante/cc-model-router/releases/tag/v0.2.0
 [0.1.1]: https://github.com/misterkante/cc-model-router/releases/tag/v0.1.1
 [0.1.0]: https://github.com/misterkante/cc-model-router/releases/tag/v0.1.0

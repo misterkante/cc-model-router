@@ -1,7 +1,7 @@
 {
   "name": "cc-model-router",
-  "version": "0.1.1",
-  "description": "Automatic model routing for Claude Code: classify each task, pick the cheapest model that can do it, then verify and escalate when needed.",
+  "version": "0.2.0",
+  "description": "Automatic model routing for Claude Code: a CLI and a plugin that classify each task, pick the cheapest model that can do it, then verify and escalate when needed.",
   "type": "module",
   "bin": {
     "cc-model-router": "./bin/cc-model-router.js",
@@ -17,6 +17,8 @@
   },
   "author": "Gilchrist Kante (https://github.com/misterkante)",
   "files": [
+    "plugin",
+    ".claude-plugin",
     "bin",
     "src",
     "hooks",
@@ -45,7 +47,7 @@
   "scripts": {
     "test": "node --test tests/*.test.js",
     "demo": "bash scripts/demo.sh",
-    "prepublishOnly": "npm test && npm run docs:check",
+    "prepublishOnly": "npm test && npm run docs:check && npm run plugin:validate && npm run plugin:test",
     "bench": "node bench/run.mjs",
     "bench:verify": "node bench/verify.mjs",
     "bench:report": "node bench/report.mjs",
@@ -54,7 +56,9 @@
     "bench:recheck": "node bench/recheck.mjs",
     "bench:simulate-escalation": "node bench/simulate-escalation.mjs",
     "test:tui": "bash scripts/tui-smoke.sh",
-    "docs:check": "node scripts/check-docs.mjs"
+    "docs:check": "node scripts/check-docs.mjs",
+    "plugin:test": "claude plugin test plugin",
+    "plugin:validate": "claude plugin validate plugin"
   },
   "engines": {
     "node": ">=18"
@@ -70,6 +74,7 @@
     "tokens",
     "llm",
     "cli",
-    "benchmark"
+    "benchmark",
+    "plugin"
   ]
 }
