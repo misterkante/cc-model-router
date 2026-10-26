@@ -206,6 +206,9 @@ npm run bench:recheck -- bench/results/<fichier>.json <taskId>
 # Simuler une politique Sonnet-first (aucun appel modèle)
 npm run bench:simulate-escalation
 
+# Vérifier une tâche dans une copie (checks qui lisent seulement le répertoire)
+node bench/check-one.mjs impl-angular <copie>
+
 # Fusionner un re-run de tâche après correction de fixture
 npm run bench:merge -- bench/results/<base>.json bench/results/<rerun>.json --out bench/results/<merged>.json
 ```

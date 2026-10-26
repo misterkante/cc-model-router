@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-10-26",
+  "kind": "real escalation pilot, not a benchmark",
+  "claudeVersion": "2.1.309",
+  "budgetPerRunUsd": 0.5,
+  "task": "debug-calc",
+  "fixture": "buggy-python",
+  "policy": "sonnet-first debugging with --verify --escalate, no hook",
+  "attempts": [
+    {
+      "attempt": 1,
+      "tier": "debugging",
+      "model": "claude-sonnet-5-5",
+      "costUsd": 0.0706806,
+      "tokens": 85678,
+      "check": {
+        "pass": false,
+        "detail": "test_average_empty: ZeroDivisionError in average([])"
+      },
+      "escalated": true
+    },
+    {
+      "attempt": 2,
+      "tier": "debugging",
+      "model": "claude-opus-5-5",
+      "costUsd": 0.1425072,
+      "tokens": 89380,
+      "check": {
+        "pass": true,
+        "detail": "4 tests OK"
+      },
+      "escalated": false
+    }
+  ],
+  "accepted": true,
+  "attemptsCount": 2,
+  "totalCostUsd": 0.2131878,
+  "totalTokens": 175058,
+  "opusDirectReferenceUsd": 0.1559457,
+  "deltaVsOpusDirectPct": 36.7,
+  "changedFiles": ["calc.py"],
+  "unexpectedChanges": [],
+  "notes": [
+    "No hook: this reproduces the benchmark baseline Sonnet failure on debug-calc (0/2).",
+    "Sonnet fixed add and clamp but missed average([]); Opus received the unittest output and fixed it.",
+    "The Opus retry alone cost $0.1425 vs $0.1559 for a fresh Opus run on average, but the failed first attempt made the accepted run 36.7% more expensive than Opus direct.",
+    "One real failure, not an escalation rate. API-equivalent cost, not billed dollars."
+  ]
+}

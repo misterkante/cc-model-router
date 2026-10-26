@@ -213,7 +213,7 @@
       "unexpectedChanges": [],
       "check": {
         "pass": false,
-        "detail": "======================================================================\nERROR: test_average_empty (test_calc.CalcTest.test_average_empty)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/cc-router-bench-debug-calc-h1vwnx/repo/test_"
+        "detail": "======================================================================\nERROR: test_average_empty (test_calc.CalcTest.test_average_empty)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<fixture>/test_"
       }
     }
   ]

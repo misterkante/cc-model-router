@@ -165,7 +165,7 @@ Your `~/.claude/settings.json` and `~/.claude/model-router.json` are never modif
 
 Reference run: **12 tasks × 2 variants × 2 repeats = 48 runs**, automatic checks, isolated copies. Routing passed **23/24 (95.8%) vs 21/24 (87.5%)** and cost **$0.0906 per accepted task vs $0.1375** (-34.1%). Raw tokens fell 5.2% overall, but that is not the claim: the saving is in cost/quota, carried by mechanical (-94%) and implementation (-53%). Debugging is a quality guard in this comparison (+30% per accepted vs the Sonnet baseline), not a saving; the baseline does not load the hook (see limitations).
 
-The run also found the next product gap: Sonnet produced one invalid YAML on an implementation task, and the debugging tier over-routes Opus on simple bugs. `run --verify` + `--escalate` closes the first gap; an opt-in Sonnet-first debugging policy closes the second. A simulation from the same records estimates **-15.5% debugging cost** vs Opus-first at 8/8 accepted, with 3/8 retries; it is a simulation, not a new run, and is not included in the 48-run numbers. A 4-run real pilot on `debug-calc` and `debug-search` then passed 4/4 with Sonnet and no escalation; it is a sanity check, not a benchmark.
+The run also found the next product gap: Sonnet produced one invalid YAML on an implementation task, and the debugging tier over-routes Opus on simple bugs. `run --verify` + `--escalate` closes the first gap; an opt-in Sonnet-first debugging policy closes the second. A simulation from the same records estimates **-15.5% debugging cost** vs Opus-first at 8/8 accepted, with 3/8 retries; it is a simulation, not a new run, and is not included in the 48-run numbers. A 4-run real pilot on `debug-calc` and `debug-search` then passed 4/4 with Sonnet and no escalation. A second real pilot without the hook reproduced the known Sonnet failure on `debug-calc`: Sonnet failed the check, Opus retried and passed, for **$0.2132 vs $0.1559** Opus direct (+36.7%). That is one real failure, not a rate; it validates the mechanism and shows a failed first attempt can cost more than going straight to Opus. None of these pilots is a benchmark.
 
 Full results, per-tier analysis, incident log and caveats: [`docs/BENCHMARK.md`](docs/BENCHMARK.md). Canonical process: [`bench/README.md`](bench/README.md).
 
@@ -195,7 +195,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). Run `npm test` and `npm run bench:veri
 - For interactive plan → code switching, Claude Code's native `opusplan` alias already covers part of the job.
 - Classification is heuristic and can be wrong. The `confidence` and `matched` fields are in the output so you can tune the keywords.
 - **Verification and escalation are opt-in.** The router does not know your test command; a retry reuses the working tree and can duplicate work or cost more. Use a clean git state for important runs.
-- **Sonnet-first debugging has a simulation and a 4-run pilot, not a benchmark.** It requires a reliable `--verify` command and `--escalate`; without them, debugging stays on Opus. The 15.5% figure reuses existing records and assumes the Opus retry succeeds at the recorded cost; the pilot passed 4/4 with Sonnet, so escalation was not exercised.
+- **Sonnet-first debugging has a simulation and two small pilots, not a benchmark.** It requires a reliable `--verify` command and `--escalate`; without them, debugging stays on Opus. The 15.5% figure reuses existing records and assumes the Opus retry succeeds at the recorded cost. The 4-run pilot passed 4/4 with Sonnet; a second pilot without the hook observed one real Sonnet failure on `debug-calc`, recovered by Opus for **$0.2132 vs $0.1559** Opus direct (+36.7%). One failure is not an escalation rate, and a failed first attempt can cost more than Opus direct.
 - **The 48-run baseline does not load the hook; the routed variant does.** The comparison measures the router as a product, not a pure model A/B. The real `debug-calc` + `debug-search` pilot (Sonnet-first + hook, 4/4) vs the baseline Sonnet (1/4 on the same tasks) shows the difference can matter.
 
 ## Tests
@@ -213,7 +213,8 @@ npm test
 - [x] Quality benchmark harness (12 tasks × 2 repeats, 48 runs)
 - [x] Validation + escalation (`run --verify`, retry with next model)
 - [x] Finer debugging policy (opt-in Sonnet-first, Opus on failed check)
-- [ ] Measure Sonnet-first debugging on the benchmark (escalation rate, retry cost) — 4-run pilot passed, escalation not exercised
+- [x] Real escalation exercised (one `debug-calc` Sonnet failure → Opus retry; +36.7% vs Opus direct)
+- [ ] Measure Sonnet-first escalation rate and average retry cost across tasks/repeats
 - [ ] OpenCode adapter
 - [ ] Stats dashboard (cost/quota saved, escalation rate)
 

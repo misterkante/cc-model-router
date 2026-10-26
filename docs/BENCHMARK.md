@@ -192,15 +192,17 @@ simuler une politique « Sonnet d'abord, Opus sur échec de check » :
 - Une **simulation** à partir des enregistrements existants, pas un nouveau benchmark.
 - Le coût du retry Opus est **proxied** par le run Opus frais. En réalité, le retry part de l'arbre
   Sonnet échoué et reçoit la sortie d'échec : le coût peut différer (cache froid, contexte plus
-  long, correction partielle).
+  long, correction partielle). Le pilot d'escalade a mesuré **0,1425 $** pour le retry, contre
+  **0,1559 $** en moyenne pour un Opus frais.
 - On suppose que le retry Opus réussit quand le run Opus frais a réussi ; aucun deuxième échec
   n'est modélisé.
 - Pas de latence, pas de cache, pas de vérification réelle.
 - La politique n'est appliquée que si `--verify` et `--escalate` sont fournis ; sans check fiable,
   le debugging reste Opus.
 
-Le pilot réel ci-dessous (4/4 Sonnet sur deux tâches) montre que l'hypothèse « Sonnet échoue 0/2 » n'est pas stable :
-la simulation est un scénario, pas une prédiction.
+Les pilots réels ci-dessous montrent que l'hypothèse « Sonnet échoue 0/2 » n'est pas stable :
+**4/4** avec hook, mais **un échec réel** sans hook. La simulation est un scénario, pas une
+prédiction.
 
 Reproduire : `npm run bench:simulate-escalation` (ou `node bench/simulate-escalation.mjs`).
 
@@ -225,9 +227,49 @@ Claude Code 2.1.309.
   contexte du hook, de la stochasticité, ou des deux. **Ne pas attribuer la différence au modèle
   seul.**
 - Aucun fichier hors `calc.py` / `search.py` modifié ; les checks externes passent.
-- **L'escalade n'a pas été exercée** : les quatre runs Sonnet ont réussi. Les tests unitaires/CLI
-  couvrent le mécanisme ; il reste à observer un échec réel pour mesurer le coût du retry.
+- **L'escalade n'a pas été exercée dans ces quatre runs** : les quatre runs Sonnet ont réussi.
+  Un second pilot, sans hook, a reproduit l'échec Sonnet connu sur `debug-calc` et observé
+  l'escalade Opus (section suivante).
 - 4 runs, pas un benchmark ; coût API-équivalent, pas facturé.
+
+### Pilot réel d'escalade (2026-10-26, 1 run, 2 tentatives)
+
+Pour exercer réellement le chemin d'échec, un second pilot a utilisé `debug-calc` **sans hook**
+(settings vides), afin de retrouver le comportement du baseline Sonnet du benchmark, qui avait
+échoué 0/2 sur cette tâche. Configuration : `debuggingStrategy: "sonnet-first"`,
+`--verify "python3 -m unittest test_calc.py"`, `--escalate`, budget 0,50 $, copie isolée,
+Claude Code 2.1.309.
+
+| Tentative | Modèle | Coût API-équivalent | Check | Escalade |
+|---:|---|---:|---|---|
+| 1 | Sonnet 5.5 | 0,0707 $ | **échec** : `average([])` → `ZeroDivisionError` | oui |
+| 2 | Opus 5.5 | 0,1425 $ | OK (4 tests) | — |
+
+- **Escalade réelle observée** : Sonnet corrige `add` et `clamp` mais rate `average([])` ;
+  Opus reçoit la sortie d'échec et corrige `average`. Le run est accepté après 2 tentatives.
+- Coût total **0,2132 $** ; référence Opus direct sur `debug-calc` : 0,1514 $ et 0,1605 $,
+  moyenne **0,1559 $**. L'échec + retry coûte donc **+36,7 %** vs Opus direct.
+- Le retry Opus seul (0,1425 $) est **-8,6 %** vs un run Opus frais : il part d'un arbre
+  partiellement corrigé, pas d'une copie neuve. Le cache n'est pas mesuré ; la simulation qui
+  proxifie le retry par un run Opus frais est donc légèrement pessimiste sur ce point.
+- Seul `calc.py` a été modifié. `__pycache__` créé par `unittest` a été retiré avant le diff ;
+  ce n'est pas une édition du modèle.
+- **Un échec réel, pas un taux** : ce pilot valide le mécanisme et mesure un cas de coût. Il ne
+  prouve pas que Sonnet échoue à un taux donné ; le taux et le coût moyen restent à mesurer sur
+  plusieurs runs. Il montre aussi qu'un premier essai raté peut coûter plus cher qu'Opus direct,
+  même quand le retry réussit.
+- Le run sans hook est le même point de départ que le baseline du benchmark ; le pilot 4/4
+  ci-dessus utilisait le hook. La différence hook/stochasticité reste un confondant.
+- Données assainies : [`benchmarks/2026-10-26-escalation-pilot.json`](benchmarks/2026-10-26-escalation-pilot.json).
+- Reproduire (settings vides, config temporaire) :
+
+```bash
+CC_ROUTER_CONFIG_DIR=<tmp-config> node bin/cc-router.js run \
+  "Debug the failing tests: there is a bug in calc.py, fix it so all tests pass. Do not modify test_calc.py or any other file." \
+  --verify "python3 -m unittest test_calc.py" --escalate \
+  -- --settings <empty-settings.json> --permission-mode acceptEdits \
+     --output-format json --max-budget-usd 0.50
+```
 
 ### Un échec d'implémentation réel : YAML invalide
 
@@ -236,6 +278,7 @@ fichier. Opus a produit un YAML valide sur les deux répétitions. Ce n'est pas 
 sens « mauvais tier » : c'est un échec de **validation**. Un `cc-router run --verify "python3 -c
 'import yaml; yaml.safe_load(open(...))'"` (ou un check de projet) aurait renvoyé un échec, puis un
 retry Sonnet ou une escalade Opus aurait récupéré le run. C'est la deuxième priorité produit.
+Le pilot d'escalade ci-dessus a depuis exercé ce chemin sur un échec de debugging réel.
 
 ### Coût vs tokens : le point crucial
 
@@ -326,8 +369,10 @@ Voir le protocole complet : [`../bench/README.md`](../bench/README.md).
 
 1. **Debugging plus fin** : `debuggingStrategy: "sonnet-first"` + `--verify --escalate` est
    implémenté (2026-10-26) ; la simulation donne -15,5 % vs Opus direct à 8/8. Pilot réel 4/4
-   Sonnet sur `debug-calc` + `debug-search`, sans escalade ; il reste à observer un échec réel pour mesurer le taux
-   d'escalade, le coût échec + retry et l'effet du cache froid sur les 4 tâches.
+   Sonnet sur `debug-calc` + `debug-search`, sans escalade ; un second pilot sans hook a observé
+   un échec Sonnet réel sur `debug-calc` puis une réussite Opus (0,2132 $ vs 0,1559 $ Opus direct,
+   +36,7 %). Il reste à mesurer le **taux** d'escalade, le coût moyen et l'effet du cache sur
+   plusieurs runs et les 4 tâches.
 2. **Validation post-run** : `cc-router run --verify "<commande>"` + `--escalate` (implémenté
    le 2026-10-26, hors chiffres de ce run). C'est ce qui aurait rattrapé le YAML invalide de
    Sonnet : le parser renvoie 1, puis Opus reçoit l'erreur et corrige.

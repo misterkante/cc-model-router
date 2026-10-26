@@ -166,8 +166,10 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
 5. **Une politique debugging Sonnet-first opt-in** : Sonnet d'abord, Opus sur échec de
    `--verify`, avec une simulation à **-15,5 %** vs Opus direct à 8/8 (3/8 retries).
    Un pilot réel de 4 runs sur `debug-calc` + `debug-search` passe 4/4 avec Sonnet, sans
-   escalade ; l'escalade réelle et le coût du retry restent à mesurer. C'est une piste crédible,
-   pas un claim de benchmark.
+   escalade. Un second pilot, sans hook, a reproduit l'échec Sonnet connu sur `debug-calc` :
+   Sonnet échoue au check, Opus reçoit l'erreur et réussit, pour **0,2132 $ vs 0,1559 $**
+   Opus direct (+36,7 %). C'est un échec réel et un coût mesuré, pas un taux ; un premier
+   essai raté peut coûter plus cher qu'Opus direct. Pas un claim de benchmark.
 
 ### Ce que les autres font mieux (à assumer)
 
@@ -192,7 +194,9 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
   implementation. Ce n'est **pas** un baseline tout-Opus. C'est le comportement que le
   routeur cible ; le comparer à tout-Opus gonflerait artificiellement l'économie.
 - **Le chiffre à ne pas cacher** : Sonnet a échoué 1/8 en implementation (YAML invalide).
-  `--verify`/`--escalate` est la réponse, mais n'est pas encore mesuré dans les 48 runs.
+  `--verify`/`--escalate` est la réponse ; un échec réel de debugging a été récupéré dans un
+  pilot (Sonnet → Opus, +36,7 % vs Opus direct), mais le taux et le coût moyen ne sont pas
+  encore mesurés dans les 48 runs.
 
 ## 6. Viabilité
 
@@ -201,7 +205,7 @@ cache froid au retry, mais uniquement quand la première tentative a échoué.
 - **Demande** : documentée par les issues, les concurrents et les coûts réels.
 - **Niche** : les gateways sont gros mais généralistes ; le hook concurrent le plus proche
   est petit (105 ★) et sans benchmark. Un outil natif, mesuré, vérifié, MIT, a une place.
-- **Coût de développement** : faible (Node, zéro dépendance, déjà 52 tests).
+- **Coût de développement** : faible (Node, zéro dépendance, déjà 53 tests).
 - **Valeur portfolio** : élevée (recherche, CLI, hooks, isolation, tests, benchmark,
   analyse coût/qualité, documentation honnête).
 
@@ -280,8 +284,9 @@ commerciale.
 **Honnêteté :**
 > Échantillon petit, pas une preuve statistique ; Sonnet a échoué 1/8 en implémentation ;
 > `--verify`/`--escalate` est la réponse, pas encore dans les 48 runs ; la politique
-> Sonnet-first est une simulation + un pilot 4/4, pas un benchmark, et l'escalade n'a pas été
-> exercée ; pas de proxy, pas de clé API, MIT.
+> Sonnet-first est une simulation + deux petits pilots, pas un benchmark. Un échec réel a été
+> récupéré (Sonnet → Opus, 0,2132 $ vs 0,1559 $ Opus direct, +36,7 %), mais le taux d'escalade
+> reste inconnu ; pas de proxy, pas de clé API, MIT.
 
 ### 7.4 Métriques post-lancement
 
@@ -303,7 +308,7 @@ Ce que le projet démontre, concrètement :
 - **Recherche datée** : lineup, CLI, issues, concurrents, sources primaires.
 - **Ingénierie** : CLI Node, hooks, config globale/projet, isolation, `spawnSync`,
   parsing d'arguments, exit codes, dry-run.
-- **Qualité** : 52 tests, faux binaire Claude, tests d'intégration, `bench:verify`,
+- **Qualité** : 53 tests, faux binaire Claude, tests d'intégration, `bench:verify`,
   checks déterministes, dataset assaini.
 - **Analyse coût/qualité** : coût par tâche acceptée, baseline, tokens vs coût, limites.
 - **Communication** : README, benchmark reproductible, documentation honnête, ce document.
