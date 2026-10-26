@@ -94,7 +94,7 @@ Verified on CLI 2.1.309 (`claude --help` + binary inspection):
 
 ## 🧪 Real devquiz test (2026-10-25)
 
-Context: devquiz copy in `/tmp/devquiz-router-test`, Claude Code CLI 2.1.309,
+Context: devquiz copy in `$TMPDIR/devquiz-router-test`, Claude Code CLI 2.1.309,
 `-p --output-format json`, $0.30/run cap, hook via `--settings`.
 
 | Run | Routing | Actual model | Cost | Files |

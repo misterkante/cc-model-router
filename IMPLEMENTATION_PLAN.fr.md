@@ -81,7 +81,7 @@ Vérifiés sur le CLI 2.1.309 (`claude --help` + inspection du binaire) :
 
 ## 🧪 Test réel devquiz (2026-10-25)
 
-Contexte : copie de devquiz dans `/tmp/devquiz-router-test`, CLI Claude Code 2.1.309, `-p --output-format json`, plafond 0,30 $/run, hook via `--settings`.
+Contexte : copie de devquiz dans `$TMPDIR/devquiz-router-test`, CLI Claude Code 2.1.309, `-p --output-format json`, plafond 0,30 $/run, hook via `--settings`.
 
 | Run | Routage | Modèle réel | Coût | Fichiers |
 |---|---|---|---|---|
