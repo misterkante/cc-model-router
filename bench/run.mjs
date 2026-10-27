@@ -29,7 +29,7 @@ const only = arg("tasks", "").split(",").filter(Boolean);
 const variants = arg("variants", "routed,baseline").split(",").filter(Boolean);
 const budget = arg("budget", "0.20");
 const repeats = Number(arg("repeats", "1"));
-const devquizRepo = arg("repo", path.join(ROOT, "bench", "fixtures", "devquiz"));
+const dailyQuizRepo = arg("repo", path.join(ROOT, "bench", "fixtures", "daily-quiz"));
 
 for (const variant of variants) {
   if (variant !== "routed" && variant !== "baseline") {
@@ -60,7 +60,7 @@ if (!Number.isFinite(Number(budget)) || Number(budget) <= 0) {
 }
 
 function fixturePath(name) {
-  if (name === "devquiz") return devquizRepo;
+  if (name === "daily-quiz") return dailyQuizRepo;
   return path.join(ROOT, "bench", "fixtures", name);
 }
 

@@ -12,6 +12,13 @@ Toutes les évolutions notables du projet sont documentées ici. Le format suit
 
 - Kit de lancement bilingue avec preuves, limites, brouillons Show HN, Reddit,
   X, article et LinkedIn.
+- `npm run privacy:check` fait échouer la CI si un nom de projet privé ou un
+  chemin personnel est commité.
+
+### Modifié
+
+- La fixture synthétique du benchmark s'appelle désormais `daily-quiz` ; les
+  chiffres, les tâches et les checks du benchmark sont inchangés.
 
 ## [0.2.0] - 2026-10-26
 

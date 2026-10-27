@@ -22,7 +22,7 @@ pilot) is analysed below; the 48-run baseline does not load the hook.
 The canonical details, task-addition rules and publication checklist are in
 [`../bench/README.md`](../bench/README.md).
 
-- Each run starts from an **isolated copy**: a synthetic devquiz fixture for
+- Each run starts from an **isolated copy**: a synthetic daily-quiz fixture for
   mechanical/implementation, dedicated Python fixtures for debugging. The source repo is never
   modified.
 - `routed` variant: `ccmr run`, hook loaded via `--settings`, isolated config
@@ -43,14 +43,14 @@ The canonical details, task-addition rules and publication checklist are in
 
 | Id | Tier | Fixture | Baseline | Check |
 |---|---|---|---|---|
-| `mech-questions` | mechanical | devquiz | sonnet / medium | IDs Q-01..Q-11 present |
-| `mech-features` | mechanical | devquiz | sonnet / medium | IDs F-01..F-14 present |
-| `mech-lots` | mechanical | devquiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
-| `mech-questions-json` | mechanical | devquiz | sonnet / medium | JSON of 11 questions with text |
-| `impl-roadmap` | implementation | devquiz | opus / high | file + IDs + lots A/B/C |
-| `impl-profile` | implementation | devquiz | opus / high | valid YAML + AC1 (Python) |
-| `impl-angular` | implementation | devquiz | opus / high | YAML + ≥ 8 concepts + Angular URLs |
-| `impl-questions` | implementation | devquiz | opus / high | 11 answers with rationale |
+| `mech-questions` | mechanical | daily-quiz | sonnet / medium | IDs Q-01..Q-11 present |
+| `mech-features` | mechanical | daily-quiz | sonnet / medium | IDs F-01..F-14 present |
+| `mech-lots` | mechanical | daily-quiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
+| `mech-questions-json` | mechanical | daily-quiz | sonnet / medium | JSON of 11 questions with text |
+| `impl-roadmap` | implementation | daily-quiz | opus / high | file + IDs + lots A/B/C |
+| `impl-profile` | implementation | daily-quiz | opus / high | valid YAML + AC1 (Python) |
+| `impl-angular` | implementation | daily-quiz | opus / high | YAML + ≥ 8 concepts + Angular URLs |
+| `impl-questions` | implementation | daily-quiz | opus / high | 11 answers with rationale |
 | `debug-calc` | debugging | buggy-python | sonnet / medium | tests green + test file intact |
 | `debug-parse` | debugging | buggy-python-parse | sonnet / medium | tests green + test file intact |
 | `debug-state` | debugging | buggy-python-state | sonnet / medium | tests green + test file intact |
@@ -68,7 +68,7 @@ command was blocked, no file was created, and the model believed it had succeede
 
 Fix and re-run:
 
-1. The target directory `bench/fixtures/devquiz/parcours/` is now pre-created (`.gitkeep`), so
+1. The target directory `bench/fixtures/daily-quiz/parcours/` is now pre-created (`.gitkeep`), so
    Write can create the file without `mkdir`.
 2. `impl-angular` was re-run alone: 2 repeats × 2 variants, same budget.
 3. The re-run gives routed **1/2** (repeat 1: invalid YAML, a real Sonnet failure; repeat 2: OK)

@@ -2,7 +2,7 @@ export const TASKS = [
   {
     id: "mech-questions",
     tier: "mechanical",
-    fixture: "devquiz",
+    fixture: "daily-quiz",
     baseline: { model: "sonnet", effort: "medium" },
     prompt:
       "grep the open questions Q-01..Q-11 in docs/SPEC.md and list them with one-line summaries. Do not edit anything.",
@@ -12,7 +12,7 @@ export const TASKS = [
   {
     id: "mech-features",
     tier: "mechanical",
-    fixture: "devquiz",
+    fixture: "daily-quiz",
     baseline: { model: "sonnet", effort: "medium" },
     prompt:
       "grep the feature table F-01..F-14 in docs/SPEC.md and list each id with its status. Do not edit anything.",
@@ -22,7 +22,7 @@ export const TASKS = [
   {
     id: "mech-lots",
     tier: "mechanical",
-    fixture: "devquiz",
+    fixture: "daily-quiz",
     baseline: { model: "sonnet", effort: "medium" },
     prompt:
       'grep docs/SPEC.md and count the features in each lot (A, B, C). Return a JSON object like {"A": 0, "B": 0, "C": 0}. Do not edit anything.',
@@ -32,7 +32,7 @@ export const TASKS = [
   {
     id: "mech-questions-json",
     tier: "mechanical",
-    fixture: "devquiz",
+    fixture: "daily-quiz",
     baseline: { model: "sonnet", effort: "medium" },
     prompt:
       "grep the open questions Q-01..Q-11 in docs/SPEC.md and extract them as a JSON array of objects with keys id and question. Do not edit anything.",
@@ -42,7 +42,7 @@ export const TASKS = [
   {
     id: "impl-roadmap",
     tier: "implementation",
-    fixture: "devquiz",
+    fixture: "daily-quiz",
     baseline: { model: "opus", effort: "high" },
     prompt:
       "Create docs/ROADMAP.md grouping features F-01..F-14 into lots A, B and C, with a one-line description per feature and a short milestone plan. Do not modify other files.",
@@ -52,7 +52,7 @@ export const TASKS = [
   {
     id: "impl-profile",
     tier: "implementation",
-    fixture: "devquiz",
+    fixture: "daily-quiz",
     baseline: { model: "opus", effort: "high" },
     prompt:
       "Create profil.yaml and parcours/python.yaml following the F-01 acceptance criteria in docs/SPEC.md. Do not modify other files.",
@@ -62,7 +62,7 @@ export const TASKS = [
   {
     id: "impl-angular",
     tier: "implementation",
-    fixture: "devquiz",
+    fixture: "daily-quiz",
     baseline: { model: "opus", effort: "high" },
     prompt:
       "Create parcours/angular.yaml for beginners following the F-01 acceptance criteria in docs/SPEC.md, with at least 8 ordered notions and official Angular documentation URLs. Do not modify other files.",
@@ -72,7 +72,7 @@ export const TASKS = [
   {
     id: "impl-questions",
     tier: "implementation",
-    fixture: "devquiz",
+    fixture: "daily-quiz",
     baseline: { model: "opus", effort: "high" },
     prompt:
       "Create docs/QUESTIONS.md answering Q-01..Q-11 with a proposed answer and a one-line rationale for each. Do not modify other files.",

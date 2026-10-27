@@ -8,7 +8,7 @@ checks.
 
 | Fixture | Used by | Planted defects |
 |---|---|---|
-| `devquiz/` | `mech-*`, `impl-*` | None. Synthetic spec with F-01..F-14, Q-01..Q-11 and F-01 AC1. |
+| `daily-quiz/` | `mech-*`, `impl-*` | None. Synthetic spec with F-01..F-14, Q-01..Q-11 and F-01 AC1. |
 | `buggy-python/` | `debug-calc` | `add` subtracts, `average([])` divides by zero, `clamp` off-by-one. |
 | `buggy-python-parse/` | `debug-parse` | Duration parser rejects spaces, accepts `90m` and `1h90m`. |
 | `buggy-python-state/` | `debug-state` | Cart shares the input list, removes all matches, ignores missing updates, accepts negative values. |

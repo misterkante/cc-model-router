@@ -12,6 +12,13 @@ All notable changes to this project are documented here. The format follows
 
 - Bilingual launch kit with claims, caveats, Show HN, Reddit, X, article and
   LinkedIn drafts.
+- `npm run privacy:check` fails CI when a private project name or a
+  machine-specific home path is committed.
+
+### Changed
+
+- The synthetic benchmark fixture is now named `daily-quiz`; the benchmark
+  numbers, tasks and checks are unchanged.
 
 ## [0.2.0] - 2026-10-26
 

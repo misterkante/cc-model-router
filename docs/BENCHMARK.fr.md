@@ -23,7 +23,7 @@ runs ne charge pas le hook.
 Le détail canonique, les règles d'ajout de tâche et la checklist de publication sont dans
 [`../bench/README.fr.md`](../bench/README.fr.md).
 
-- Chaque run part d'une **copie isolée** : fixture devquiz synthétique pour mechanical/implementation,
+- Chaque run part d'une **copie isolée** : fixture daily-quiz synthétique pour mechanical/implementation,
   fixtures Python dédiées pour debugging. Le repo source n'est jamais modifié.
 - Variante `routed` : `ccmr run`, hook chargé via `--settings`, config isolée
   (`CC_ROUTER_CONFIG_DIR`).
@@ -42,14 +42,14 @@ Le détail canonique, les règles d'ajout de tâche et la checklist de publicati
 
 | Id | Tier | Fixture | Baseline | Check |
 |---|---|---|---|---|
-| `mech-questions` | mechanical | devquiz | sonnet / medium | IDs Q-01..Q-11 présents |
-| `mech-features` | mechanical | devquiz | sonnet / medium | IDs F-01..F-14 présents |
-| `mech-lots` | mechanical | devquiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
-| `mech-questions-json` | mechanical | devquiz | sonnet / medium | JSON de 11 questions avec texte |
-| `impl-roadmap` | implementation | devquiz | opus / high | fichier + IDs + lots A/B/C |
-| `impl-profile` | implementation | devquiz | opus / high | YAML valide + AC1 (Python) |
-| `impl-angular` | implementation | devquiz | opus / high | YAML + ≥ 8 notions + URLs Angular |
-| `impl-questions` | implementation | devquiz | opus / high | 11 réponses avec rationale |
+| `mech-questions` | mechanical | daily-quiz | sonnet / medium | IDs Q-01..Q-11 présents |
+| `mech-features` | mechanical | daily-quiz | sonnet / medium | IDs F-01..F-14 présents |
+| `mech-lots` | mechanical | daily-quiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
+| `mech-questions-json` | mechanical | daily-quiz | sonnet / medium | JSON de 11 questions avec texte |
+| `impl-roadmap` | implementation | daily-quiz | opus / high | fichier + IDs + lots A/B/C |
+| `impl-profile` | implementation | daily-quiz | opus / high | YAML valide + AC1 (Python) |
+| `impl-angular` | implementation | daily-quiz | opus / high | YAML + ≥ 8 notions + URLs Angular |
+| `impl-questions` | implementation | daily-quiz | opus / high | 11 réponses avec rationale |
 | `debug-calc` | debugging | buggy-python | sonnet / medium | tests verts + test intact |
 | `debug-parse` | debugging | buggy-python-parse | sonnet / medium | tests verts + test intact |
 | `debug-state` | debugging | buggy-python-state | sonnet / medium | tests verts + test intact |
@@ -67,7 +67,7 @@ Bash** ; la commande a été bloquée, aucun fichier n'a été créé, et le mod
 
 Correction et re-run :
 
-1. Le répertoire cible `bench/fixtures/devquiz/parcours/` est désormais pré-créé (`.gitkeep`), pour
+1. Le répertoire cible `bench/fixtures/daily-quiz/parcours/` est désormais pré-créé (`.gitkeep`), pour
    que Write puisse créer le fichier sans `mkdir`.
 2. `impl-angular` a été rejoué seul : 2 répétitions × 2 variantes, même budget.
 3. Le re-run donne routé **1/2** (répétition 1 : YAML invalide, vrai échec Sonnet ; répétition 2 :

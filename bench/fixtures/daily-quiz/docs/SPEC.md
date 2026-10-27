@@ -1,12 +1,12 @@
-# devquiz — spécification (fixture de benchmark)
+# daily-quiz — spécification (fixture de benchmark)
 
-> Fixture synthétique et autonome. Elle reproduit la structure de la spec réelle
+> Fixture synthétique et autonome. Elle reproduit une structure de spec réaliste
 > (identifiants de fonctionnalités, questions ouvertes, AC1 de F-01) sans dépendre
-> d'un dépôt privé. Le vrai devquiz peut être utilisé avec `--repo <chemin>`.
+> d'un dépôt existant. Un autre dépôt peut être utilisé avec `--repo <chemin>`.
 
 ## Contexte
 
-devquiz génère chaque jour un quiz de développement (Python, Angular, entretien
+daily-quiz génère chaque jour un quiz de développement (Python, Angular, entretien
 backend), le fait pratiquer, puis suit la progression. Le pipeline lit des fichiers
 YAML versionnés et publie un quiz quotidien.
 
@@ -63,7 +63,7 @@ Acceptation :
   `parcours/<piste>.yaml` liste les notions dans l'ordre, chacune avec un identifiant
   unique, un titre, au moins une URL de documentation officielle et, en option, un
   exercice externe.
-- AC2 la commande `devquiz check` valide tous les fichiers et sort avec le code 0.
+- AC2 la commande `daily-quiz check` valide tous les fichiers et sort avec le code 0.
 - AC3 (négatif) un champ manquant, une URL invalide, un identifiant de notion en double
   ou une piste inconnue : code non nul et message nommant le fichier, le champ et la ligne.
 - AC4 au moins trois parcours livrés : Python (débutant), Angular (débutant) et un

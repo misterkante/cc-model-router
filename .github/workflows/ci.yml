@@ -27,5 +27,8 @@ jobs:
       - name: Documentation links and bilingual pairs
         run: npm run docs:check
 
+      - name: No private names or machine paths
+        run: npm run privacy:check
+
       - name: Benchmark protocol check (no model calls)
         run: npm run bench:verify

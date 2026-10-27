@@ -117,19 +117,19 @@ for (const task of TASKS) {
   }
 }
 
-// Devquiz fixture content
-const spec = path.join(ROOT, "bench", "fixtures", "devquiz", "docs", "SPEC.md");
+// Daily-quiz fixture content
+const spec = path.join(ROOT, "bench", "fixtures", "daily-quiz", "docs", "SPEC.md");
 if (!existsSync(spec)) {
-  fail("devquiz fixture: docs/SPEC.md missing");
+  fail("daily-quiz fixture: docs/SPEC.md missing");
 } else {
   const text = readFileSync(spec, "utf8");
   const missing = [...ids("F-", 1, 14), ...ids("Q-", 1, 11)].filter(
     (id) => !text.includes(id)
   );
   if (missing.length) {
-    fail(`devquiz fixture: missing ${missing.join(", ")}`);
+    fail(`daily-quiz fixture: missing ${missing.join(", ")}`);
   } else {
-    ok("devquiz fixture: F-01..F-14 and Q-01..Q-11 present");
+    ok("daily-quiz fixture: F-01..F-14 and Q-01..Q-11 present");
   }
 }
 

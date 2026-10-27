@@ -93,9 +93,9 @@ Verified on CLI 2.1.309 (`claude --help` + binary inspection):
 - Claude argument passthrough via `-- <args>` (e.g. `-- -p`).
 - Aliases `haiku` / `sonnet` / `opus` / `fable` confirmed.
 
-## 🧪 Real devquiz test (2026-10-25)
+## 🧪 Real project test (2026-10-25)
 
-Context: devquiz copy in `$TMPDIR/devquiz-router-test`, Claude Code CLI 2.1.309,
+Context: private project copy in `$TMPDIR/ccmr-project-test`, Claude Code CLI 2.1.309,
 `-p --output-format json`, $0.30/run cap, hook via `--settings`.
 
 | Run | Routing | Actual model | Cost | Files |
@@ -106,7 +106,7 @@ Context: devquiz copy in `$TMPDIR/devquiz-router-test`, Claude Code CLI 2.1.309,
 
 - Task A saving: **-94.3%** vs Sonnet ($0.00334 vs $0.05859).
 - `UserPromptSubmit` hook triggered in headless: 2 entries in `.sandbox/config/router.log`.
-- No real devquiz file modified; `~/.claude` intact.
+- No real project file modified; `~/.claude` intact.
 - Total test cost: **~$0.165**.
 - Limitation: 1 sample per task; the interactive session remained to validate.
 

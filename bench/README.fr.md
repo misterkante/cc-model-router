@@ -97,23 +97,23 @@ Pour les tâches d'édition, `allowedChanges` liste les seuls fichiers autorisé
 
 | Id | Tier | Fixture | Baseline | Check |
 |---|---|---|---|---|
-| `mech-questions` | mechanical | devquiz | sonnet / medium | IDs Q-01..Q-11 présents |
-| `mech-features` | mechanical | devquiz | sonnet / medium | IDs F-01..F-14 présents |
-| `mech-lots` | mechanical | devquiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
-| `mech-questions-json` | mechanical | devquiz | sonnet / medium | JSON de 11 questions avec texte |
-| `impl-roadmap` | implementation | devquiz | opus / high | fichier + IDs + lots A/B/C |
-| `impl-profile` | implementation | devquiz | opus / high | YAML valide + AC1 (Python) |
-| `impl-angular` | implementation | devquiz | opus / high | YAML + ≥ 8 notions + URLs Angular |
-| `impl-questions` | implementation | devquiz | opus / high | 11 réponses avec rationale |
+| `mech-questions` | mechanical | daily-quiz | sonnet / medium | IDs Q-01..Q-11 présents |
+| `mech-features` | mechanical | daily-quiz | sonnet / medium | IDs F-01..F-14 présents |
+| `mech-lots` | mechanical | daily-quiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
+| `mech-questions-json` | mechanical | daily-quiz | sonnet / medium | JSON de 11 questions avec texte |
+| `impl-roadmap` | implementation | daily-quiz | opus / high | fichier + IDs + lots A/B/C |
+| `impl-profile` | implementation | daily-quiz | opus / high | YAML valide + AC1 (Python) |
+| `impl-angular` | implementation | daily-quiz | opus / high | YAML + ≥ 8 notions + URLs Angular |
+| `impl-questions` | implementation | daily-quiz | opus / high | 11 réponses avec rationale |
 | `debug-calc` | debugging | buggy-python | sonnet / medium | tests verts + test intact |
 | `debug-parse` | debugging | buggy-python-parse | sonnet / medium | tests verts + test intact |
 | `debug-state` | debugging | buggy-python-state | sonnet / medium | tests verts + test intact |
 | `debug-search` | debugging | buggy-python-search | sonnet / medium | tests verts + test intact |
 
-La fixture `devquiz` est **locale et synthétique** (`bench/fixtures/devquiz/`). Pour tester ton vrai dépôt :
+La fixture `daily-quiz` est **locale et synthétique** (`bench/fixtures/daily-quiz/`). Pour tester ton vrai dépôt :
 
 ```bash
-node bench/run.mjs --repo /chemin/vers/devquiz --budget 0.50
+node bench/run.mjs --repo /chemin/vers/ton-projet --budget 0.50
 ```
 
 ## 5. Ajouter une tâche
@@ -199,8 +199,8 @@ npm run bench -- --repeats 2 --budget 0.50
 # Rapport Markdown lisible
 npm run bench:report -- bench/results/<fichier>.json
 
-# Contre ton vrai dépôt devquiz
-npm run bench -- --repo /chemin/vers/devquiz --budget 0.50
+# Contre ton propre dépôt
+npm run bench -- --repo /chemin/vers/ton-projet --budget 0.50
 
 # Re-scorer un résultat après correction d'un check (sans relancer les modèles)
 npm run bench:recheck -- bench/results/<fichier>.json <taskId>
@@ -223,7 +223,7 @@ Options :
 | `--variants` | `routed,baseline` | variantes à exécuter |
 | `--repeats` | `1` | nombre de répétitions par tâche et par variante |
 | `--budget` | `0.20` | plafond API-équivalent par run |
-| `--repo` | fixture locale | dépôt devquiz alternatif |
+| `--repo` | fixture locale | autre dépôt sur lequel lancer les tâches |
 | `--out` | `bench/results/run-<date>.json` | fichier de sortie |
 
 ## 9. Résultats

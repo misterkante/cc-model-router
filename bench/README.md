@@ -118,24 +118,24 @@ task unaccepted.
 
 | Id | Tier | Fixture | Baseline | Check |
 |---|---|---|---|---|
-| `mech-questions` | mechanical | devquiz | sonnet / medium | IDs Q-01..Q-11 present |
-| `mech-features` | mechanical | devquiz | sonnet / medium | IDs F-01..F-14 present |
-| `mech-lots` | mechanical | devquiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
-| `mech-questions-json` | mechanical | devquiz | sonnet / medium | JSON of 11 questions with text |
-| `impl-roadmap` | implementation | devquiz | opus / high | file + IDs + lots A/B/C |
-| `impl-profile` | implementation | devquiz | opus / high | valid YAML + AC1 (Python) |
-| `impl-angular` | implementation | devquiz | opus / high | YAML + ≥ 8 concepts + Angular URLs |
-| `impl-questions` | implementation | devquiz | opus / high | 11 answers with rationale |
+| `mech-questions` | mechanical | daily-quiz | sonnet / medium | IDs Q-01..Q-11 present |
+| `mech-features` | mechanical | daily-quiz | sonnet / medium | IDs F-01..F-14 present |
+| `mech-lots` | mechanical | daily-quiz | sonnet / medium | JSON `{"A":9,"B":3,"C":2}` |
+| `mech-questions-json` | mechanical | daily-quiz | sonnet / medium | JSON of 11 questions with text |
+| `impl-roadmap` | implementation | daily-quiz | opus / high | file + IDs + lots A/B/C |
+| `impl-profile` | implementation | daily-quiz | opus / high | valid YAML + AC1 (Python) |
+| `impl-angular` | implementation | daily-quiz | opus / high | YAML + ≥ 8 concepts + Angular URLs |
+| `impl-questions` | implementation | daily-quiz | opus / high | 11 answers with rationale |
 | `debug-calc` | debugging | buggy-python | sonnet / medium | tests green + test file intact |
 | `debug-parse` | debugging | buggy-python-parse | sonnet / medium | tests green + test file intact |
 | `debug-state` | debugging | buggy-python-state | sonnet / medium | tests green + test file intact |
 | `debug-search` | debugging | buggy-python-search | sonnet / medium | tests green + test file intact |
 
-The `devquiz` fixture is **local and synthetic** (`bench/fixtures/devquiz/`). To test your real
+The `daily-quiz` fixture is **local and synthetic** (`bench/fixtures/daily-quiz/`). To test your real
 repository:
 
 ```bash
-node bench/run.mjs --repo /path/to/devquiz --budget 0.50
+node bench/run.mjs --repo /path/to/your-project --budget 0.50
 ```
 
 ## 5. Add a task
@@ -224,8 +224,8 @@ npm run bench -- --repeats 2 --budget 0.50
 # Readable Markdown report
 npm run bench:report -- bench/results/<file>.json
 
-# Against your real devquiz repository
-npm run bench -- --repo /path/to/devquiz --budget 0.50
+# Against your own repository
+npm run bench -- --repo /path/to/your-project --budget 0.50
 
 # Re-score a result after fixing a check (without re-running the models)
 npm run bench:recheck -- bench/results/<file>.json <taskId>
@@ -248,7 +248,7 @@ Options:
 | `--variants` | `routed,baseline` | variants to run |
 | `--repeats` | `1` | repeats per task and variant |
 | `--budget` | `0.20` | API-equivalent cap per run |
-| `--repo` | local fixture | alternative devquiz repository |
+| `--repo` | local fixture | alternative repository to run the tasks against |
 | `--out` | `bench/results/run-<date>.json` | output file |
 
 ## 9. Results

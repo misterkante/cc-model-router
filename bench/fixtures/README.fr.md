@@ -8,7 +8,7 @@ fichiers.
 
 | Fixture | Utilisée par | Défauts plantés |
 |---|---|---|
-| `devquiz/` | `mech-*`, `impl-*` | Aucun. Spec synthétique avec F-01..F-14, Q-01..Q-11 et F-01 AC1. |
+| `daily-quiz/` | `mech-*`, `impl-*` | Aucun. Spec synthétique avec F-01..F-14, Q-01..Q-11 et F-01 AC1. |
 | `buggy-python/` | `debug-calc` | `add` soustrait, `average([])` divise par zéro, `clamp` a un off-by-one. |
 | `buggy-python-parse/` | `debug-parse` | Le parser de durée rejette les espaces, accepte `90m` et `1h90m`. |
 | `buggy-python-state/` | `debug-state` | Le panier partage la liste d’entrée, supprime toutes les occurrences, ignore les mises à jour manquantes, accepte les valeurs négatives. |
